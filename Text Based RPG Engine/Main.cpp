@@ -26,6 +26,23 @@ int getValidInput(const string& prompt) {
     }
 }
 
+// Helper function to generate visual progress bars
+string renderBar(int current, int max, int length = 20) {
+    if (max <= 0) return "[Error]";
+
+    int fill = (current * length) / max;
+    if (fill < 0) fill = 0;
+    if (fill > length) fill = length;
+
+    string bar = "[";
+    for (int i = 0; i < length; ++i) {
+        if (i < fill) bar += "|";
+        else bar += " ";
+    }
+    bar += "]";
+    return bar;
+}
+
 class Player : public Character {
 public:
     vector<Item> inventory;
@@ -133,11 +150,13 @@ public:
     }
 
     void displayHUD() {
-        cout << "\n========================================";
-        cout << "\n PLAYER: " << name << " | LVL: " << level << " | WEP: " << equippedWeapon.name;
-        cout << "\n HP: " << health << "/" << maxHealth << " | MP: " << mana << "/" << maxMana;
-        cout << "\n XP: " << xp << "/" << xpToNextLevel << " | ARMOR: " << armor << "%";
-        cout << "\n========================================\n";
+        cout << "\n======================================================\n";
+        cout << " COMMANDER: " << name << " | RANK: " << level << " | WEP: " << equippedWeapon.name << "\n";
+        cout << " HP: " << renderBar(health, maxHealth) << " " << health << "/" << maxHealth << "\n";
+        cout << " MP: " << renderBar(mana, maxMana, 10) << " " << mana << "/" << maxMana << "\n";
+        cout << " XP: " << renderBar(xp, xpToNextLevel, 15) << " " << xp << "/" << xpToNextLevel << "\n";
+        cout << " ARMOR: " << armor << "%\n";
+        cout << "======================================================\n";
     }
 };
 
