@@ -83,12 +83,15 @@ public:
     void specialAbility(Character& target) {
         if (mana >= 20) {
             mana -= 20;
-            int specialDmg = (damage + equippedWeapon.damageBonus) * 3;
-            cout << "\033[1;35m[ULTIMATE]\033[0m " << name << " executes a Heavy Strike for " << specialDmg << " damage!\n";
+            int specialDmg = (damage + equippedWeapon.damageBonus) * 2;
+            cout << "\033[1;35m[TACTICAL STRIKE]\033[0m " << name << " executes a heavy blow for " << specialDmg << " damage!\n";
             target.takeDamage(specialDmg);
+
+            // Inflict 10 damage per turn for 3 turns
+            target.applyEffect({ "Fracture", 10, 3 });
         }
         else {
-            cout << "\033[1;33m[LOW MANA]\033[0m Insufficient energy.\n";
+            cout << "\033[1;33m[RESOURCES LOW]\033[0m Insufficient energy.\n";
         }
     }
 
@@ -210,6 +213,13 @@ int main() {
         }
 
         while (hero->isAlive() && enemy->isAlive()) {
+            // Process any active debuffs before the turn starts
+            hero->processEffects();
+            enemy->processEffects();
+
+            // Check if status effects killed anyone before proceeding
+            if (!hero->isAlive() || !enemy->isAlive()) break;
+
             hero->displayHUD();
             cout << "\n1. Attack | 2. Inventory | 3. Special\n";
             int choice = getValidInput("Action: ");
