@@ -9,8 +9,46 @@
 #include "Character.h"
 #include "Monster.h"
 #include "Weapon.h"
+#include <sstream>
 
 using namespace std;
+
+// Structure to hold the loaded data
+struct MonsterData {
+    string name;
+    int baseHealth;
+    int baseDamage;
+    bool isBoss;
+};
+
+// Function to read the CSV file
+vector<MonsterData> loadMonsterDatabase(const string& filename) {
+    vector<MonsterData> database;
+    ifstream file(filename);
+    string line;
+
+    if (!file.is_open()) {
+        cout << "\033[1;31m[ENGINE ERROR]\033[0m Could not find " << filename << ". Loading fallback data.\n";
+        database.push_back({ "Fallback_Drone", 50, 10, false });
+        database.push_back({ "Fallback_Boss", 250, 20, true });
+        return database;
+    }
+
+    while (getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue; // Skip empty lines
+
+        stringstream ss(line);
+        string name, healthStr, dmgStr, bossStr;
+
+        getline(ss, name, ',');
+        getline(ss, healthStr, ',');
+        getline(ss, dmgStr, ',');
+        getline(ss, bossStr, ',');
+
+        database.push_back({ name, stoi(healthStr), stoi(dmgStr), bossStr == "1" });
+    }
+    return database;
+}
 
 // Helper function for safe integer input
 int getValidInput(const string& prompt) {
@@ -45,10 +83,11 @@ string renderBar(int current, int max, int length = 20) {
 
 class Player : public Character {
 public:
-    vector<Item> inventory;
-    Weapon equippedWeapon = { "Iron Pipe", 5, "Common" };
+    std::vector<Item> inventory;
+    Weapon equippedWeapon;
 
     Player(string n) : Character(n, 120, 25) {
+        equippedWeapon = { "Iron Pipe", 5, "Common" };
         inventory.push_back({ "Field Kit", 20 });
     }
 
@@ -121,7 +160,8 @@ public:
         ifstream inFile("savegame.txt");
         if (inFile.is_open()) {
             inFile >> level >> health >> maxHealth >> damage >> xp >> mana >> maxMana >> armor >> equippedWeapon.damageBonus >> currentWave;
-            getline(inFile >> ws, equippedWeapon.name);
+            inFile.ignore();  // Skip whitespace after the last integer
+            getline(inFile, equippedWeapon.name);
             inFile.close();
 
             // Fix XP exploit
@@ -225,6 +265,8 @@ int main() {
     srand(static_cast<unsigned int>(time(0)));
     auto hero = make_unique<Player>("MK_Void");
 
+    vector<MonsterData> monsterDB = loadMonsterDatabase("monsters.csv");
+
     int wave = 1;
     hero->loadGame(wave); // Load wave data
 
@@ -232,12 +274,25 @@ int main() {
         bool isBossWave = (wave % 5 == 0);
         unique_ptr<Monster> enemy;
 
+        // Filter the database for the correct enemy type
+        vector<MonsterData> validEnemies;
+        for (const auto& m : monsterDB) {
+            if (m.isBoss == isBossWave) validEnemies.push_back(m);
+        }
+
+        // Pick a random valid enemy and scale it by the current wave
+        int randIndex = rand() % validEnemies.size();
+        MonsterData chosen = validEnemies[randIndex];
+
+        string enemyName = chosen.name + "_v" + to_string(wave);
+        int enemyHp = chosen.baseHealth + (wave * 10);
+        int enemyDmg = chosen.baseDamage + wave;
+        bool enemyIsBoss = chosen.isBoss;
+
+        enemy = make_unique<Monster>(enemyName, enemyHp, enemyDmg, enemyIsBoss);
+
         if (isBossWave) {
             cout << "\n\033[1;35m[!!! HEAVY TARGET WARNING !!!]\033[0m\n";
-            enemy = make_unique<Monster>("Juggernaut_v" + to_string(wave), 200 + (wave * 20), 15 + wave, true);
-        }
-        else {
-            enemy = make_unique<Monster>("Automaton_v" + to_string(wave), 40 + (wave * 10), 8 + wave);
         }
 
         while (hero->isAlive() && enemy->isAlive()) {
