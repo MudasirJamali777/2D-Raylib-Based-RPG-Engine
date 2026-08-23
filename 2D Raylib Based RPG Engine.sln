@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36915.13 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.8.12009.203 stable
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Text Based RPG Engine", "Text Based RPG Engine\Text Based RPG Engine.vcxproj", "{416A439E-6168-44E6-BAE7-7A41D98E2603}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "2D Raylib Based RPG Engine", "Text Based RPG Engine\Text Based RPG Engine.vcxproj", "{416A439E-6168-44E6-BAE7-7A41D98E2603}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
