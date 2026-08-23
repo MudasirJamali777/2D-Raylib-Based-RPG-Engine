@@ -193,6 +193,34 @@ void openShop(Player& hero) {
     }
 }
 
+// Dynamic Narrative Event Generator
+void triggerRandomEvent(Player& hero) {
+    int roll = rand() % 100 + 1;
+    cout << "\n\033[1;36m--- [SYSTEM SCAN: UNKNOWN ANOMALY] ---\033[0m\n";
+
+    if (roll <= 30) {
+        // 30% chance to find XP
+        cout << "Narrative Log: You discover a deactivated recon drone. Salvaging its core grants you valuable data.\n";
+        hero.gainXP(75);
+    }
+    else if (roll <= 60) {
+        // 30% chance for a trap
+        cout << "Narrative Log: An environmental hazard leaks corrosive fluid! Your systems take a hit.\n";
+        hero.takeDamage(20);
+    }
+    else if (roll <= 85) {
+        // 25% chance for free loot
+        cout << "Narrative Log: You uncover a hidden supply cache containing medical equipment.\n";
+        hero.addLoot({ "Med-Injector", 30 });
+    }
+    else {
+        // 15% chance for nothing
+        cout << "Narrative Log: The sector is clear. No anomalies detected. You proceed forward.\n";
+    }
+
+    cout << "------------------------------------------\n";
+}
+
 int main() {
     srand(static_cast<unsigned int>(time(0)));
     auto hero = make_unique<Player>("MK_Void");
@@ -264,8 +292,15 @@ int main() {
                 else hero->addLoot({ "Bandage", 15 });
             }
 
+            
             wave++;
-            hero->saveGame(wave); // Save new wave data
+
+            // Trigger a random narrative event on standard waves (skip on shop or boss waves)
+            if (wave % 3 != 0 && !isBossWave) {
+                triggerRandomEvent(*hero);
+            }
+
+            hero->saveGame(wave); // Save new wave data with event results applied
 
             if (wave % 3 == 0 && hero->isAlive()) {
                 openShop(*hero);
