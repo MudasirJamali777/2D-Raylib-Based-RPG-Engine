@@ -35,5 +35,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="monsters.csv" />
+    <None Include="weapons.csv" />
+    <None Include="items.csv" />
   </ItemGroup>
 </Project>

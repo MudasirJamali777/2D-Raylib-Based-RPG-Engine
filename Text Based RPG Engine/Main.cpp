@@ -261,11 +261,64 @@ void triggerRandomEvent(Player& hero) {
     cout << "------------------------------------------\n";
 }
 
+// Load Weapons from CSV
+vector<Weapon> loadWeaponDatabase(const string& filename) {
+    vector<Weapon> database;
+    ifstream file(filename);
+    string line;
+
+    if (!file.is_open()) {
+        cout << "\033[1;31m[ENGINE ERROR]\033[0m Could not find " << filename << ". Using default weapon.\n";
+        database.push_back({ "Iron Pipe", 5, "Common" });
+        return database;
+    }
+
+    while (getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue;
+        stringstream ss(line);
+        string name, dmgStr, rarity;
+
+        getline(ss, name, ',');
+        getline(ss, dmgStr, ',');
+        getline(ss, rarity, ',');
+
+        database.push_back({ name, stoi(dmgStr), rarity });
+    }
+    return database;
+}
+
+// Load Items from CSV
+vector<Item> loadItemDatabase(const string& filename) {
+    vector<Item> database;
+    ifstream file(filename);
+    string line;
+
+    if (!file.is_open()) {
+        cout << "\033[1;31m[ENGINE ERROR]\033[0m Could not find " << filename << ". Using default item.\n";
+        database.push_back({ "Field Kit", 20 });
+        return database;
+    }
+
+    while (getline(file, line)) {
+        if (line.empty() || line[0] == '#') continue;
+        stringstream ss(line);
+        string name, healStr;
+
+        getline(ss, name, ',');
+        getline(ss, healStr, ',');
+
+        database.push_back({ name, stoi(healStr) });
+    }
+    return database;
+}
+
 int main() {
     srand(static_cast<unsigned int>(time(0)));
     auto hero = make_unique<Player>("MK_Void");
 
     vector<MonsterData> monsterDB = loadMonsterDatabase("monsters.csv");
+    vector<Weapon> weaponDB = loadWeaponDatabase("weapons.csv");
+    vector<Item> itemDB = loadItemDatabase("items.csv");
 
     int wave = 1;
     hero->loadGame(wave); // Load wave data
@@ -338,13 +391,15 @@ int main() {
         if (hero->isAlive()) {
             cout << "\033[1;32m[AREA CLEARED]\033[0m\n";
             if (isBossWave) {
-                Weapon bossLoot = { "Titan-Slayer", 30 + (wave * 5), "LEGENDARY" };
-                hero->equipWeapon(bossLoot);
+                // Pick a random legendary/rare weapon from weaponDB
+                int randWep = rand() % weaponDB.size();
+                hero->equipWeapon(weaponDB[randWep]);
             }
             else {
                 hero->gainXP(50 + (wave * 10));
-                if (rand() % 2 == 0) hero->addLoot({ "Trauma Kit", 40 });
-                else hero->addLoot({ "Bandage", 15 });
+                // Pick a random consumable from itemDB
+                int randItem = rand() % itemDB.size();
+                hero->addLoot(itemDB[randItem]);
             }
 
             

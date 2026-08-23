@@ -134,7 +134,9 @@
     <Text Include="Text.txt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="items.csv" />
     <None Include="monsters.csv" />
+    <None Include="weapons.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
