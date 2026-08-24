@@ -44,5 +44,8 @@
     <ClInclude Include="Shop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Relic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

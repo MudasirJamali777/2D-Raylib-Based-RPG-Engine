@@ -54,3 +54,11 @@ struct Star {
     float speed;
     float size;
 };
+
+struct HealthPickup {
+    Vector2 pos;
+    Vector2 vel;
+    int healAmount;
+    float life;
+    float spin;
+};

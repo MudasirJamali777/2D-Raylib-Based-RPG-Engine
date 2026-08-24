@@ -26,6 +26,8 @@ struct ActiveMonster {
     float attackTimer;
     Color color;
     bool isBoss;
+    bool isElite = false;
+    int eliteKind = -1;
     int typeIndex;
     std::string name;
 };

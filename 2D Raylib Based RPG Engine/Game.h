@@ -7,6 +7,8 @@
 #include "Monster.h"
 #include "Particle.h"
 #include "Shop.h"
+#include "Dungeon.h"
+#include "Relic.h"
 
 enum class GameState {
     Title,
@@ -42,12 +44,22 @@ private:
     ShopState shop;
     Camera2D camera{};
     Rectangle safeZone{};
+    DungeonMap dungeon;
 
     float screenShake = 0.0f;
     float nextWaveTimer = 0.0f;
     float announcementTimer = 0.0f;
     float safeZoneHealBuffer = 0.0f;
+    float hitStopTimer = 0.0f;
     std::string announcement;
+
+    int waveTargetRoomIndex = -1;
+    int lockedRoomIndex = -1;
+    bool rewardChestActive = false;
+    bool rewardSelectionOpen = false;
+    Vector2 rewardChestPos = { 0.0f, 0.0f };
+    std::vector<RelicType> relics;
+    std::vector<RelicChoice> rewardChoices;
 
     std::vector<Weapon> weaponDB;
     std::vector<MonsterType> monsterTypes;
@@ -55,6 +67,7 @@ private:
     std::vector<ActiveMonster> monsters;
     std::vector<Particle> particles;
     std::vector<Orb> orbs;
+    std::vector<HealthPickup> healthPickups;
     std::vector<FloatingText> floatingTexts;
     std::vector<Turret> turrets;
     std::vector<Shockwave> shockwaves;
@@ -63,7 +76,27 @@ private:
     void BuildColorTheme();
     void BuildDatabases();
     void BuildStars();
+    void BuildDungeon();
     void ResetRun();
+
+    Vector2 MoveWithCollision(Vector2 start, Vector2 delta, float radius, int steps = 1) const;
+    Vector2 GetSpawnPointInCombatRoom() const;
+    const DungeonArea* GetCurrentArea(Vector2 pos) const;
+    std::vector<Rectangle> GetActiveBarrierRects() const;
+    int CountRelic(RelicType type) const;
+    float GetMoveSpeed() const;
+    float GetAttackCooldown() const;
+    float GetDashCooldown() const;
+    float GetCritChance() const;
+    float GetCritMultiplier() const;
+    int GetFlatDamageBonus() const;
+    int GetEmpDamage() const;
+    float GetEmpRadius() const;
+    int GetTurretDamage() const;
+    float GetTurretLifetime() const;
+    int GetHealPickupValue(int baseValue) const;
+    void BuildRewardChoices();
+    void ApplyRelic(RelicType type);
 
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);
     void EmitBurst(Vector2 pos, int count, float speed, Color color, float size);
@@ -80,6 +113,8 @@ private:
     void DrawTitleScreen() const;
     void DrawWorld() const;
     void DrawHud() const;
+    void DrawMiniMap() const;
+    void DrawRewardOverlay() const;
     void DrawShop() const;
     void DrawGameOver() const;
     void DrawEnemySprite(const ActiveMonster& monster) const;

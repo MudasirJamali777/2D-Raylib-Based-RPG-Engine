@@ -13,6 +13,7 @@ struct Player {
     int wave = 1;
     int hpUpgradeLevel = 0;
     int equippedWeaponIdx = 0;
+    int relicsCollected = 0;
 
     float dashCd = 0.0f;
     float empCd = 0.0f;
