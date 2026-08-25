@@ -64,6 +64,7 @@ Game::Game() {
 
     BuildColorTheme();
     BuildDatabases();
+    LoadProfile();
     BuildStars();
     BuildDungeon();
     BuildTileMap();
@@ -658,7 +659,7 @@ int Game::CountRelic(RelicType type) const {
 }
 
 float Game::GetMoveSpeed() const {
-    return player.speed + 0.42f * (float)CountRelic(RelicType::PhaseBoots);
+    return 4.6f + 0.16f * (float)CountRelic(RelicType::PhaseBoots);
 }
 
 float Game::GetAttackCooldown() const {
@@ -670,9 +671,9 @@ float Game::GetAttackCooldown() const {
 }
 
 float Game::GetDashCooldown() const {
-    float value = 3.0f - 0.24f * (float)CountRelic(RelicType::PhaseBoots);
-    if (value < 1.4f) {
-        value = 1.4f;
+    float value = 3.0f - 0.12f * (float)CountRelic(RelicType::PhaseBoots);
+    if (value < 1.8f) {
+        value = 1.8f;
     }
     return value;
 }
@@ -737,6 +738,68 @@ void Game::ApplyRelic(RelicType type) {
         player.maxHp += 18;
         player.hp = std::min(player.maxHp, player.hp + 24);
     }
+}
+
+bool Game::LoadProfile() {
+    persistentOwnedWeapons.assign(weaponDB.size(), false);
+    if (!persistentOwnedWeapons.empty()) {
+        persistentOwnedWeapons[0] = true;
+    }
+    persistentHpUpgradeLevel = 0;
+    persistentEquippedWeaponIdx = 0;
+    legacyRenown = 0;
+
+    std::ifstream in("profile.txt");
+    if (!in.is_open()) {
+        return false;
+    }
+
+    std::string header;
+    in >> header;
+    if (header != "CROWNHEART_PROFILE_V1") {
+        return false;
+    }
+
+    in >> legacyRenown >> persistentHpUpgradeLevel >> persistentEquippedWeaponIdx;
+    if (legacyRenown < 0) legacyRenown = 0;
+    if (persistentHpUpgradeLevel < 0) persistentHpUpgradeLevel = 0;
+    if (persistentEquippedWeaponIdx < 0 || persistentEquippedWeaponIdx >= (int)weaponDB.size()) {
+        persistentEquippedWeaponIdx = 0;
+    }
+
+    size_t ownedCount = 0;
+    in >> ownedCount;
+    for (size_t i = 0; i < ownedCount; ++i) {
+        int owned = 0;
+        in >> owned;
+        if (i < persistentOwnedWeapons.size()) {
+            persistentOwnedWeapons[i] = (owned != 0);
+        }
+    }
+
+    if (!persistentOwnedWeapons.empty()) {
+        persistentOwnedWeapons[0] = true;
+        if (!persistentOwnedWeapons[persistentEquippedWeaponIdx]) {
+            persistentEquippedWeaponIdx = 0;
+        }
+    }
+
+    return true;
+}
+
+void Game::SaveProfile() const {
+    std::ofstream out("profile.txt", std::ios::trunc);
+    if (!out.is_open()) {
+        return;
+    }
+
+    out << "CROWNHEART_PROFILE_V1\n";
+    out << legacyRenown << ' ' << persistentHpUpgradeLevel << ' ' << persistentEquippedWeaponIdx << '\n';
+    out << persistentOwnedWeapons.size();
+    for (bool owned : persistentOwnedWeapons) {
+        out << ' ' << (owned ? 1 : 0);
+    }
+    out << '\n';
 }
 
 bool Game::HasSaveFile() const {
@@ -940,13 +1003,26 @@ void Game::ResetRun() {
     player = Player{};
     player.pos = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.72f };
     player.aimDir = { 0.0f, -1.0f };
-    player.xp = 240;
+    player.hpUpgradeLevel = persistentHpUpgradeLevel;
+    player.maxHp = 160 + persistentHpUpgradeLevel * 30;
+    player.hp = player.maxHp;
+    player.xp = 240 + legacyRenown;
+    legacyRenown = 0;
 
     shop = ShopState{};
-    shop.ownedWeapons.assign(weaponDB.size(), false);
+    shop.ownedWeapons = persistentOwnedWeapons;
+    if (shop.ownedWeapons.size() != weaponDB.size()) {
+        shop.ownedWeapons.assign(weaponDB.size(), false);
+    }
     if (!shop.ownedWeapons.empty()) {
         shop.ownedWeapons[0] = true;
     }
+    player.equippedWeaponIdx = persistentEquippedWeaponIdx;
+    if (player.equippedWeaponIdx < 0 || player.equippedWeaponIdx >= (int)weaponDB.size() || !shop.ownedWeapons[player.equippedWeaponIdx]) {
+        player.equippedWeaponIdx = 0;
+    }
+    persistentEquippedWeaponIdx = player.equippedWeaponIdx;
+    SaveProfile();
 
     relics.clear();
     rewardChoices.clear();
@@ -1542,9 +1618,11 @@ void Game::UpdatePlaying(float dt) {
                 player.hpUpgradeLevel++;
                 player.maxHp += 30;
                 player.hp = std::min(player.maxHp, player.hp + 30);
+                persistentHpUpgradeLevel = player.hpUpgradeLevel;
                 shop.message = "VIGOR RAISED";
                 shop.messageColor = safeGreen;
                 shop.messageTimer = 1.5f;
+                SaveProfile();
                 SaveRun();
             }
             else {
@@ -1557,18 +1635,23 @@ void Game::UpdatePlaying(float dt) {
         if (IsKeyPressed(KEY_B)) {
             if (shop.ownedWeapons[shop.browseWeaponIdx]) {
                 player.equippedWeaponIdx = shop.browseWeaponIdx;
+                persistentEquippedWeaponIdx = player.equippedWeaponIdx;
                 shop.message = "ARMAMENT READIED";
                 shop.messageColor = neonCyan;
                 shop.messageTimer = 1.2f;
+                SaveProfile();
                 SaveRun();
             }
             else if (player.xp >= weaponDB[shop.browseWeaponIdx].cost) {
                 player.xp -= weaponDB[shop.browseWeaponIdx].cost;
                 shop.ownedWeapons[shop.browseWeaponIdx] = true;
                 player.equippedWeaponIdx = shop.browseWeaponIdx;
+                persistentOwnedWeapons = shop.ownedWeapons;
+                persistentEquippedWeaponIdx = player.equippedWeaponIdx;
                 shop.message = "BARGAIN SEALED";
                 shop.messageColor = neonGold;
                 shop.messageTimer = 1.5f;
+                SaveProfile();
                 SaveRun();
             }
             else {
@@ -1580,6 +1663,11 @@ void Game::UpdatePlaying(float dt) {
     }
 
     if (player.hp <= 0) {
+        persistentOwnedWeapons = shop.ownedWeapons;
+        persistentHpUpgradeLevel = player.hpUpgradeLevel;
+        persistentEquippedWeaponIdx = player.equippedWeaponIdx;
+        legacyRenown = std::max(legacyRenown, (int)std::round((float)player.xp * 0.65f));
+        SaveProfile();
         DeleteSave();
         gameState = GameState::GameOver;
         announcement = "FALLEN IN BATTLE";
@@ -2133,8 +2221,9 @@ void Game::DrawGameOver() const {
     DrawText("FALLEN IN BATTLE", screenW / 2 - MeasureText("FALLEN IN BATTLE", 56) / 2, 180, 56, softRed);
     DrawText(TextFormat("WAVE REACHED: %d", player.wave), screenW / 2 - MeasureText(TextFormat("WAVE REACHED: %d", player.wave), 28) / 2, 280, 28, WHITE);
     DrawText(TextFormat("TOTAL KILLS: %d", player.kills), screenW / 2 - MeasureText(TextFormat("TOTAL KILLS: %d", player.kills), 28) / 2, 320, 28, WHITE);
-    DrawText(TextFormat("XP BANKED: %d", player.xp), screenW / 2 - MeasureText(TextFormat("XP BANKED: %d", player.xp), 28) / 2, 360, 28, neonGold);
-    DrawText("PRESS ENTER TO RIDE OUT AGAIN", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT AGAIN", 26) / 2, 450, 26, neonCyan);
+    DrawText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), screenW / 2 - MeasureText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), 28) / 2, 360, 28, neonGold);
+    DrawText("WEAPONS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 404, 22, RAYWHITE);
+    DrawText("PRESS ENTER TO RIDE OUT AGAIN", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT AGAIN", 26) / 2, 456, 26, neonCyan);
 }
 
 void Game::DrawEnemySprite(const ActiveMonster& monster) const {

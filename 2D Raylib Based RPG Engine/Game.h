@@ -65,6 +65,10 @@ private:
     std::vector<Weapon> weaponDB;
     std::vector<MonsterType> monsterTypes;
     std::vector<Star> stars;
+    std::vector<bool> persistentOwnedWeapons;
+    int persistentHpUpgradeLevel = 0;
+    int persistentEquippedWeaponIdx = 0;
+    int legacyRenown = 0;
     TileMap tileMap;
     Texture2D tileAtlas{};
     Texture2D propAtlas{};
@@ -109,7 +113,9 @@ private:
     void ApplyRelic(RelicType type);
     bool HasSaveFile() const;
     bool LoadRun();
+    bool LoadProfile();
     void SaveRun() const;
+    void SaveProfile() const;
     void DeleteSave() const;
 
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);
