@@ -16,6 +16,7 @@ struct DungeonObstacle {
     Color color{ 42, 50, 72, 255 };
     int spriteIndex = -1;
     float spriteScale = 1.0f;
+    std::vector<Rectangle> colliders;
 };
 
 struct DungeonMap {
@@ -89,8 +90,17 @@ inline bool IsPositionWalkable(Vector2 pos, float radius, const DungeonMap& dung
     }
 
     for (const auto& obstacle : dungeon.obstacles) {
-        if (CircleRectCollision(pos, radius + 1.0f, obstacle.rect)) {
-            return false;
+        if (obstacle.colliders.empty()) {
+            if (CircleRectCollision(pos, radius + 0.5f, obstacle.rect)) {
+                return false;
+            }
+        }
+        else {
+            for (const auto& collider : obstacle.colliders) {
+                if (CircleRectCollision(pos, radius + 0.5f, collider)) {
+                    return false;
+                }
+            }
         }
     }
 

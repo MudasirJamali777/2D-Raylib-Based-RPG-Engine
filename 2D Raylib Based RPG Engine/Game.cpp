@@ -223,48 +223,77 @@ void Game::BuildDungeon() {
         { -1600.0f, 970.0f, 100.0f, 80.0f }
     };
 
-    auto AddObstacle = [&](Rectangle rect, Color color, int spriteIndex, float spriteScale) {
-        dungeon.obstacles.push_back({ rect, color, spriteIndex, spriteScale });
+    auto AddObstacle = [&](Rectangle rect, Color color, int spriteIndex, float spriteScale, std::initializer_list<Rectangle> colliders) {
+        DungeonObstacle obstacle{};
+        obstacle.rect = rect;
+        obstacle.color = color;
+        obstacle.spriteIndex = spriteIndex;
+        obstacle.spriteScale = spriteScale;
+        obstacle.colliders.assign(colliders.begin(), colliders.end());
+        dungeon.obstacles.push_back(obstacle);
         };
 
-    AddObstacle({ -96.0f, -44.0f, 192.0f, 168.0f }, { 114, 101, 85, 255 }, 5, 1.82f);
-    AddObstacle({ -258.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f);
-    AddObstacle({ 182.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f);
-    AddObstacle({ -328.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f);
-    AddObstacle({ 286.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f);
+    auto TowerCollider = [&](Rectangle rect) {
+        return Rectangle{ rect.x + rect.width * 0.31f, rect.y + rect.height * 0.60f, rect.width * 0.38f, rect.height * 0.28f };
+        };
+    auto SignCollider = [&](Rectangle rect) {
+        return Rectangle{ rect.x + rect.width * 0.38f, rect.y + rect.height * 0.48f, rect.width * 0.18f, rect.height * 0.34f };
+        };
+    auto TreeTrunk = [&](Rectangle rect) {
+        return Rectangle{ rect.x + rect.width * 0.39f, rect.y + rect.height * 0.58f, rect.width * 0.20f, rect.height * 0.28f };
+        };
+    auto TreeRoots = [&](Rectangle rect) {
+        return Rectangle{ rect.x + rect.width * 0.31f, rect.y + rect.height * 0.72f, rect.width * 0.36f, rect.height * 0.12f };
+        };
+    auto RockCollider = [&](Rectangle rect) {
+        return Rectangle{ rect.x + rect.width * 0.22f, rect.y + rect.height * 0.46f, rect.width * 0.54f, rect.height * 0.24f };
+        };
+    auto HutCollider = [&](Rectangle rect) {
+        return Rectangle{ rect.x + rect.width * 0.27f, rect.y + rect.height * 0.48f, rect.width * 0.42f, rect.height * 0.28f };
+        };
 
-    AddObstacle({ 930.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f);
-    AddObstacle({ 1162.0f, -34.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
-    AddObstacle({ 1272.0f, 92.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+    AddObstacle({ -96.0f, -44.0f, 192.0f, 168.0f }, { 114, 101, 85, 255 }, 5, 1.82f, {
+        { -72.0f, 34.0f, 30.0f, 60.0f },
+        { -22.0f, 54.0f, 44.0f, 42.0f },
+        { 42.0f, 34.0f, 30.0f, 60.0f }
+        });
+    AddObstacle({ -258.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f, { TowerCollider({ -258.0f, 46.0f, 76.0f, 118.0f }) });
+    AddObstacle({ 182.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f, { TowerCollider({ 182.0f, 46.0f, 76.0f, 118.0f }) });
+    AddObstacle({ -328.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f, { SignCollider({ -328.0f, 136.0f, 42.0f, 62.0f }) });
+    AddObstacle({ 286.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f, { SignCollider({ 286.0f, 136.0f, 42.0f, 62.0f }) });
 
-    AddObstacle({ -1282.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f);
-    AddObstacle({ -1058.0f, 42.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
-    AddObstacle({ -1410.0f, 88.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+    AddObstacle({ 930.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f, { TreeTrunk({ 930.0f, -186.0f, 92.0f, 126.0f }), TreeRoots({ 930.0f, -186.0f, 92.0f, 126.0f }) });
+    AddObstacle({ 1162.0f, -34.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 1162.0f, -34.0f, 96.0f, 78.0f }) });
+    AddObstacle({ 1272.0f, 92.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1272.0f, 92.0f, 110.0f, 104.0f }) });
 
-    AddObstacle({ -202.0f, -1216.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f);
-    AddObstacle({ 94.0f, -1078.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
-    AddObstacle({ -26.0f, -970.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f);
+    AddObstacle({ -1282.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f, { TreeTrunk({ -1282.0f, -186.0f, 92.0f, 126.0f }), TreeRoots({ -1282.0f, -186.0f, 92.0f, 126.0f }) });
+    AddObstacle({ -1058.0f, 42.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ -1058.0f, 42.0f, 96.0f, 78.0f }) });
+    AddObstacle({ -1410.0f, 88.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1410.0f, 88.0f, 110.0f, 104.0f }) });
 
-    AddObstacle({ -198.0f, 904.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f);
-    AddObstacle({ 90.0f, 1040.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
-    AddObstacle({ -30.0f, 1126.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f);
+    AddObstacle({ -202.0f, -1216.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f, { TreeTrunk({ -202.0f, -1216.0f, 88.0f, 122.0f }), TreeRoots({ -202.0f, -1216.0f, 88.0f, 122.0f }) });
+    AddObstacle({ 94.0f, -1078.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 94.0f, -1078.0f, 96.0f, 78.0f }) });
+    AddObstacle({ -26.0f, -970.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f, { TowerCollider({ -26.0f, -970.0f, 82.0f, 128.0f }) });
 
-    AddObstacle({ 906.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
-    AddObstacle({ 1228.0f, -976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+    AddObstacle({ -198.0f, 904.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f, { TreeTrunk({ -198.0f, 904.0f, 88.0f, 122.0f }), TreeRoots({ -198.0f, 904.0f, 88.0f, 122.0f }) });
+    AddObstacle({ 90.0f, 1040.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 90.0f, 1040.0f, 96.0f, 78.0f }) });
+    AddObstacle({ -30.0f, 1126.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f, { TowerCollider({ -30.0f, 1126.0f, 82.0f, 128.0f }) });
 
-    AddObstacle({ 904.0f, 852.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
-    AddObstacle({ 1224.0f, 976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+    AddObstacle({ 906.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ 906.0f, -1112.0f, 92.0f, 124.0f }), TreeRoots({ 906.0f, -1112.0f, 92.0f, 124.0f }) });
+    AddObstacle({ 1228.0f, -976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1228.0f, -976.0f, 112.0f, 100.0f }) });
 
-    AddObstacle({ -1374.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
-    AddObstacle({ -1098.0f, -974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+    AddObstacle({ 904.0f, 852.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ 904.0f, 852.0f, 92.0f, 124.0f }), TreeRoots({ 904.0f, 852.0f, 92.0f, 124.0f }) });
+    AddObstacle({ 1224.0f, 976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1224.0f, 976.0f, 112.0f, 100.0f }) });
 
-    AddObstacle({ -1378.0f, 854.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
-    AddObstacle({ -1102.0f, 974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+    AddObstacle({ -1374.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ -1374.0f, -1112.0f, 92.0f, 124.0f }), TreeRoots({ -1374.0f, -1112.0f, 92.0f, 124.0f }) });
+    AddObstacle({ -1098.0f, -974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1098.0f, -974.0f, 112.0f, 100.0f }) });
 
-    AddObstacle({ 286.0f, -748.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.10f);
-    AddObstacle({ -432.0f, 540.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.94f);
-    AddObstacle({ 1678.0f, -976.0f, 86.0f, 120.0f }, { 116, 104, 91, 255 }, 4, 0.98f);
-    AddObstacle({ -1768.0f, 964.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.90f);
+    AddObstacle({ -1378.0f, 854.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ -1378.0f, 854.0f, 92.0f, 124.0f }), TreeRoots({ -1378.0f, 854.0f, 92.0f, 124.0f }) });
+    AddObstacle({ -1102.0f, 974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1102.0f, 974.0f, 112.0f, 100.0f }) });
+
+    AddObstacle({ 286.0f, -748.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.10f, { TreeTrunk({ 286.0f, -748.0f, 92.0f, 124.0f }), TreeRoots({ 286.0f, -748.0f, 92.0f, 124.0f }) });
+    AddObstacle({ -432.0f, 540.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.94f, { HutCollider({ -432.0f, 540.0f, 112.0f, 100.0f }) });
+    AddObstacle({ 1678.0f, -976.0f, 86.0f, 120.0f }, { 116, 104, 91, 255 }, 4, 0.98f, { TowerCollider({ 1678.0f, -976.0f, 86.0f, 120.0f }) });
+    AddObstacle({ -1768.0f, 964.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.90f, { RockCollider({ -1768.0f, 964.0f, 96.0f, 78.0f }) });
 
     safeZone = dungeon.rooms.front().rect;
 }
@@ -361,9 +390,9 @@ void Game::BuildTileMap() {
 
             if (!insidePlayable) {
                 int hash = (x * 92821 + y * 68917) & 255;
-                if (hash < 20) decorProps.push_back({ center, 0, 1.08f + (hash % 3) * 0.12f });
-                else if (hash < 28) decorProps.push_back({ center, 2, 0.78f + (hash % 3) * 0.08f });
-                else if (hash < 36) decorProps.push_back({ center, 1, 0.82f + (hash % 2) * 0.08f });
+                if (hash < 8) decorProps.push_back({ center, 0, 1.04f + (hash % 2) * 0.10f });
+                else if (hash < 12) decorProps.push_back({ center, 2, 0.76f + (hash % 2) * 0.08f });
+                else if (hash < 16) decorProps.push_back({ center, 1, 0.80f + (hash % 2) * 0.06f });
             }
         }
     }
@@ -1782,11 +1811,6 @@ void Game::DrawWorld() const {
         DrawRectangleLinesEx(corridor, 2.0f, Fade({ 160, 126, 78, 255 }, 0.18f));
     }
 
-    for (const auto& obstacle : dungeon.obstacles) {
-        DrawRectangleRounded(obstacle.rect, 0.16f, 6, Fade({ 77, 57, 38, 255 }, 0.12f));
-        DrawRectangleLinesEx(obstacle.rect, 2.0f, Fade({ 101, 78, 51, 255 }, 0.34f));
-    }
-
     for (const auto& prop : decorProps) {
         drawProp(prop);
     }
@@ -1996,13 +2020,26 @@ void Game::DrawMiniMap() const {
     }
 
     for (const auto& obstacle : dungeon.obstacles) {
-        Rectangle mini = {
-            mapRect.x + (obstacle.rect.x - minX) * scale,
-            mapRect.y + (obstacle.rect.y - minY) * scale,
-            obstacle.rect.width * scale,
-            obstacle.rect.height * scale
-        };
-        DrawRectangleRec(mini, Fade(obstacle.color, 0.24f));
+        if (obstacle.colliders.empty()) {
+            Rectangle mini = {
+                mapRect.x + (obstacle.rect.x - minX) * scale,
+                mapRect.y + (obstacle.rect.y - minY) * scale,
+                obstacle.rect.width * scale,
+                obstacle.rect.height * scale
+            };
+            DrawRectangleRec(mini, Fade(obstacle.color, 0.18f));
+        }
+        else {
+            for (const auto& collider : obstacle.colliders) {
+                Rectangle mini = {
+                    mapRect.x + (collider.x - minX) * scale,
+                    mapRect.y + (collider.y - minY) * scale,
+                    collider.width * scale,
+                    collider.height * scale
+                };
+                DrawRectangleRec(mini, Fade(obstacle.color, 0.18f));
+            }
+        }
     }
 
     int monsterDots = 0;
