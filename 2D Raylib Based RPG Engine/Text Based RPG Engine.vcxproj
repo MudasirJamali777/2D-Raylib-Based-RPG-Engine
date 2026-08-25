@@ -29,6 +29,7 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="Relic.h" />
     <ClInclude Include="Shop.h" />
+    <ClInclude Include="Tilemap.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Weapon.h" />
   </ItemGroup>
@@ -136,6 +137,9 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>if not exist "$(OutDir)assets" mkdir "$(OutDir)assets" xcopy /Y /I /E "$(ProjectDir)assets" "$(OutDir)assets"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

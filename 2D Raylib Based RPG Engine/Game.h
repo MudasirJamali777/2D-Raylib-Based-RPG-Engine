@@ -9,6 +9,7 @@
 #include "Shop.h"
 #include "Dungeon.h"
 #include "Relic.h"
+#include "Tilemap.h"
 
 enum class GameState {
     Title,
@@ -64,6 +65,12 @@ private:
     std::vector<Weapon> weaponDB;
     std::vector<MonsterType> monsterTypes;
     std::vector<Star> stars;
+    TileMap tileMap;
+    Texture2D tileAtlas{};
+    Texture2D propAtlas{};
+    Texture2D actorAtlas{};
+    std::vector<PropInstance> worldProps;
+    std::vector<PropInstance> decorProps;
     std::vector<ActiveMonster> monsters;
     std::vector<Particle> particles;
     std::vector<Orb> orbs;
@@ -77,6 +84,9 @@ private:
     void BuildDatabases();
     void BuildStars();
     void BuildDungeon();
+    void BuildTileMap();
+    void LoadAssets();
+    void UnloadAssets();
     void ResetRun();
 
     Vector2 MoveWithCollision(Vector2 start, Vector2 delta, float radius, int steps = 1) const;
@@ -112,6 +122,10 @@ private:
     void UpdateGameOver(float dt);
     void UpdateStars(float dt);
     void UpdateCamera();
+
+    Rectangle TileSourceRect(int index) const;
+    Rectangle PropSourceRect(int index) const;
+    Rectangle ActorSourceRect(int index) const;
 
     void Draw() const;
     void DrawTitleScreen() const;
