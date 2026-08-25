@@ -78,18 +78,18 @@ void Game::Run() {
 }
 
 void Game::BuildColorTheme() {
-    bg = { 7, 10, 18, 255 };
-    bg2 = { 13, 18, 30, 255 };
-    grid = { 22, 31, 52, 255 };
-    panel = { 10, 14, 28, 235 };
-    panel2 = { 14, 20, 38, 245 };
-    neonCyan = { 0, 255, 245, 255 };
-    neonBlue = { 72, 145, 255, 255 };
-    neonPink = { 255, 65, 185, 255 };
-    neonGold = { 255, 210, 80, 255 };
-    softRed = { 255, 90, 120, 255 };
-    safeGreen = { 90, 255, 160, 255 };
-    bossPurple = { 182, 76, 255, 255 };
+    bg = { 193, 221, 113, 255 };
+    bg2 = { 160, 199, 84, 255 };
+    grid = { 146, 184, 82, 255 };
+    panel = { 244, 232, 196, 240 };
+    panel2 = { 232, 217, 178, 245 };
+    neonCyan = { 59, 146, 209, 255 };
+    neonBlue = { 88, 128, 204, 255 };
+    neonPink = { 191, 86, 101, 255 };
+    neonGold = { 214, 173, 76, 255 };
+    softRed = { 182, 72, 62, 255 };
+    safeGreen = { 74, 146, 70, 255 };
+    bossPurple = { 121, 94, 161, 255 };
 }
 
 void Game::BuildDatabases() {
@@ -1291,26 +1291,37 @@ void Game::Draw() const {
 }
 
 void Game::DrawTitleScreen() const {
-    int titleWidth = MeasureText("NEON ABYSS", 72);
-    DrawText("NEON ABYSS", screenW / 2 - titleWidth / 2, 110, 72, neonCyan);
-    DrawText("NEXUS SIEGE", screenW / 2 - MeasureText("NEXUS SIEGE", 28) / 2, 190, 28, neonPink);
-    DrawText("A top-down cyber action RPG vertical slice", screenW / 2 - MeasureText("A top-down cyber action RPG vertical slice", 22) / 2, 238, 22, RAYWHITE);
+    DrawRectangleGradientV(0, 0, screenW, screenH, { 186, 221, 255, 255 }, bg2);
 
-    DrawPanel({ screenW / 2.0f - 340.0f, 300.0f, 680.0f, 210.0f }, panel, neonBlue);
-    DrawText("FEATURES", screenW / 2 - MeasureText("FEATURES", 24) / 2, 322, 24, neonGold);
-    DrawText("- Fast WASD movement with dash, EMP, and sentry turret", screenW / 2 - 285, 365, 20, RAYWHITE);
-    DrawText("- Wave survival with elite enemies and boss encounters", screenW / 2 - 285, 395, 20, RAYWHITE);
-    DrawText("- 17-weapon arsenal, safe-zone merchant, and permanent upgrades", screenW / 2 - 285, 425, 20, RAYWHITE);
-    DrawText("- Multi-room dungeon layout, corridors, collision walls, and room pressure", screenW / 2 - 285, 455, 20, RAYWHITE);
-
-    Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? neonCyan : WHITE;
-    DrawText("PRESS ENTER TO DEPLOY A NEW RUN", screenW / 2 - MeasureText("PRESS ENTER TO DEPLOY A NEW RUN", 26) / 2, 548, 26, pulse);
-
-    if (HasSaveFile()) {
-        DrawText("PRESS C TO CONTINUE SAVED RUN", screenW / 2 - MeasureText("PRESS C TO CONTINUE SAVED RUN", 22) / 2, 586, 22, neonGold);
+    for (int i = 0; i < screenW; i += 140) {
+        DrawTreeProp({ (float)i + 30.0f, 170.0f + std::sin((float)i * 0.03f) * 8.0f }, 1.7f, { 69, 181, 83, 255 });
+        DrawTreeProp({ (float)i + 90.0f, 680.0f + std::cos((float)i * 0.02f) * 10.0f }, 1.9f, { 59, 166, 77, 255 });
     }
 
-    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 626, 16, GRAY);
+    DrawCastleProp({ screenW * 0.5f, 250.0f }, 2.1f);
+    DrawTowerProp({ screenW * 0.5f - 220.0f, 300.0f }, 1.35f, neonPink);
+    DrawTowerProp({ screenW * 0.5f + 220.0f, 300.0f }, 1.35f, neonPink);
+
+    int titleWidth = MeasureText("NEON ABYSS", 74);
+    DrawText("NEON ABYSS", screenW / 2 - titleWidth / 2, 82, 74, { 67, 86, 54, 255 });
+    DrawText("KINGDOM SIEGE", screenW / 2 - MeasureText("KINGDOM SIEGE", 30) / 2, 158, 30, softRed);
+    DrawText("A hand-drawn fantasy action RPG prototype in Raylib", screenW / 2 - MeasureText("A hand-drawn fantasy action RPG prototype in Raylib", 22) / 2, 196, 22, { 79, 74, 63, 255 });
+
+    DrawPanel({ screenW / 2.0f - 360.0f, 360.0f, 720.0f, 190.0f }, panel, { 118, 105, 80, 255 });
+    DrawText("WHAT'S IN THE BUILD", screenW / 2 - MeasureText("WHAT'S IN THE BUILD", 24) / 2, 384, 24, { 92, 78, 58, 255 });
+    DrawText("- Cartoony overworld presentation with connected sectors", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
+    DrawText("- Real-time combat with dash, pulse, EMP and sentry skills", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
+    DrawText("- Room lockdown fights, relic rewards and wave progression", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
+    DrawText("- Save / continue support while the art style evolves", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
+
+    Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
+    DrawText("PRESS ENTER FOR A NEW RUN", screenW / 2 - MeasureText("PRESS ENTER FOR A NEW RUN", 28) / 2, 586, 28, pulse);
+
+    if (HasSaveFile()) {
+        DrawText("PRESS C TO CONTINUE SAVED RUN", screenW / 2 - MeasureText("PRESS C TO CONTINUE SAVED RUN", 22) / 2, 622, 22, neonGold);
+    }
+
+    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 656, 16, { 86, 82, 72, 255 });
 }
 
 void Game::DrawWorld() const {
@@ -1322,116 +1333,105 @@ void Game::DrawWorld() const {
     int startY = ((int)camera.target.y - screenH) / gridSize * gridSize - gridSize;
     int endY = ((int)camera.target.y + screenH) / gridSize * gridSize + gridSize;
 
-    for (int x = startX; x <= endX; x += gridSize) {
-        DrawLine(x, startY, x, endY, Fade(grid, x % (gridSize * 4) == 0 ? 0.85f : 0.45f));
-    }
-    for (int y = startY; y <= endY; y += gridSize) {
-        DrawLine(startX, y, endX, y, Fade(grid, y % (gridSize * 4) == 0 ? 0.85f : 0.45f));
+    DrawRectangle(startX - 220, startY - 220, (endX - startX) + 440, (endY - startY) + 440, { 147, 185, 76, 255 });
+
+    for (int x = startX - 64; x <= endX + 64; x += 64) {
+        for (int y = startY - 64; y <= endY + 64; y += 64) {
+            if (((x + y) / 64) % 3 == 0) {
+                DrawLineEx({ (float)x + 8.0f, (float)y + 42.0f }, { (float)x + 14.0f, (float)y + 34.0f }, 1.2f, Fade({ 86, 132, 57, 255 }, 0.30f));
+                DrawLineEx({ (float)x + 16.0f, (float)y + 41.0f }, { (float)x + 12.0f, (float)y + 33.0f }, 1.2f, Fade({ 86, 132, 57, 255 }, 0.30f));
+            }
+        }
     }
 
     for (const auto& corridor : dungeon.corridors) {
-        DrawRectangleGradientV((int)corridor.x, (int)corridor.y, (int)corridor.width, (int)corridor.height, Fade(neonBlue, 0.10f), Fade(BLACK, 0.04f));
-        DrawRectangleLinesEx(corridor, 2.0f, Fade(neonBlue, 0.40f));
+        DrawRectangleRounded(corridor, 0.18f, 8, { 241, 219, 155, 255 });
+        DrawRectangleLinesEx(corridor, 3.0f, { 131, 168, 67, 255 });
 
         if (corridor.width > corridor.height) {
-            for (float x = corridor.x + 26.0f; x < corridor.x + corridor.width - 26.0f; x += 54.0f) {
-                DrawLineEx({ x, corridor.y + 12.0f }, { x + 18.0f, corridor.y + 12.0f }, 2.0f, Fade(neonBlue, 0.38f));
-                DrawLineEx({ x, corridor.y + corridor.height - 12.0f }, { x + 18.0f, corridor.y + corridor.height - 12.0f }, 2.0f, Fade(neonBlue, 0.38f));
+            for (float x = corridor.x + 26.0f; x < corridor.x + corridor.width - 26.0f; x += 70.0f) {
+                DrawRockProp({ x, corridor.y + corridor.height * 0.5f + 36.0f }, 0.55f);
+                DrawBushProp({ x + 18.0f, corridor.y + 18.0f }, 0.55f);
             }
         }
         else {
-            for (float y = corridor.y + 26.0f; y < corridor.y + corridor.height - 26.0f; y += 54.0f) {
-                DrawLineEx({ corridor.x + 12.0f, y }, { corridor.x + 12.0f, y + 18.0f }, 2.0f, Fade(neonBlue, 0.38f));
-                DrawLineEx({ corridor.x + corridor.width - 12.0f, y }, { corridor.x + corridor.width - 12.0f, y + 18.0f }, 2.0f, Fade(neonBlue, 0.38f));
+            for (float y = corridor.y + 26.0f; y < corridor.y + corridor.height - 26.0f; y += 70.0f) {
+                DrawBushProp({ corridor.x + 18.0f, y }, 0.55f);
+                DrawRockProp({ corridor.x + corridor.width - 28.0f, y + 18.0f }, 0.50f);
             }
         }
     }
 
-    for (const auto& room : dungeon.rooms) {
-        Color roomBorder = room.isSafeZone ? safeGreen : neonBlue;
-        DrawRectangleGradientV((int)room.rect.x, (int)room.rect.y, (int)room.rect.width, (int)room.rect.height,
-            room.isSafeZone ? Fade(safeGreen, 0.11f) : Fade(neonBlue, 0.08f), Fade(BLACK, 0.06f));
-        DrawRectangleLinesEx(room.rect, room.isSafeZone ? 3.0f : 2.0f, Fade(roomBorder, 0.86f));
+    for (size_t roomIndex = 0; roomIndex < dungeon.rooms.size(); ++roomIndex) {
+        const auto& room = dungeon.rooms[roomIndex];
+        Color border = room.isSafeZone ? Color{ 90, 133, 64, 255 } : Color{ 104, 145, 68, 255 };
+        Color fill = room.isSafeZone ? Color{ 167, 199, 92, 255 } : Color{ 156, 191, 88, 255 };
 
-        Rectangle inner = ShrinkRect(room.rect, 18.0f);
-        Rectangle frame = ShrinkRect(room.rect, 42.0f);
-        if (inner.width > 0.0f && inner.height > 0.0f) {
-            DrawRectangleLinesEx(inner, 1.0f, Fade(roomBorder, 0.20f));
-        }
-        if (frame.width > 0.0f && frame.height > 0.0f) {
-            DrawRectangleLinesEx(frame, 1.0f, Fade(roomBorder, 0.10f));
-        }
+        DrawRectangleRounded(room.rect, 0.06f, 8, fill);
+        DrawRectangleLinesEx(room.rect, 3.0f, border);
 
-        for (float x = room.rect.x + 44.0f; x < room.rect.x + room.rect.width - 44.0f; x += 72.0f) {
-            DrawLineEx({ x, room.rect.y + 20.0f }, { x, room.rect.y + room.rect.height - 20.0f }, 1.0f, Fade(roomBorder, 0.06f));
+        for (float x = room.rect.x + 26.0f; x < room.rect.x + room.rect.width - 26.0f; x += 66.0f) {
+            DrawBushProp({ x, room.rect.y + 18.0f }, 0.48f);
+            DrawBushProp({ x, room.rect.y + room.rect.height - 18.0f }, 0.48f);
         }
-        for (float y = room.rect.y + 44.0f; y < room.rect.y + room.rect.height - 44.0f; y += 72.0f) {
-            DrawLineEx({ room.rect.x + 20.0f, y }, { room.rect.x + room.rect.width - 20.0f, y }, 1.0f, Fade(roomBorder, 0.05f));
+        for (float y = room.rect.y + 26.0f; y < room.rect.y + room.rect.height - 26.0f; y += 66.0f) {
+            DrawBushProp({ room.rect.x + 18.0f, y }, 0.48f);
+            DrawBushProp({ room.rect.x + room.rect.width - 18.0f, y }, 0.48f);
         }
 
-        DrawLineEx({ room.rect.x + 10.0f, room.rect.y + 10.0f }, { room.rect.x + 56.0f, room.rect.y + 10.0f }, 3.0f, Fade(roomBorder, 0.6f));
-        DrawLineEx({ room.rect.x + 10.0f, room.rect.y + 10.0f }, { room.rect.x + 10.0f, room.rect.y + 56.0f }, 3.0f, Fade(roomBorder, 0.6f));
-        DrawLineEx({ room.rect.x + room.rect.width - 10.0f, room.rect.y + 10.0f }, { room.rect.x + room.rect.width - 56.0f, room.rect.y + 10.0f }, 3.0f, Fade(roomBorder, 0.6f));
-        DrawLineEx({ room.rect.x + room.rect.width - 10.0f, room.rect.y + 10.0f }, { room.rect.x + room.rect.width - 10.0f, room.rect.y + 56.0f }, 3.0f, Fade(roomBorder, 0.6f));
-        DrawLineEx({ room.rect.x + 10.0f, room.rect.y + room.rect.height - 10.0f }, { room.rect.x + 56.0f, room.rect.y + room.rect.height - 10.0f }, 3.0f, Fade(roomBorder, 0.6f));
-        DrawLineEx({ room.rect.x + 10.0f, room.rect.y + room.rect.height - 10.0f }, { room.rect.x + 10.0f, room.rect.y + room.rect.height - 56.0f }, 3.0f, Fade(roomBorder, 0.6f));
-        DrawLineEx({ room.rect.x + room.rect.width - 10.0f, room.rect.y + room.rect.height - 10.0f }, { room.rect.x + room.rect.width - 56.0f, room.rect.y + room.rect.height - 10.0f }, 3.0f, Fade(roomBorder, 0.6f));
-        DrawLineEx({ room.rect.x + room.rect.width - 10.0f, room.rect.y + room.rect.height - 10.0f }, { room.rect.x + room.rect.width - 10.0f, room.rect.y + room.rect.height - 56.0f }, 3.0f, Fade(roomBorder, 0.6f));
-
-        int labelSize = room.isSafeZone ? 24 : 18;
+        int labelSize = room.isSafeZone ? 24 : 20;
         int labelX = (int)(room.rect.x + room.rect.width * 0.5f) - MeasureText(room.name.c_str(), labelSize) / 2;
-        int labelY = (int)(room.rect.y + 18.0f);
-        DrawText(room.name.c_str(), labelX, labelY, labelSize, room.isSafeZone ? safeGreen : RAYWHITE);
+        DrawText(room.name.c_str(), labelX, (int)room.rect.y + 16, labelSize, { 89, 76, 53, 255 });
 
-        for (int i = 0; i < 4; ++i) {
-            Vector2 corner = {
-                (i == 0 || i == 2) ? room.rect.x + 28.0f : room.rect.x + room.rect.width - 28.0f,
-                (i == 0 || i == 1) ? room.rect.y + 28.0f : room.rect.y + room.rect.height - 28.0f
-            };
-            DrawCircleV(corner, room.isSafeZone ? 7.0f : 5.0f, Fade(roomBorder, room.isSafeZone ? 0.45f : 0.25f));
+        Vector2 roomCenter = { room.rect.x + room.rect.width * 0.5f, room.rect.y + room.rect.height * 0.5f };
+        if (roomIndex == 0) {
+            DrawCastleProp(roomCenter, 1.9f);
+            DrawTowerProp({ roomCenter.x - 180.0f, roomCenter.y + 80.0f }, 1.1f, neonPink);
+            DrawTowerProp({ roomCenter.x + 180.0f, roomCenter.y + 80.0f }, 1.1f, neonPink);
+        }
+        else if (roomIndex == 1 || roomIndex == 2) {
+            DrawTowerProp({ roomCenter.x, roomCenter.y + 30.0f }, 1.15f, softRed);
+            DrawHutProp({ roomCenter.x + (roomIndex == 1 ? 180.0f : -180.0f), roomCenter.y - 60.0f }, 1.0f);
+        }
+        else {
+            DrawHutProp({ roomCenter.x - 120.0f, roomCenter.y + 20.0f }, 1.0f);
+            DrawTowerProp({ roomCenter.x + 140.0f, roomCenter.y - 10.0f }, 1.0f, softRed);
         }
     }
 
-    for (const auto& obstacle : dungeon.obstacles) {
-        DrawRectangleRec(obstacle.rect, obstacle.color);
-        DrawRectangleLinesEx(obstacle.rect, 2.0f, Fade(WHITE, 0.18f));
+    for (size_t i = 0; i < dungeon.obstacles.size(); ++i) {
+        const auto& obstacle = dungeon.obstacles[i];
+        Vector2 center = { obstacle.rect.x + obstacle.rect.width * 0.5f, obstacle.rect.y + obstacle.rect.height * 0.5f };
 
-        Rectangle core = ShrinkRect(obstacle.rect, 8.0f);
-        if (core.width > 0.0f && core.height > 0.0f) {
-            DrawRectangleRec(core, Fade(BLACK, 0.28f));
+        if (i % 4 == 0) {
+            DrawTreeProp(center, 1.5f, { 55, 176, 86, 255 });
         }
-
-        if (obstacle.rect.width >= obstacle.rect.height) {
-            for (float x = obstacle.rect.x + 12.0f; x < obstacle.rect.x + obstacle.rect.width - 12.0f; x += 24.0f) {
-                DrawLineEx({ x, obstacle.rect.y + obstacle.rect.height - 10.0f }, { x + 12.0f, obstacle.rect.y + 10.0f }, 2.0f, Fade(neonGold, 0.25f));
-            }
+        else if (i % 4 == 1) {
+            DrawRockProp(center, 1.45f);
+            DrawRockProp({ center.x + 24.0f, center.y + 8.0f }, 0.8f);
+        }
+        else if (i % 4 == 2) {
+            DrawHutProp(center, 1.1f);
         }
         else {
-            for (float y = obstacle.rect.y + 12.0f; y < obstacle.rect.y + obstacle.rect.height - 12.0f; y += 24.0f) {
-                DrawLineEx({ obstacle.rect.x + 10.0f, y + 12.0f }, { obstacle.rect.x + obstacle.rect.width - 10.0f, y }, 2.0f, Fade(neonGold, 0.25f));
-            }
+            DrawTowerProp(center, 1.0f, softRed);
         }
-
-        Vector2 obstacleCore = { obstacle.rect.x + obstacle.rect.width * 0.5f, obstacle.rect.y + obstacle.rect.height * 0.5f };
-        DrawGlowCircle(obstacleCore, 6.0f, Fade(neonCyan, 0.65f));
-        DrawCircleV(obstacleCore, 4.0f, neonCyan);
     }
 
     Vector2 safeCenter = SafeZoneCenter(safeZone);
-    float pulse = 150.0f + std::sin((float)GetTime() * 2.0f) * 10.0f;
-    DrawCircleLines((int)safeCenter.x, (int)safeCenter.y, pulse, Fade(safeGreen, 0.28f));
-    DrawCircleLines((int)safeCenter.x, (int)safeCenter.y, pulse + 32.0f, Fade(safeGreen, 0.16f));
-    DrawText("NEXUS", (int)safeCenter.x - 36, (int)safeCenter.y - 10, 22, safeGreen);
+    DrawCircleLines((int)safeCenter.x, (int)safeCenter.y, 92.0f + std::sin((float)GetTime() * 2.0f) * 2.0f, Fade(WHITE, 0.22f));
 
     for (const auto& barrier : GetActiveBarrierRects()) {
-        DrawRectangleRec(barrier, Fade(softRed, 0.20f));
-        DrawRectangleLinesEx(barrier, 3.0f, Fade(softRed, 0.92f));
-        for (float i = 8.0f; i < ((barrier.width > barrier.height) ? barrier.width : barrier.height); i += 24.0f) {
-            if (barrier.width > barrier.height) {
-                DrawLineEx({ barrier.x + i, barrier.y + 5.0f }, { barrier.x + i + 12.0f, barrier.y + barrier.height - 5.0f }, 3.0f, Fade(neonGold, 0.45f));
+        if (barrier.width > barrier.height) {
+            for (float x = barrier.x + 10.0f; x < barrier.x + barrier.width - 8.0f; x += 22.0f) {
+                DrawRectangleRounded({ x, barrier.y + 2.0f, 10.0f, barrier.height - 4.0f }, 0.2f, 4, { 138, 98, 61, 255 });
+                DrawLineEx({ x - 2.0f, barrier.y + barrier.height - 4.0f }, { x + 12.0f, barrier.y + 4.0f }, 2.0f, { 94, 63, 43, 255 });
             }
-            else {
-                DrawLineEx({ barrier.x + 5.0f, barrier.y + i }, { barrier.x + barrier.width - 5.0f, barrier.y + i + 12.0f }, 3.0f, Fade(neonGold, 0.45f));
+        }
+        else {
+            for (float y = barrier.y + 10.0f; y < barrier.y + barrier.height - 8.0f; y += 22.0f) {
+                DrawRectangleRounded({ barrier.x + 2.0f, y, barrier.width - 4.0f, 10.0f }, 0.2f, 4, { 138, 98, 61, 255 });
+                DrawLineEx({ barrier.x + 4.0f, y - 2.0f }, { barrier.x + barrier.width - 4.0f, y + 12.0f }, 2.0f, { 94, 63, 43, 255 });
             }
         }
     }
@@ -1455,25 +1455,27 @@ void Game::DrawWorld() const {
     }
 
     for (const auto& orb : orbs) {
-        DrawGlowCircle(orb.pos, 6.0f, orb.color);
-        DrawCircleV(orb.pos, 4.0f, WHITE);
+        DrawCartoonShadow({ orb.pos.x, orb.pos.y + 6.0f }, 6.0f, 3.0f, 0.14f);
+        DrawCircleV(orb.pos, 6.0f, orb.color);
+        DrawCircleV({ orb.pos.x - 1.0f, orb.pos.y - 1.0f }, 2.6f, WHITE);
     }
 
     for (const auto& pickup : healthPickups) {
         Vector2 bobPos = { pickup.pos.x, pickup.pos.y + std::sin(pickup.spin) * 4.0f };
-        DrawGlowCircle(bobPos, 10.0f, safeGreen);
-        DrawCircleV(bobPos, 9.0f, safeGreen);
-        DrawRectangle((int)bobPos.x - 2, (int)bobPos.y - 6, 4, 12, WHITE);
-        DrawRectangle((int)bobPos.x - 6, (int)bobPos.y - 2, 12, 4, WHITE);
+        DrawCartoonShadow({ bobPos.x, bobPos.y + 9.0f }, 8.0f, 4.0f, 0.16f);
+        DrawCircleV(bobPos, 9.0f, { 181, 48, 52, 255 });
+        DrawCircleV({ bobPos.x, bobPos.y - 7.0f }, 4.0f, { 89, 167, 71, 255 });
+        DrawRectangle((int)bobPos.x - 2, (int)bobPos.y - 5, 4, 10, WHITE);
+        DrawRectangle((int)bobPos.x - 5, (int)bobPos.y - 2, 10, 4, WHITE);
     }
 
     if (rewardChestActive) {
-        float chestPulse = std::sin((float)GetTime() * 4.0f) * 4.0f;
-        DrawGlowCircle(rewardChestPos, 26.0f + chestPulse, neonGold);
-        DrawRectangleRounded({ rewardChestPos.x - 24.0f, rewardChestPos.y - 16.0f, 48.0f, 32.0f }, 0.25f, 6, neonGold);
-        DrawRectangleRounded({ rewardChestPos.x - 18.0f, rewardChestPos.y - 10.0f, 36.0f, 20.0f }, 0.25f, 6, Fade(BLACK, 0.25f));
-        DrawRectangle((int)rewardChestPos.x - 3, (int)rewardChestPos.y - 12, 6, 24, WHITE);
-        DrawCircleLines((int)rewardChestPos.x, (int)rewardChestPos.y, 42.0f + chestPulse, Fade(neonGold, 0.35f));
+        float chestPulse = std::sin((float)GetTime() * 4.0f) * 3.0f;
+        DrawCartoonShadow({ rewardChestPos.x, rewardChestPos.y + 18.0f }, 24.0f, 8.0f, 0.18f);
+        DrawRectangleRounded({ rewardChestPos.x - 24.0f, rewardChestPos.y - 4.0f, 48.0f, 24.0f }, 0.2f, 6, { 148, 97, 54, 255 });
+        DrawRectangleRounded({ rewardChestPos.x - 26.0f, rewardChestPos.y - 18.0f, 52.0f, 20.0f }, 0.25f, 6, { 181, 121, 69, 255 });
+        DrawRectangle((int)rewardChestPos.x - 4, (int)rewardChestPos.y - 10, 8, 18, { 220, 191, 92, 255 });
+        DrawCircleLines((int)rewardChestPos.x, (int)rewardChestPos.y, 38.0f + chestPulse, Fade(neonGold, 0.24f));
     }
 
     for (const auto& monster : monsters) {
@@ -1494,15 +1496,20 @@ void Game::DrawWorld() const {
         DrawCircleV(particle.pos, particle.size, Fade(particle.color, alpha));
     }
 
-    Color playerColor = (player.hitFlash > 0.0f) ? WHITE : neonCyan;
-    float playerPulse = 22.0f + std::sin((float)GetTime() * 6.0f) * 1.8f;
-    DrawEllipse((int)player.pos.x, (int)(player.pos.y + 22.0f), 20, 8, Fade(BLACK, 0.26f));
-    DrawGlowCircle(player.pos, playerPulse, playerColor);
-    DrawCircleLines((int)player.pos.x, (int)player.pos.y, 28.0f, Fade(playerColor, 0.22f));
-    DrawCircleV(player.pos, 21.0f, playerColor);
-    DrawCircleV(player.pos, 10.0f, WHITE);
-    DrawLineEx(player.pos, VecAdd(player.pos, VecScale(player.aimDir, 34.0f)), 5.0f, neonPink);
-    DrawCircleLines((int)player.pos.x, (int)player.pos.y, weaponDB[player.equippedWeaponIdx].range, Fade(weaponDB[player.equippedWeaponIdx].color, 0.12f));
+    Color cloakColor = (player.hitFlash > 0.0f) ? WHITE : Color{ 191, 71, 64, 255 };
+    DrawCartoonShadow({ player.pos.x, player.pos.y + 22.0f }, 18.0f, 7.0f, 0.18f);
+    DrawCircleLines((int)player.pos.x, (int)player.pos.y, weaponDB[player.equippedWeaponIdx].range, Fade(neonBlue, 0.10f));
+    DrawTriangle(
+        { player.pos.x, player.pos.y - 18.0f },
+        { player.pos.x - 16.0f, player.pos.y + 16.0f },
+        { player.pos.x + 16.0f, player.pos.y + 16.0f },
+        cloakColor
+    );
+    DrawRectangleRounded({ player.pos.x - 10.0f, player.pos.y - 6.0f, 20.0f, 24.0f }, 0.28f, 8, { 101, 132, 179, 255 });
+    DrawCircleV({ player.pos.x, player.pos.y - 12.0f }, 9.0f, { 245, 230, 200, 255 });
+    DrawCircleV({ player.pos.x, player.pos.y - 13.0f }, 7.0f, { 212, 221, 230, 255 });
+    DrawLineEx(player.pos, VecAdd(player.pos, VecScale(player.aimDir, 36.0f)), 4.0f, { 120, 85, 56, 255 });
+    DrawCircleV({ player.pos.x + player.aimDir.x * 18.0f, player.pos.y + player.aimDir.y * 18.0f }, 4.0f, { 220, 191, 92, 255 });
 
     for (const auto& text : floatingTexts) {
         DrawText(text.text.c_str(), (int)text.pos.x, (int)text.pos.y, 18, Fade(text.color, text.life));
@@ -1728,69 +1735,48 @@ void Game::DrawGameOver() const {
 
 void Game::DrawEnemySprite(const ActiveMonster& monster) const {
     Color body = (monster.hitFlash > 0.0f) ? WHITE : monster.color;
-    Color core = Fade(WHITE, 0.92f);
     float t = (float)GetTime();
-    float wobble = std::sin(t * 4.0f + monster.pos.x * 0.01f) * 2.0f;
+    float bob = std::sin(t * 4.0f + monster.pos.x * 0.01f) * 2.0f;
 
-    DrawEllipse((int)monster.pos.x, (int)(monster.pos.y + monster.radius + 6.0f), (int)(monster.radius * 0.85f), (int)(monster.radius * 0.34f), Fade(BLACK, 0.28f));
-    DrawGlowCircle(monster.pos, monster.radius + (monster.isBoss ? 8.0f : 4.0f), body);
+    DrawCartoonShadow({ monster.pos.x, monster.pos.y + monster.radius + 6.0f }, monster.radius * 0.85f, monster.radius * 0.30f, 0.20f);
 
     switch (monster.typeIndex % 4) {
     case 0:
-        DrawCircleV(monster.pos, monster.radius + wobble * 0.08f, body);
-        DrawCircleV(monster.pos, monster.radius * 0.52f, Fade(BLACK, 0.18f));
-        DrawCircleV(monster.pos, monster.radius * 0.34f, core);
+        DrawCircleV({ monster.pos.x, monster.pos.y + bob * 0.3f }, monster.radius, body);
+        DrawCircleV({ monster.pos.x, monster.pos.y + monster.radius * 0.15f }, monster.radius * 0.40f, Fade(BLACK, 0.12f));
         break;
     case 1:
-        DrawRectanglePro(
-            Rectangle{ monster.pos.x - monster.radius, monster.pos.y - monster.radius, monster.radius * 2.0f, monster.radius * 2.0f },
-            { monster.radius, monster.radius },
-            45.0f + wobble,
-            body
-        );
-        DrawRectanglePro(
-            Rectangle{ monster.pos.x - monster.radius * 0.55f, monster.pos.y - monster.radius * 0.55f, monster.radius * 1.1f, monster.radius * 1.1f },
-            { monster.radius * 0.55f, monster.radius * 0.55f },
-            45.0f + wobble,
-            Fade(BLACK, 0.18f)
-        );
-        DrawCircleV(monster.pos, monster.radius * 0.26f, core);
+        DrawRectangleRounded({ monster.pos.x - monster.radius, monster.pos.y - monster.radius * 0.82f, monster.radius * 2.0f, monster.radius * 1.8f }, 0.28f, 8, body);
+        DrawTriangle({ monster.pos.x - monster.radius * 0.7f, monster.pos.y - monster.radius * 0.7f }, { monster.pos.x - monster.radius * 0.2f, monster.pos.y - monster.radius * 1.2f }, { monster.pos.x + monster.radius * 0.1f, monster.pos.y - monster.radius * 0.65f }, body);
+        DrawTriangle({ monster.pos.x + monster.radius * 0.7f, monster.pos.y - monster.radius * 0.7f }, { monster.pos.x + monster.radius * 0.2f, monster.pos.y - monster.radius * 1.2f }, { monster.pos.x - monster.radius * 0.1f, monster.pos.y - monster.radius * 0.65f }, body);
         break;
     case 2:
         DrawTriangle(
             { monster.pos.x, monster.pos.y - monster.radius * 1.15f },
-            { monster.pos.x - monster.radius * 1.02f, monster.pos.y + monster.radius * 0.92f },
-            { monster.pos.x + monster.radius * 1.02f, monster.pos.y + monster.radius * 0.92f },
+            { monster.pos.x - monster.radius * 1.0f, monster.pos.y + monster.radius * 0.85f },
+            { monster.pos.x + monster.radius * 1.0f, monster.pos.y + monster.radius * 0.85f },
             body
         );
-        DrawTriangle(
-            { monster.pos.x, monster.pos.y - monster.radius * 0.50f },
-            { monster.pos.x - monster.radius * 0.42f, monster.pos.y + monster.radius * 0.30f },
-            { monster.pos.x + monster.radius * 0.42f, monster.pos.y + monster.radius * 0.30f },
-            Fade(BLACK, 0.18f)
-        );
-        DrawCircleV(monster.pos, monster.radius * 0.22f, core);
         break;
     default:
-        DrawPoly(monster.pos, 6, monster.radius, t * 45.0f, body);
-        DrawPoly(monster.pos, 6, monster.radius * 0.62f, -t * 60.0f, Fade(BLACK, 0.16f));
-        DrawCircleV(monster.pos, monster.radius * 0.25f, core);
+        DrawCircleV(monster.pos, monster.radius * 0.88f, body);
+        DrawCircleV({ monster.pos.x - monster.radius * 0.7f, monster.pos.y - monster.radius * 0.15f }, monster.radius * 0.42f, body);
+        DrawCircleV({ monster.pos.x + monster.radius * 0.7f, monster.pos.y - monster.radius * 0.15f }, monster.radius * 0.42f, body);
         break;
     }
 
-    Vector2 leftEye = { monster.pos.x - monster.radius * 0.30f, monster.pos.y - monster.radius * 0.08f };
-    Vector2 rightEye = { monster.pos.x + monster.radius * 0.30f, monster.pos.y - monster.radius * 0.08f };
-    DrawCircleV(leftEye, monster.isBoss ? 4.0f : 2.6f, WHITE);
-    DrawCircleV(rightEye, monster.isBoss ? 4.0f : 2.6f, WHITE);
+    Vector2 leftEye = { monster.pos.x - monster.radius * 0.28f, monster.pos.y - monster.radius * 0.10f };
+    Vector2 rightEye = { monster.pos.x + monster.radius * 0.28f, monster.pos.y - monster.radius * 0.10f };
+    DrawCircleV(leftEye, monster.isBoss ? 4.0f : 2.8f, WHITE);
+    DrawCircleV(rightEye, monster.isBoss ? 4.0f : 2.8f, WHITE);
+    DrawCircleV({ leftEye.x, leftEye.y + 1.0f }, monster.isBoss ? 2.0f : 1.3f, BLACK);
+    DrawCircleV({ rightEye.x, rightEye.y + 1.0f }, monster.isBoss ? 2.0f : 1.3f, BLACK);
 
     if (monster.isElite) {
-        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 6.0f + std::sin(t * 5.0f) * 1.5f, Fade(neonPink, 0.45f));
+        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 6.0f + std::sin(t * 5.0f) * 1.5f, Fade(neonPink, 0.30f));
     }
 
     if (monster.isBoss) {
-        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 8.0f + std::sin(t * 3.0f) * 2.0f, Fade(neonGold, 0.45f));
-        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 18.0f + std::sin(t * 2.0f) * 3.0f, Fade(body, 0.22f));
+        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 12.0f + std::sin(t * 3.0f) * 2.0f, Fade(neonGold, 0.34f));
     }
-
-    DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 1.0f, Fade(WHITE, 0.6f));
 }
