@@ -71,27 +71,25 @@ inline bool IsPointInWalkArea(const DungeonMap& dungeon, Vector2 pos) {
 }
 
 inline bool IsPositionWalkable(Vector2 pos, float radius, const DungeonMap& dungeon) {
-    const float diag = radius * 0.70710678f;
-    const Vector2 probes[] = {
-        pos,
-        { pos.x + radius, pos.y },
-        { pos.x - radius, pos.y },
-        { pos.x, pos.y + radius },
-        { pos.x, pos.y - radius },
-        { pos.x + diag, pos.y + diag },
-        { pos.x + diag, pos.y - diag },
-        { pos.x - diag, pos.y + diag },
-        { pos.x - diag, pos.y - diag }
-    };
+    if (!IsPointInWalkArea(dungeon, pos)) {
+        return false;
+    }
 
-    for (const auto& probe : probes) {
+    constexpr int sampleCount = 16;
+    for (int i = 0; i < sampleCount; ++i) {
+        float angle = (6.28318530718f * (float)i) / (float)sampleCount;
+        Vector2 probe = {
+            pos.x + std::cos(angle) * radius,
+            pos.y + std::sin(angle) * radius
+        };
+
         if (!IsPointInWalkArea(dungeon, probe)) {
             return false;
         }
     }
 
     for (const auto& obstacle : dungeon.obstacles) {
-        if (CircleRectCollision(pos, radius + 1.5f, obstacle.rect)) {
+        if (CircleRectCollision(pos, radius + 1.0f, obstacle.rect)) {
             return false;
         }
     }

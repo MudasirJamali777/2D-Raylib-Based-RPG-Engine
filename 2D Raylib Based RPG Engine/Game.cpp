@@ -432,34 +432,88 @@ Vector2 Game::MoveWithCollision(Vector2 start, Vector2 delta, float radius, int 
         steps = 1;
     }
 
-    int autoSteps = (int)std::ceil(std::max(std::fabs(delta.x), std::fabs(delta.y)) / std::max(6.0f, radius * 0.45f));
+    std::vector<Rectangle> barriers = GetActiveBarrierRects();
+    auto CanOccupy = [&](Vector2 candidate) {
+        if (!IsPositionWalkable(candidate, radius, dungeon)) {
+            return false;
+        }
+
+        for (const auto& barrier : barriers) {
+            if (CircleRectCollision(candidate, radius, barrier)) {
+                return false;
+            }
+        }
+
+        return true;
+        };
+
+    Vector2 position = start;
+    if (!CanOccupy(position)) {
+        bool found = false;
+        for (float dist = 2.0f; dist <= 96.0f && !found; dist += 2.0f) {
+            for (int i = 0; i < 24; ++i) {
+                float angle = (6.28318530718f * (float)i) / 24.0f;
+                Vector2 probe = {
+                    start.x + std::cos(angle) * dist,
+                    start.y + std::sin(angle) * dist
+                };
+                if (CanOccupy(probe)) {
+                    position = probe;
+                    found = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    int autoSteps = (int)std::ceil(std::max(std::fabs(delta.x), std::fabs(delta.y)) / 3.0f);
     if (autoSteps > steps) {
         steps = autoSteps;
     }
 
-    Vector2 position = start;
     Vector2 stepDelta = { delta.x / (float)steps, delta.y / (float)steps };
-    std::vector<Rectangle> barriers = GetActiveBarrierRects();
 
-    auto BlockedByBarrier = [&](Vector2 candidate) {
-        for (const auto& barrier : barriers) {
-            if (CircleRectCollision(candidate, radius, barrier)) {
-                return true;
+    auto MoveAxisPrecisely = [&](bool moveX, float amount) {
+        if (std::fabs(amount) <= 0.0001f) {
+            return;
+        }
+
+        Vector2 target = position;
+        if (moveX) target.x += amount;
+        else target.y += amount;
+
+        if (CanOccupy(target)) {
+            position = target;
+            return;
+        }
+
+        float low = 0.0f;
+        float high = 1.0f;
+        float best = 0.0f;
+        for (int i = 0; i < 12; ++i) {
+            float mid = (low + high) * 0.5f;
+            Vector2 probe = position;
+            if (moveX) probe.x += amount * mid;
+            else probe.y += amount * mid;
+
+            if (CanOccupy(probe)) {
+                best = mid;
+                low = mid;
+            }
+            else {
+                high = mid;
             }
         }
-        return false;
+
+        if (best > 0.0f) {
+            if (moveX) position.x += amount * best;
+            else position.y += amount * best;
+        }
         };
 
     for (int i = 0; i < steps; ++i) {
-        Vector2 nextX = { position.x + stepDelta.x, position.y };
-        if (IsPositionWalkable(nextX, radius, dungeon) && !BlockedByBarrier(nextX)) {
-            position.x = nextX.x;
-        }
-
-        Vector2 nextY = { position.x, position.y + stepDelta.y };
-        if (IsPositionWalkable(nextY, radius, dungeon) && !BlockedByBarrier(nextY)) {
-            position.y = nextY.y;
-        }
+        MoveAxisPrecisely(true, stepDelta.x);
+        MoveAxisPrecisely(false, stepDelta.y);
     }
 
     return position;
