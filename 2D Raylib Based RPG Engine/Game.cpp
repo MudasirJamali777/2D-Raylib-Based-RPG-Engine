@@ -4,6 +4,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <ctime>
+#include <fstream>
+#include <cstdio>
 #include <random>
 
 Game::Game() {
@@ -265,16 +267,16 @@ std::vector<Rectangle> Game::GetActiveBarrierRects() const {
 
     switch (lockedRoomIndex) {
     case 1:
-        barriers.push_back({ 620.0f - 20.0f, -92.0f, 40.0f, 184.0f });
+        barriers.push_back({ 500.0f - 18.0f, -96.0f, 36.0f, 192.0f });
         break;
     case 2:
-        barriers.push_back({ -660.0f, -92.0f, 40.0f, 184.0f });
+        barriers.push_back({ -500.0f - 18.0f, -96.0f, 36.0f, 192.0f });
         break;
     case 3:
-        barriers.push_back({ -92.0f, -580.0f, 184.0f, 40.0f });
+        barriers.push_back({ -96.0f, -440.0f - 18.0f, 192.0f, 36.0f });
         break;
     case 4:
-        barriers.push_back({ -92.0f, 540.0f, 184.0f, 40.0f });
+        barriers.push_back({ -96.0f, 440.0f - 18.0f, 192.0f, 36.0f });
         break;
     default:
         break;
@@ -373,6 +375,203 @@ void Game::ApplyRelic(RelicType type) {
         player.maxHp += 18;
         player.hp = std::min(player.maxHp, player.hp + 24);
     }
+}
+
+bool Game::HasSaveFile() const {
+    std::ifstream in("savegame.txt");
+    return in.good();
+}
+
+void Game::DeleteSave() const {
+    std::remove("savegame.txt");
+}
+
+void Game::SaveRun() const {
+    std::ofstream out("savegame.txt", std::ios::trunc);
+    if (!out.is_open()) {
+        return;
+    }
+
+    out << "NEON_ABYSS_SAVE_V2\n";
+    out << player.pos.x << ' ' << player.pos.y << ' ' << player.aimDir.x << ' ' << player.aimDir.y << '\n';
+    out << player.hp << ' ' << player.maxHp << ' ' << player.xp << ' ' << player.kills << ' '
+        << player.wave << ' ' << player.hpUpgradeLevel << ' ' << player.equippedWeaponIdx << ' '
+        << player.relicsCollected << '\n';
+    out << player.dashCd << ' ' << player.empCd << ' ' << player.turretCd << ' ' << player.attackCd << ' ' << player.hitFlash << '\n';
+    out << waveTargetRoomIndex << ' ' << lockedRoomIndex << ' ' << (rewardChestActive ? 1 : 0) << ' '
+        << (rewardSelectionOpen ? 1 : 0) << ' ' << rewardChestPos.x << ' ' << rewardChestPos.y << '\n';
+
+    out << shop.ownedWeapons.size();
+    for (bool owned : shop.ownedWeapons) {
+        out << ' ' << (owned ? 1 : 0);
+    }
+    out << '\n';
+
+    out << relics.size();
+    for (RelicType relic : relics) {
+        out << ' ' << (int)relic;
+    }
+    out << '\n';
+
+    out << monsters.size() << '\n';
+    for (const auto& monster : monsters) {
+        out << monster.pos.x << ' ' << monster.pos.y << ' '
+            << monster.vel.x << ' ' << monster.vel.y << ' '
+            << monster.hp << ' ' << monster.maxHp << ' ' << monster.damage << ' ' << monster.xpDrop << ' '
+            << monster.speed << ' ' << monster.radius << ' ' << monster.hitFlash << ' ' << monster.attackTimer << ' '
+            << (int)monster.color.r << ' ' << (int)monster.color.g << ' ' << (int)monster.color.b << ' ' << (int)monster.color.a << ' '
+            << (monster.isBoss ? 1 : 0) << ' ' << (monster.isElite ? 1 : 0) << ' ' << monster.eliteKind << ' ' << monster.typeIndex << '\n';
+    }
+
+    out << turrets.size() << '\n';
+    for (const auto& turret : turrets) {
+        out << turret.pos.x << ' ' << turret.pos.y << ' ' << turret.life << ' ' << turret.fireTimer << '\n';
+    }
+
+    out << healthPickups.size() << '\n';
+    for (const auto& pickup : healthPickups) {
+        out << pickup.pos.x << ' ' << pickup.pos.y << ' ' << pickup.vel.x << ' ' << pickup.vel.y << ' '
+            << pickup.healAmount << ' ' << pickup.life << ' ' << pickup.spin << '\n';
+    }
+
+    out << orbs.size() << '\n';
+    for (const auto& orb : orbs) {
+        out << orb.pos.x << ' ' << orb.pos.y << ' ' << orb.vel.x << ' ' << orb.vel.y << ' ' << orb.value << ' '
+            << (int)orb.color.r << ' ' << (int)orb.color.g << ' ' << (int)orb.color.b << ' ' << (int)orb.color.a << '\n';
+    }
+}
+
+bool Game::LoadRun() {
+    std::ifstream in("savegame.txt");
+    if (!in.is_open()) {
+        return false;
+    }
+
+    std::string header;
+    in >> header;
+    if (header != "NEON_ABYSS_SAVE_V2") {
+        return false;
+    }
+
+    ResetRun();
+    monsters.clear();
+    orbs.clear();
+    healthPickups.clear();
+    turrets.clear();
+    particles.clear();
+    shockwaves.clear();
+    beams.clear();
+    floatingTexts.clear();
+
+    int rewardChestFlag = 0;
+    int rewardSelectionFlag = 0;
+
+    in >> player.pos.x >> player.pos.y >> player.aimDir.x >> player.aimDir.y;
+    in >> player.hp >> player.maxHp >> player.xp >> player.kills
+        >> player.wave >> player.hpUpgradeLevel >> player.equippedWeaponIdx >> player.relicsCollected;
+    in >> player.dashCd >> player.empCd >> player.turretCd >> player.attackCd >> player.hitFlash;
+    in >> waveTargetRoomIndex >> lockedRoomIndex >> rewardChestFlag >> rewardSelectionFlag >> rewardChestPos.x >> rewardChestPos.y;
+
+    rewardChestActive = (rewardChestFlag != 0);
+    rewardSelectionOpen = false;
+
+    if (player.equippedWeaponIdx < 0 || player.equippedWeaponIdx >= (int)weaponDB.size()) {
+        player.equippedWeaponIdx = 0;
+    }
+
+    size_t ownedCount = 0;
+    in >> ownedCount;
+    shop.ownedWeapons.assign(weaponDB.size(), false);
+    for (size_t i = 0; i < ownedCount; ++i) {
+        int owned = 0;
+        in >> owned;
+        if (i < shop.ownedWeapons.size()) {
+            shop.ownedWeapons[i] = (owned != 0);
+        }
+    }
+
+    if (!shop.ownedWeapons.empty()) {
+        shop.ownedWeapons[0] = true;
+    }
+
+    size_t relicCount = 0;
+    in >> relicCount;
+    relics.clear();
+    for (size_t i = 0; i < relicCount; ++i) {
+        int relicValue = 0;
+        in >> relicValue;
+        relics.push_back((RelicType)relicValue);
+    }
+
+    size_t monsterCount = 0;
+    in >> monsterCount;
+    for (size_t i = 0; i < monsterCount; ++i) {
+        ActiveMonster monster{};
+        int r = 255, g = 255, b = 255, a = 255;
+        int isBossInt = 0;
+        int isEliteInt = 0;
+
+        in >> monster.pos.x >> monster.pos.y
+            >> monster.vel.x >> monster.vel.y
+            >> monster.hp >> monster.maxHp >> monster.damage >> monster.xpDrop
+            >> monster.speed >> monster.radius >> monster.hitFlash >> monster.attackTimer
+            >> r >> g >> b >> a
+            >> isBossInt >> isEliteInt >> monster.eliteKind >> monster.typeIndex;
+
+        monster.color = { (unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a };
+        monster.isBoss = (isBossInt != 0);
+        monster.isElite = (isEliteInt != 0);
+        monster.name = (monster.typeIndex >= 0 && monster.typeIndex < (int)monsterTypes.size())
+            ? monsterTypes[monster.typeIndex].name
+            : "UNKNOWN";
+
+        if (monster.isElite) {
+            if (monster.eliteKind == 0) monster.name = "FRENZIED " + monster.name;
+            else if (monster.eliteKind == 1) monster.name = "BULWARK " + monster.name;
+            else if (monster.eliteKind == 2) monster.name = "VOLTAIC " + monster.name;
+        }
+
+        monsters.push_back(monster);
+    }
+
+    size_t turretCount = 0;
+    in >> turretCount;
+    for (size_t i = 0; i < turretCount; ++i) {
+        Turret turret{};
+        in >> turret.pos.x >> turret.pos.y >> turret.life >> turret.fireTimer;
+        turrets.push_back(turret);
+    }
+
+    size_t pickupCount = 0;
+    in >> pickupCount;
+    for (size_t i = 0; i < pickupCount; ++i) {
+        HealthPickup pickup{};
+        in >> pickup.pos.x >> pickup.pos.y >> pickup.vel.x >> pickup.vel.y >> pickup.healAmount >> pickup.life >> pickup.spin;
+        healthPickups.push_back(pickup);
+    }
+
+    size_t orbCount = 0;
+    in >> orbCount;
+    for (size_t i = 0; i < orbCount; ++i) {
+        Orb orb{};
+        int r = 255, g = 255, b = 255, a = 255;
+        in >> orb.pos.x >> orb.pos.y >> orb.vel.x >> orb.vel.y >> orb.value >> r >> g >> b >> a;
+        orb.color = { (unsigned char)r, (unsigned char)g, (unsigned char)b, (unsigned char)a };
+        orbs.push_back(orb);
+    }
+
+    if (!in.good() && !in.eof()) {
+        return false;
+    }
+
+    shop.isOpen = false;
+    shop.message.clear();
+    shop.messageTimer = 0.0f;
+    rewardChoices.clear();
+    gameState = GameState::Playing;
+    announcement = "RUN RESTORED";
+    announcementTimer = 2.2f;
+    return true;
 }
 
 void Game::ResetRun() {
@@ -534,8 +733,14 @@ void Game::SpawnWave(int waveNumber) {
 
 void Game::UpdateTitle() {
     if (IsKeyPressed(KEY_ENTER)) {
+        DeleteSave();
         ResetRun();
         gameState = GameState::Playing;
+        SaveRun();
+    }
+
+    if (HasSaveFile() && IsKeyPressed(KEY_C)) {
+        LoadRun();
     }
 }
 
@@ -572,6 +777,7 @@ void Game::UpdatePlaying(float dt) {
             rewardChoices.clear();
             player.wave++;
             SpawnWave(player.wave);
+            SaveRun();
         }
         else if (IsKeyPressed(KEY_TWO) && rewardChoices.size() > 1) {
             ApplyRelic(rewardChoices[1].type);
@@ -580,6 +786,7 @@ void Game::UpdatePlaying(float dt) {
             rewardChoices.clear();
             player.wave++;
             SpawnWave(player.wave);
+            SaveRun();
         }
         else if (IsKeyPressed(KEY_THREE) && rewardChoices.size() > 2) {
             ApplyRelic(rewardChoices[2].type);
@@ -588,6 +795,7 @@ void Game::UpdatePlaying(float dt) {
             rewardChoices.clear();
             player.wave++;
             SpawnWave(player.wave);
+            SaveRun();
         }
     }
 
@@ -607,9 +815,26 @@ void Game::UpdatePlaying(float dt) {
     if (!rewardChestActive && lockedRoomIndex < 0 && currentArea != nullptr) {
         for (int i = 0; i < (int)dungeon.rooms.size(); ++i) {
             if (i == waveTargetRoomIndex && &dungeon.rooms[i] == currentArea && !dungeon.rooms[i].isSafeZone && !monsters.empty()) {
-                lockedRoomIndex = i;
-                announcement = dungeon.rooms[i].name + " // LOCKDOWN";
-                announcementTimer = 2.0f;
+                Rectangle lockZone = ShrinkRect(dungeon.rooms[i].rect, 96.0f);
+                if (lockZone.width < 40.0f || lockZone.height < 40.0f) {
+                    lockZone = dungeon.rooms[i].rect;
+                }
+
+                if (CheckCollisionPointRec(player.pos, lockZone)) {
+                    lockedRoomIndex = i;
+
+                    Vector2 roomCenter = {
+                        dungeon.rooms[i].rect.x + dungeon.rooms[i].rect.width * 0.5f,
+                        dungeon.rooms[i].rect.y + dungeon.rooms[i].rect.height * 0.5f
+                    };
+                    Vector2 pushDir = VecNormalizeSafe(VecSub(roomCenter, player.pos));
+                    if (pushDir.x != 0.0f || pushDir.y != 0.0f) {
+                        player.pos = MoveWithCollision(player.pos, VecScale(pushDir, 42.0f), 18.0f, 8);
+                    }
+
+                    announcement = dungeon.rooms[i].name + " // LOCKDOWN";
+                    announcementTimer = 2.0f;
+                }
                 break;
             }
         }
@@ -933,6 +1158,7 @@ void Game::UpdatePlaying(float dt) {
             announcementTimer = 2.2f;
             lockedRoomIndex = -1;
             hitStopTimer = std::max(hitStopTimer, 0.06f);
+            SaveRun();
         }
     }
 
@@ -955,6 +1181,7 @@ void Game::UpdatePlaying(float dt) {
                 shop.message = "MAX HP BOOSTED";
                 shop.messageColor = safeGreen;
                 shop.messageTimer = 1.5f;
+                SaveRun();
             }
             else {
                 shop.message = "NOT ENOUGH XP";
@@ -969,6 +1196,7 @@ void Game::UpdatePlaying(float dt) {
                 shop.message = "WEAPON EQUIPPED";
                 shop.messageColor = neonCyan;
                 shop.messageTimer = 1.2f;
+                SaveRun();
             }
             else if (player.xp >= weaponDB[shop.browseWeaponIdx].cost) {
                 player.xp -= weaponDB[shop.browseWeaponIdx].cost;
@@ -977,6 +1205,7 @@ void Game::UpdatePlaying(float dt) {
                 shop.message = "PURCHASE COMPLETE";
                 shop.messageColor = neonGold;
                 shop.messageTimer = 1.5f;
+                SaveRun();
             }
             else {
                 shop.message = "NOT ENOUGH XP";
@@ -987,6 +1216,7 @@ void Game::UpdatePlaying(float dt) {
     }
 
     if (player.hp <= 0) {
+        DeleteSave();
         gameState = GameState::GameOver;
         announcement = "SIGNAL LOST";
         announcementTimer = 3.0f;
@@ -1074,8 +1304,13 @@ void Game::DrawTitleScreen() const {
     DrawText("- Multi-room dungeon layout, corridors, collision walls, and room pressure", screenW / 2 - 285, 455, 20, RAYWHITE);
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? neonCyan : WHITE;
-    DrawText("PRESS ENTER TO DEPLOY", screenW / 2 - MeasureText("PRESS ENTER TO DEPLOY", 26) / 2, 560, 26, pulse);
-    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 602, 16, GRAY);
+    DrawText("PRESS ENTER TO DEPLOY A NEW RUN", screenW / 2 - MeasureText("PRESS ENTER TO DEPLOY A NEW RUN", 26) / 2, 548, 26, pulse);
+
+    if (HasSaveFile()) {
+        DrawText("PRESS C TO CONTINUE SAVED RUN", screenW / 2 - MeasureText("PRESS C TO CONTINUE SAVED RUN", 22) / 2, 586, 22, neonGold);
+    }
+
+    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 626, 16, GRAY);
 }
 
 void Game::DrawWorld() const {

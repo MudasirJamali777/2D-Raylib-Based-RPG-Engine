@@ -97,6 +97,10 @@ private:
     int GetHealPickupValue(int baseValue) const;
     void BuildRewardChoices();
     void ApplyRelic(RelicType type);
+    bool HasSaveFile() const;
+    bool LoadRun();
+    void SaveRun() const;
+    void DeleteSave() const;
 
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);
     void EmitBurst(Vector2 pos, int count, float speed, Color color, float size);
