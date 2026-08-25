@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include <vector>
 #include <string>
+#include <cmath>
 
 struct DungeonArea {
     Rectangle rect{};
@@ -13,6 +14,8 @@ struct DungeonArea {
 struct DungeonObstacle {
     Rectangle rect{};
     Color color{ 42, 50, 72, 255 };
+    int spriteIndex = -1;
+    float spriteScale = 1.0f;
 };
 
 struct DungeonMap {
@@ -51,31 +54,44 @@ inline bool IsCircleInsideRect(Vector2 center, float radius, Rectangle rect) {
         && center.y + radius <= rect.y + rect.height;
 }
 
-inline bool IsPositionWalkable(Vector2 pos, float radius, const DungeonMap& dungeon) {
-    bool insideWalkArea = false;
-
+inline bool IsPointInWalkArea(const DungeonMap& dungeon, Vector2 pos) {
     for (const auto& room : dungeon.rooms) {
-        if (CheckCollisionPointRec(pos, ExpandRect(room.rect, radius))) {
-            insideWalkArea = true;
-            break;
+        if (CheckCollisionPointRec(pos, room.rect)) {
+            return true;
         }
     }
 
-    if (!insideWalkArea) {
-        for (const auto& corridor : dungeon.corridors) {
-            if (CheckCollisionPointRec(pos, ExpandRect(corridor, radius))) {
-                insideWalkArea = true;
-                break;
-            }
+    for (const auto& corridor : dungeon.corridors) {
+        if (CheckCollisionPointRec(pos, corridor)) {
+            return true;
         }
     }
 
-    if (!insideWalkArea) {
-        return false;
+    return false;
+}
+
+inline bool IsPositionWalkable(Vector2 pos, float radius, const DungeonMap& dungeon) {
+    const float diag = radius * 0.70710678f;
+    const Vector2 probes[] = {
+        pos,
+        { pos.x + radius, pos.y },
+        { pos.x - radius, pos.y },
+        { pos.x, pos.y + radius },
+        { pos.x, pos.y - radius },
+        { pos.x + diag, pos.y + diag },
+        { pos.x + diag, pos.y - diag },
+        { pos.x - diag, pos.y + diag },
+        { pos.x - diag, pos.y - diag }
+    };
+
+    for (const auto& probe : probes) {
+        if (!IsPointInWalkArea(dungeon, probe)) {
+            return false;
+        }
     }
 
     for (const auto& obstacle : dungeon.obstacles) {
-        if (CheckCollisionPointRec(pos, ExpandRect(obstacle.rect, radius + 2.0f))) {
+        if (CircleRectCollision(pos, radius + 1.5f, obstacle.rect)) {
             return false;
         }
     }

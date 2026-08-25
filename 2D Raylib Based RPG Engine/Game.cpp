@@ -56,7 +56,7 @@ Game::Game() {
     std::srand((unsigned int)std::time(nullptr));
 
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_FULLSCREEN_MODE);
-    InitWindow(screenW, screenH, "NEON ABYSS // NEXUS SIEGE");
+    InitWindow(screenW, screenH, "CROWNHEART // KINGDOM SIEGE");
 
     screenW = GetScreenWidth();
     screenH = GetScreenHeight();
@@ -142,38 +142,38 @@ void Game::BuildColorTheme() {
 
 void Game::BuildDatabases() {
     weaponDB = {
-        {"Rusty Pipe", 14, 65.0f, "Common", 0, LIGHTGRAY},
-        {"Iron Baton", 18, 72.0f, "Common", 60, GRAY},
-        {"Shock Stunner", 24, 82.0f, "Common", 120, neonCyan},
-        {"Chain Saw Blade", 34, 88.0f, "Common", 200, ORANGE},
-        {"Plasma Cutter", 44, 96.0f, "Rare", 300, SKYBLUE},
-        {"Laser Edge", 56, 104.0f, "Rare", 430, BLUE},
-        {"Thermal Katana", 70, 112.0f, "Rare", 620, RED},
-        {"Sonic Vibroblade", 86, 118.0f, "Rare", 850, LIME},
-        {"Pulse Rifle Saber", 102, 126.0f, "Rare", 1100, neonCyan},
-        {"Void Reaper", 126, 138.0f, "Legendary", 1450, PURPLE},
-        {"Arc Disruptor", 152, 146.0f, "Legendary", 1850, YELLOW},
-        {"Singularity Core", 184, 154.0f, "Legendary", 2350, VIOLET},
-        {"Hyperion Greatsword", 220, 164.0f, "Legendary", 3000, GOLD},
-        {"Nanite Obliterator", 262, 174.0f, "Exotic", 3800, GREEN},
-        {"Quantum Slicer", 308, 188.0f, "Exotic", 4800, bossPurple},
+        {"Rusty Cudgel", 14, 65.0f, "Common", 0, LIGHTGRAY},
+        {"Iron Mace", 18, 72.0f, "Common", 60, GRAY},
+        {"Pilgrim's Hatchet", 24, 82.0f, "Common", 120, neonCyan},
+        {"Raider Flail", 34, 88.0f, "Common", 200, ORANGE},
+        {"Hearthblade", 44, 96.0f, "Rare", 300, SKYBLUE},
+        {"Knight Saber", 56, 104.0f, "Rare", 430, BLUE},
+        {"Sunsteel Blade", 70, 112.0f, "Rare", 620, RED},
+        {"Storm Fang", 86, 118.0f, "Rare", 850, LIME},
+        {"Raven Pike", 102, 126.0f, "Rare", 1100, neonCyan},
+        {"Grave Reaper", 126, 138.0f, "Legendary", 1450, PURPLE},
+        {"Arc Halberd", 152, 146.0f, "Legendary", 1850, YELLOW},
+        {"Starforged Brand", 184, 154.0f, "Legendary", 2350, VIOLET},
+        {"King's Greatsword", 220, 164.0f, "Legendary", 3000, GOLD},
+        {"Wyrmtooth Cleaver", 262, 174.0f, "Exotic", 3800, GREEN},
+        {"Moonveil Edge", 308, 188.0f, "Exotic", 4800, bossPurple},
         {"Celestial Cleaver", 370, 205.0f, "Exotic", 6200, WHITE},
-        {"Omega Decimator", 460, 225.0f, "Exotic", 8200, neonPink}
+        {"Crownfall", 460, 225.0f, "Exotic", 8200, neonPink}
     };
 
     monsterTypes = {
-        {"Cyber Rat", 45, 8, 2.5f, 12.0f, GRAY, false, 18},
-        {"Drone Scout", 60, 10, 3.0f, 14.0f, neonCyan, false, 24},
-        {"Syndicate Thug", 88, 14, 2.1f, 18.0f, ORANGE, false, 34},
-        {"Enforcer Bot", 130, 18, 1.6f, 22.0f, RED, false, 48},
-        {"Corrupted Cyborg", 175, 24, 1.8f, 20.0f, PURPLE, false, 64},
-        {"Viper Assassin", 110, 22, 3.4f, 15.0f, LIME, false, 56},
-        {"Heavy Automaton", 280, 30, 1.15f, 28.0f, DARKBLUE, false, 80},
-        {"Neon Brute", 220, 28, 1.4f, 25.0f, PINK, false, 72},
-        {"Pulse Wraith", 145, 20, 2.8f, 17.0f, SKYBLUE, false, 60},
-        {"Scrap Spider", 95, 16, 2.9f, 13.0f, BROWN, false, 40},
-        {"JUGGERNAUT PRIME", 1100, 36, 1.3f, 42.0f, MAROON, true, 550},
-        {"THE ARCHITECT", 1800, 48, 1.05f, 48.0f, bossPurple, true, 900}
+        {"Briar Rat", 45, 8, 2.5f, 12.0f, GRAY, false, 18},
+        {"Marsh Sprite", 60, 10, 3.0f, 14.0f, neonCyan, false, 24},
+        {"Road Brigand", 88, 14, 2.1f, 18.0f, ORANGE, false, 34},
+        {"Redfang Marauder", 130, 18, 1.6f, 22.0f, RED, false, 48},
+        {"Grave Warden", 175, 24, 1.8f, 20.0f, PURPLE, false, 64},
+        {"Hollow Stalker", 110, 22, 3.4f, 15.0f, LIME, false, 56},
+        {"Stonehide Ogre", 280, 30, 1.15f, 28.0f, DARKBLUE, false, 80},
+        {"Ashen Brute", 220, 28, 1.4f, 25.0f, PINK, false, 72},
+        {"Mire Wisp", 145, 20, 2.8f, 17.0f, SKYBLUE, false, 60},
+        {"Burrow Skitter", 95, 16, 2.9f, 13.0f, BROWN, false, 40},
+        {"THE ASHEN WYRM", 1100, 36, 1.3f, 42.0f, MAROON, true, 550},
+        {"THE THORN KING", 1800, 48, 1.05f, 48.0f, bossPurple, true, 900}
     };
 }
 
@@ -193,46 +193,102 @@ void Game::BuildDungeon() {
     dungeon = DungeonMap{};
 
     dungeon.rooms = {
-        { { -360.0f, -260.0f, 720.0f, 520.0f }, "NEXUS HUB", true, false },
-        { { 620.0f, -360.0f, 860.0f, 720.0f }, "EAST FORGE", false, true },
-        { { -1480.0f, -360.0f, 860.0f, 720.0f }, "WEST VAULT", false, true },
-        { { -430.0f, -1260.0f, 860.0f, 720.0f }, "NORTH CORE", false, true },
-        { { -430.0f, 540.0f, 860.0f, 720.0f }, "SOUTH SECTOR", false, true }
+        { { -480.0f, -360.0f, 960.0f, 720.0f }, "CROWNHEART KEEP", true, false },
+        { { 760.0f, -300.0f, 760.0f, 600.0f }, "SUNFORGE COURT", false, true },
+        { { -1520.0f, -300.0f, 760.0f, 600.0f }, "BRAMBLE WARD", false, true },
+        { { -360.0f, -1360.0f, 720.0f, 560.0f }, "MOONSPRING ASCENT", false, true },
+        { { -360.0f, 800.0f, 720.0f, 560.0f }, "EMBER ROAD", false, true },
+        { { 760.0f, -1260.0f, 760.0f, 520.0f }, "WYVERN WATCH", false, true },
+        { { 760.0f, 740.0f, 760.0f, 520.0f }, "GILDED FIELDS", false, true },
+        { { -1520.0f, -1260.0f, 760.0f, 520.0f }, "WHISPER GROVE", false, true },
+        { { -1520.0f, 740.0f, 760.0f, 520.0f }, "ROOTGLEN HOLD", false, true },
+        { { 180.0f, -820.0f, 320.0f, 240.0f }, "PILGRIM'S NOOK", false, false },
+        { { -560.0f, 470.0f, 320.0f, 220.0f }, "MOSSY CELLAR", false, false },
+        { { 1560.0f, -1040.0f, 300.0f, 220.0f }, "FALCONER'S LEDGE", false, false },
+        { { -1860.0f, 900.0f, 300.0f, 220.0f }, "SMUGGLER'S COVE", false, false }
     };
 
     dungeon.corridors = {
-        { 320.0f, -120.0f, 360.0f, 240.0f },
-        { -680.0f, -120.0f, 360.0f, 240.0f },
-        { -120.0f, -620.0f, 240.0f, 360.0f },
-        { -120.0f, 260.0f, 240.0f, 360.0f }
+        { 420.0f, -110.0f, 420.0f, 220.0f },
+        { -840.0f, -110.0f, 420.0f, 220.0f },
+        { -110.0f, -860.0f, 220.0f, 560.0f },
+        { -110.0f, 300.0f, 220.0f, 560.0f },
+        { 1040.0f, -860.0f, 200.0f, 620.0f },
+        { 1040.0f, 240.0f, 200.0f, 620.0f },
+        { -1240.0f, -860.0f, 200.0f, 620.0f },
+        { -1240.0f, 240.0f, 200.0f, 620.0f },
+        { 110.0f, -710.0f, 110.0f, 120.0f },
+        { -240.0f, 520.0f, 130.0f, 120.0f },
+        { 1490.0f, -970.0f, 140.0f, 80.0f },
+        { -1600.0f, 970.0f, 100.0f, 80.0f }
     };
 
-    dungeon.obstacles = {
-        { { 930.0f, -250.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { 930.0f, 120.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { 1190.0f, -70.0f, 150.0f, 150.0f }, { 44, 56, 82, 255 } },
+    auto AddObstacle = [&](Rectangle rect, Color color, int spriteIndex, float spriteScale) {
+        dungeon.obstacles.push_back({ rect, color, spriteIndex, spriteScale });
+        };
 
-        { { -1060.0f, -250.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { -1060.0f, 120.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { -1320.0f, -70.0f, 150.0f, 150.0f }, { 44, 56, 82, 255 } },
+    AddObstacle({ -96.0f, -44.0f, 192.0f, 168.0f }, { 114, 101, 85, 255 }, 5, 1.82f);
+    AddObstacle({ -258.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f);
+    AddObstacle({ 182.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f);
+    AddObstacle({ -328.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f);
+    AddObstacle({ 286.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f);
 
-        { { -280.0f, -1110.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { 150.0f, -1110.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { -70.0f, -920.0f, 140.0f, 140.0f }, { 44, 56, 82, 255 } },
+    AddObstacle({ 930.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f);
+    AddObstacle({ 1162.0f, -34.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
+    AddObstacle({ 1272.0f, 92.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
 
-        { { -280.0f, 760.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { 150.0f, 760.0f, 130.0f, 130.0f }, { 52, 64, 96, 255 } },
-        { { -70.0f, 950.0f, 140.0f, 140.0f }, { 44, 56, 82, 255 } }
-    };
+    AddObstacle({ -1282.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f);
+    AddObstacle({ -1058.0f, 42.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
+    AddObstacle({ -1410.0f, 88.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+
+    AddObstacle({ -202.0f, -1216.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f);
+    AddObstacle({ 94.0f, -1078.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
+    AddObstacle({ -26.0f, -970.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f);
+
+    AddObstacle({ -198.0f, 904.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f);
+    AddObstacle({ 90.0f, 1040.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f);
+    AddObstacle({ -30.0f, 1126.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f);
+
+    AddObstacle({ 906.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
+    AddObstacle({ 1228.0f, -976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+
+    AddObstacle({ 904.0f, 852.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
+    AddObstacle({ 1224.0f, 976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+
+    AddObstacle({ -1374.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
+    AddObstacle({ -1098.0f, -974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+
+    AddObstacle({ -1378.0f, 854.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f);
+    AddObstacle({ -1102.0f, 974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f);
+
+    AddObstacle({ 286.0f, -748.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.10f);
+    AddObstacle({ -432.0f, 540.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.94f);
+    AddObstacle({ 1678.0f, -976.0f, 86.0f, 120.0f }, { 116, 104, 91, 255 }, 4, 0.98f);
+    AddObstacle({ -1768.0f, 964.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.90f);
 
     safeZone = dungeon.rooms.front().rect;
 }
 
 void Game::BuildTileMap() {
-    int minX = -2200;
-    int minY = -1800;
-    int maxX = 2200;
-    int maxY = 1800;
+    int minX = 1000000;
+    int minY = 1000000;
+    int maxX = -1000000;
+    int maxY = -1000000;
+
+    auto includeRect = [&](Rectangle rect) {
+        minX = std::min(minX, (int)rect.x);
+        minY = std::min(minY, (int)rect.y);
+        maxX = std::max(maxX, (int)(rect.x + rect.width));
+        maxY = std::max(maxY, (int)(rect.y + rect.height));
+        };
+
+    for (const auto& room : dungeon.rooms) includeRect(room.rect);
+    for (const auto& corridor : dungeon.corridors) includeRect(corridor);
+
+    minX = (int)(std::floor((minX - 256) / 64.0f) * 64.0f);
+    minY = (int)(std::floor((minY - 256) / 64.0f) * 64.0f);
+    maxX = (int)(std::ceil((maxX + 256) / 64.0f) * 64.0f);
+    maxY = (int)(std::ceil((maxY + 256) / 64.0f) * 64.0f);
 
     tileMap = {};
     tileMap.tileSize = 64;
@@ -248,83 +304,94 @@ void Game::BuildTileMap() {
     for (int y = 0; y < tileMap.height; ++y) {
         for (int x = 0; x < tileMap.width; ++x) {
             Vector2 center = TileWorldCenter(tileMap, x, y);
-            int tile = (int)TileType::Grass;
-
+            const DungeonArea* roomAtPoint = FindDungeonArea(dungeon, center);
+            bool inCorridor = false;
             for (const auto& corridor : dungeon.corridors) {
                 if (CheckCollisionPointRec(center, corridor)) {
-                    tile = (int)TileType::Path;
+                    inCorridor = true;
                     break;
                 }
             }
 
-            if (tile != (int)TileType::Path) {
-                for (const auto& room : dungeon.rooms) {
-                    if (CheckCollisionPointRec(center, room.rect)) {
-                        tile = ((x + y) % 5 == 0) ? (int)TileType::GrassAlt : (int)TileType::Grass;
-                        break;
+            int tile = (int)TileType::Grass;
+            if (inCorridor) {
+                tile = (int)TileType::Path;
+            }
+            else if (roomAtPoint != nullptr) {
+                Vector2 roomCenter = SafeZoneCenter(roomAtPoint->rect);
+                tile = ((x + y) % 5 == 0) ? (int)TileType::GrassAlt : (int)TileType::Grass;
+
+                if (roomAtPoint->isSafeZone) {
+                    if (std::fabs(center.x - roomCenter.x) < 120.0f || std::fabs(center.y - roomCenter.y) < 120.0f || Distance(center, roomCenter) < 148.0f) {
+                        tile = (int)TileType::Path;
+                    }
+                }
+                else {
+                    if (Distance(center, roomCenter) < 96.0f) {
+                        tile = (int)TileType::Path;
+                    }
+                    else if (((x * 11 + y * 7) % 9) == 0) {
+                        tile = (int)TileType::GrassAlt;
                     }
                 }
             }
-
-            if (tile == (int)TileType::Grass && ((x * 17 + y * 31) % 19 == 0)) {
-                tile = (int)TileType::Flowers;
+            else {
+                int hash = (x * 17 + y * 31) & 31;
+                if (hash < 3) tile = (int)TileType::Flowers;
+                else if (hash < 6) tile = (int)TileType::GrassAlt;
             }
 
             tileMap.tiles[(size_t)y * (size_t)tileMap.width + (size_t)x] = tile;
 
             bool insidePlayable = false;
             for (const auto& room : dungeon.rooms) {
-                if (CheckCollisionPointRec(center, ExpandRect(room.rect, 28.0f))) {
+                if (CheckCollisionPointRec(center, ExpandRect(room.rect, 36.0f))) {
                     insidePlayable = true;
                     break;
                 }
             }
             if (!insidePlayable) {
                 for (const auto& corridor : dungeon.corridors) {
-                    if (CheckCollisionPointRec(center, ExpandRect(corridor, 24.0f))) {
+                    if (CheckCollisionPointRec(center, ExpandRect(corridor, 30.0f))) {
                         insidePlayable = true;
                         break;
                     }
                 }
             }
 
-            int hash = (x * 92821 + y * 68917) & 255;
             if (!insidePlayable) {
-                if (hash < 32) decorProps.push_back({ center, 0, 1.15f + (hash % 3) * 0.14f });
-                else if (hash < 44) decorProps.push_back({ center, 2, 0.80f + (hash % 3) * 0.10f });
-                else if (hash < 58) decorProps.push_back({ center, 1, 0.85f + (hash % 2) * 0.10f });
+                int hash = (x * 92821 + y * 68917) & 255;
+                if (hash < 20) decorProps.push_back({ center, 0, 1.08f + (hash % 3) * 0.12f });
+                else if (hash < 28) decorProps.push_back({ center, 2, 0.78f + (hash % 3) * 0.08f });
+                else if (hash < 36) decorProps.push_back({ center, 1, 0.82f + (hash % 2) * 0.08f });
             }
         }
     }
 
-    Vector2 nexusCenter = SafeZoneCenter(safeZone);
-    worldProps.push_back({ nexusCenter, 5, 1.8f });
-    worldProps.push_back({ { nexusCenter.x - 180.0f, nexusCenter.y + 70.0f }, 4, 1.05f });
-    worldProps.push_back({ { nexusCenter.x + 180.0f, nexusCenter.y + 70.0f }, 4, 1.05f });
-
-    for (int i = 1; i < (int)dungeon.rooms.size(); ++i) {
-        Vector2 c = SafeZoneCenter(dungeon.rooms[i].rect);
-        if (i == 1 || i == 2) {
-            worldProps.push_back({ c, 4, 1.05f });
-            worldProps.push_back({ { c.x + (i == 1 ? 170.0f : -170.0f), c.y - 60.0f }, 3, 0.95f });
-        }
-        else {
-            worldProps.push_back({ { c.x - 120.0f, c.y + 20.0f }, 3, 0.92f });
-            worldProps.push_back({ { c.x + 145.0f, c.y - 10.0f }, 4, 0.92f });
-        }
-    }
+    worldProps.push_back({ { 0.0f, -520.0f }, 9, 0.90f });
+    worldProps.push_back({ { 0.0f, 520.0f }, 9, 0.90f });
+    worldProps.push_back({ { 650.0f, 0.0f }, 9, 0.90f });
+    worldProps.push_back({ { -650.0f, 0.0f }, 9, 0.90f });
+    worldProps.push_back({ { 126.0f, -636.0f }, 9, 0.82f });
+    worldProps.push_back({ { -148.0f, 592.0f }, 9, 0.82f });
+    worldProps.push_back({ { 1544.0f, -930.0f }, 9, 0.82f });
+    worldProps.push_back({ { -1618.0f, 1008.0f }, 9, 0.82f });
 
     for (size_t i = 0; i < dungeon.obstacles.size(); ++i) {
         const auto& obstacle = dungeon.obstacles[i];
         Vector2 center = { obstacle.rect.x + obstacle.rect.width * 0.5f, obstacle.rect.y + obstacle.rect.height * 0.5f };
-        int spriteIndex = 2;
-        float scale = 1.0f;
-        switch (i % 4) {
-        case 0: spriteIndex = 0; scale = 1.20f; break;
-        case 1: spriteIndex = 2; scale = 0.95f; break;
-        case 2: spriteIndex = 3; scale = 0.95f; break;
-        default: spriteIndex = 4; scale = 0.92f; break;
+
+        int spriteIndex = obstacle.spriteIndex;
+        float scale = obstacle.spriteScale;
+        if (spriteIndex < 0) {
+            switch (i % 4) {
+            case 0: spriteIndex = 0; scale = 1.20f; break;
+            case 1: spriteIndex = 2; scale = 0.95f; break;
+            case 2: spriteIndex = 3; scale = 0.95f; break;
+            default: spriteIndex = 4; scale = 0.92f; break;
+            }
         }
+
         worldProps.push_back({ center, spriteIndex, scale });
     }
 }
@@ -363,6 +430,11 @@ Rectangle Game::ActorSourceRect(int index) const {
 Vector2 Game::MoveWithCollision(Vector2 start, Vector2 delta, float radius, int steps) const {
     if (steps < 1) {
         steps = 1;
+    }
+
+    int autoSteps = (int)std::ceil(std::max(std::fabs(delta.x), std::fabs(delta.y)) / std::max(6.0f, radius * 0.45f));
+    if (autoSteps > steps) {
+        steps = autoSteps;
     }
 
     Vector2 position = start;
@@ -445,21 +517,48 @@ std::vector<Rectangle> Game::GetActiveBarrierRects() const {
         return barriers;
     }
 
-    switch (lockedRoomIndex) {
-    case 1:
-        barriers.push_back({ 500.0f - 18.0f, -96.0f, 36.0f, 192.0f });
-        break;
-    case 2:
-        barriers.push_back({ -500.0f - 18.0f, -96.0f, 36.0f, 192.0f });
-        break;
-    case 3:
-        barriers.push_back({ -96.0f, -440.0f - 18.0f, 192.0f, 36.0f });
-        break;
-    case 4:
-        barriers.push_back({ -96.0f, 440.0f - 18.0f, 192.0f, 36.0f });
-        break;
-    default:
-        break;
+    Rectangle room = dungeon.rooms[lockedRoomIndex].rect;
+    Vector2 roomCenter = SafeZoneCenter(room);
+
+    for (const auto& corridor : dungeon.corridors) {
+        float overlapLeft = std::max(room.x, corridor.x);
+        float overlapTop = std::max(room.y, corridor.y);
+        float overlapRight = std::min(room.x + room.width, corridor.x + corridor.width);
+        float overlapBottom = std::min(room.y + room.height, corridor.y + corridor.height);
+        float overlapW = overlapRight - overlapLeft;
+        float overlapH = overlapBottom - overlapTop;
+
+        if (overlapW <= 26.0f || overlapH <= 26.0f) {
+            continue;
+        }
+
+        const float thickness = 40.0f;
+        const float inset = 64.0f;
+
+        if (corridor.width > corridor.height) {
+            bool leftSide = (corridor.x + corridor.width * 0.5f) < roomCenter.x;
+            float barrierX = leftSide
+                ? room.x + inset - thickness * 0.5f
+                : room.x + room.width - inset - thickness * 0.5f;
+            barriers.push_back({
+                barrierX,
+                overlapTop + 18.0f,
+                thickness,
+                std::max(56.0f, overlapH - 36.0f)
+                });
+        }
+        else {
+            bool topSide = (corridor.y + corridor.height * 0.5f) < roomCenter.y;
+            float barrierY = topSide
+                ? room.y + inset - thickness * 0.5f
+                : room.y + room.height - inset - thickness * 0.5f;
+            barriers.push_back({
+                overlapLeft + 18.0f,
+                barrierY,
+                std::max(56.0f, overlapW - 36.0f),
+                thickness
+                });
+        }
     }
 
     return barriers;
@@ -708,7 +807,7 @@ bool Game::LoadRun() {
         if (monster.isElite) {
             if (monster.eliteKind == 0) monster.name = "FRENZIED " + monster.name;
             else if (monster.eliteKind == 1) monster.name = "BULWARK " + monster.name;
-            else if (monster.eliteKind == 2) monster.name = "VOLTAIC " + monster.name;
+            else if (monster.eliteKind == 2) monster.name = "STORMBOUND " + monster.name;
         }
 
         monsters.push_back(monster);
@@ -749,13 +848,15 @@ bool Game::LoadRun() {
     shop.messageTimer = 0.0f;
     rewardChoices.clear();
     gameState = GameState::Playing;
-    announcement = "RUN RESTORED";
+    announcement = "CHRONICLE RESTORED";
     announcementTimer = 2.2f;
     return true;
 }
 
 void Game::ResetRun() {
     player = Player{};
+    player.pos = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.72f };
+    player.aimDir = { 0.0f, -1.0f };
     player.xp = 240;
 
     shop = ShopState{};
@@ -775,7 +876,7 @@ void Game::ResetRun() {
     screenShake = 0.0f;
     nextWaveTimer = 0.0f;
     safeZoneHealBuffer = 0.0f;
-    announcement = "NEXUS ONLINE";
+    announcement = "CROWNHEART AWAITS";
     announcementTimer = 2.2f;
 
     monsters.clear();
@@ -862,7 +963,7 @@ void Game::SpawnMonsterByType(int typeIndex, Vector2 pos) {
                 monster.speed *= 1.10f;
                 monster.damage += 8;
                 monster.color = neonCyan;
-                monster.name = "VOLTAIC " + monster.name;
+                monster.name = "STORMBOUND " + monster.name;
             }
         }
     }
@@ -871,7 +972,7 @@ void Game::SpawnMonsterByType(int typeIndex, Vector2 pos) {
 }
 
 void Game::SpawnWave(int waveNumber) {
-    announcement = std::string(TextFormat("WAVE %d // PURGE PROTOCOL", waveNumber));
+    announcement = std::string(TextFormat("WAVE %d // HUNT BEGINS", waveNumber));
     announcementTimer = 2.8f;
     rewardChestActive = false;
     rewardSelectionOpen = false;
@@ -906,7 +1007,7 @@ void Game::SpawnWave(int waveNumber) {
     if (waveNumber % 5 == 0) {
         int bossType = (waveNumber % 10 == 0) ? 11 : 10;
         SpawnMonsterByType(bossType, GetSpawnPointInCombatRoom());
-        announcement = monsterTypes[bossType].name + " // BOSS INBOUND";
+        announcement = monsterTypes[bossType].name + " // BOSS STIRS";
         announcementTimer = 3.8f;
     }
 }
@@ -1012,7 +1113,7 @@ void Game::UpdatePlaying(float dt) {
                         player.pos = MoveWithCollision(player.pos, VecScale(pushDir, 42.0f), 18.0f, 8);
                     }
 
-                    announcement = dungeon.rooms[i].name + " // LOCKDOWN";
+                    announcement = dungeon.rooms[i].name + " // GATES SEALED";
                     announcementTimer = 2.0f;
                 }
                 break;
@@ -1115,7 +1216,7 @@ void Game::UpdatePlaying(float dt) {
             if (dist <= empRadius) {
                 monster.hp -= empDamage;
                 monster.hitFlash = 0.18f;
-                AddFloatingText(monster.pos, "EMP " + std::to_string(empDamage), neonCyan);
+                AddFloatingText(monster.pos, "NOVA " + std::to_string(empDamage), neonCyan);
                 EmitBurst(monster.pos, 12, 5.0f, neonCyan, 3.0f);
             }
         }
@@ -1125,7 +1226,7 @@ void Game::UpdatePlaying(float dt) {
         player.turretCd = 12.0f;
         turrets.push_back({ player.pos, GetTurretLifetime(), 0.25f });
         EmitBurst(player.pos, 18, 3.0f, neonBlue, 3.8f);
-        AddFloatingText(player.pos, "TURRET ONLINE", neonBlue);
+        AddFloatingText(player.pos, "TOTEM RAISED", neonBlue);
     }
 
     for (auto& turret : turrets) {
@@ -1334,7 +1435,7 @@ void Game::UpdatePlaying(float dt) {
             rewardChestActive = true;
             rewardSelectionOpen = false;
             rewardChestPos = { room.x + room.width * 0.5f, room.y + room.height * 0.5f };
-            announcement = dungeon.rooms[lockedRoomIndex].name + " // ROOM CLEARED";
+            announcement = dungeon.rooms[lockedRoomIndex].name + " // PATH SECURED";
             announcementTimer = 2.2f;
             lockedRoomIndex = -1;
             hitStopTimer = std::max(hitStopTimer, 0.06f);
@@ -1358,13 +1459,13 @@ void Game::UpdatePlaying(float dt) {
                 player.hpUpgradeLevel++;
                 player.maxHp += 30;
                 player.hp = std::min(player.maxHp, player.hp + 30);
-                shop.message = "MAX HP BOOSTED";
+                shop.message = "VIGOR RAISED";
                 shop.messageColor = safeGreen;
                 shop.messageTimer = 1.5f;
                 SaveRun();
             }
             else {
-                shop.message = "NOT ENOUGH XP";
+                shop.message = "NOT ENOUGH RENOWN";
                 shop.messageColor = softRed;
                 shop.messageTimer = 1.2f;
             }
@@ -1373,7 +1474,7 @@ void Game::UpdatePlaying(float dt) {
         if (IsKeyPressed(KEY_B)) {
             if (shop.ownedWeapons[shop.browseWeaponIdx]) {
                 player.equippedWeaponIdx = shop.browseWeaponIdx;
-                shop.message = "WEAPON EQUIPPED";
+                shop.message = "ARMAMENT READIED";
                 shop.messageColor = neonCyan;
                 shop.messageTimer = 1.2f;
                 SaveRun();
@@ -1382,13 +1483,13 @@ void Game::UpdatePlaying(float dt) {
                 player.xp -= weaponDB[shop.browseWeaponIdx].cost;
                 shop.ownedWeapons[shop.browseWeaponIdx] = true;
                 player.equippedWeaponIdx = shop.browseWeaponIdx;
-                shop.message = "PURCHASE COMPLETE";
+                shop.message = "BARGAIN SEALED";
                 shop.messageColor = neonGold;
                 shop.messageTimer = 1.5f;
                 SaveRun();
             }
             else {
-                shop.message = "NOT ENOUGH XP";
+                shop.message = "NOT ENOUGH RENOWN";
                 shop.messageColor = softRed;
                 shop.messageTimer = 1.2f;
             }
@@ -1398,7 +1499,7 @@ void Game::UpdatePlaying(float dt) {
     if (player.hp <= 0) {
         DeleteSave();
         gameState = GameState::GameOver;
-        announcement = "SIGNAL LOST";
+        announcement = "FALLEN IN BATTLE";
         announcementTimer = 3.0f;
     }
 }
@@ -1482,23 +1583,23 @@ void Game::DrawTitleScreen() const {
     DrawTowerProp({ screenW * 0.5f - 220.0f, 300.0f }, 1.35f, neonPink);
     DrawTowerProp({ screenW * 0.5f + 220.0f, 300.0f }, 1.35f, neonPink);
 
-    int titleWidth = MeasureText("NEON ABYSS", 74);
-    DrawText("NEON ABYSS", screenW / 2 - titleWidth / 2, 82, 74, { 67, 86, 54, 255 });
+    int titleWidth = MeasureText("CROWNHEART", 74);
+    DrawText("CROWNHEART", screenW / 2 - titleWidth / 2, 82, 74, { 67, 86, 54, 255 });
     DrawText("KINGDOM SIEGE", screenW / 2 - MeasureText("KINGDOM SIEGE", 30) / 2, 158, 30, softRed);
-    DrawText("A hand-drawn fantasy action RPG prototype in Raylib", screenW / 2 - MeasureText("A hand-drawn fantasy action RPG prototype in Raylib", 22) / 2, 196, 22, { 79, 74, 63, 255 });
+    DrawText("A hand-drawn fantasy action RPG in Raylib", screenW / 2 - MeasureText("A hand-drawn fantasy action RPG in Raylib", 22) / 2, 196, 22, { 79, 74, 63, 255 });
 
     DrawPanel({ screenW / 2.0f - 360.0f, 360.0f, 720.0f, 190.0f }, panel, { 118, 105, 80, 255 });
     DrawText("WHAT'S IN THE BUILD", screenW / 2 - MeasureText("WHAT'S IN THE BUILD", 24) / 2, 384, 24, { 92, 78, 58, 255 });
-    DrawText("- Cartoony overworld presentation with connected sectors", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
-    DrawText("- Real-time combat with dash, pulse, EMP and sentry skills", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
-    DrawText("- Room lockdown fights, relic rewards and wave progression", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
-    DrawText("- Save / continue support while the art style evolves", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
+    DrawText("- A kingdom crossroads with keeps, side paths and hidden pockets", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
+    DrawText("- Real-time combat with dash, nova burst and guardian totems", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
+    DrawText("- Sealed-court battles, relic blessings and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
+    DrawText("- Save and continue support across your campaign", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
-    DrawText("PRESS ENTER FOR A NEW RUN", screenW / 2 - MeasureText("PRESS ENTER FOR A NEW RUN", 28) / 2, 586, 28, pulse);
+    DrawText("PRESS ENTER TO BEGIN A NEW QUEST", screenW / 2 - MeasureText("PRESS ENTER TO BEGIN A NEW QUEST", 28) / 2, 586, 28, pulse);
 
     if (HasSaveFile()) {
-        DrawText("PRESS C TO CONTINUE SAVED RUN", screenW / 2 - MeasureText("PRESS C TO CONTINUE SAVED RUN", 22) / 2, 622, 22, neonGold);
+        DrawText("PRESS C TO CONTINUE YOUR CHRONICLE", screenW / 2 - MeasureText("PRESS C TO CONTINUE YOUR CHRONICLE", 22) / 2, 622, 22, neonGold);
     }
 
     DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 656, 16, { 86, 82, 72, 255 });
@@ -1516,6 +1617,90 @@ void Game::DrawWorld() const {
         Rectangle src = PropSourceRect(prop.spriteIndex);
         Rectangle dst = { prop.pos.x - (cell * prop.scale) * 0.5f, prop.pos.y - (cell * prop.scale) * 0.78f, cell * prop.scale, cell * prop.scale };
         DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+        };
+
+    auto drawFenceStrip = [&](bool horizontal, float fixed, float start, float end) {
+        if (end - start < 24.0f) {
+            return;
+        }
+
+        Color wallShade = { 119, 95, 66, 255 };
+        if (horizontal) {
+            DrawLineEx({ start, fixed + 6.0f }, { end, fixed + 6.0f }, 7.0f, Fade(wallShade, 0.24f));
+        }
+        else {
+            DrawLineEx({ fixed + 6.0f, start }, { fixed + 6.0f, end }, 7.0f, Fade(wallShade, 0.24f));
+        }
+
+        if (propAtlas.id == 0) {
+            if (horizontal) DrawLineEx({ start, fixed }, { end, fixed }, 4.0f, wallShade);
+            else DrawLineEx({ fixed, start }, { fixed, end }, 4.0f, wallShade);
+            return;
+        }
+
+        Rectangle src = PropSourceRect(horizontal ? 7 : 8);
+        for (float p = start; p < end; p += 88.0f) {
+            float length = std::min(88.0f, end - p);
+            Rectangle dst = horizontal
+                ? Rectangle{ p, fixed - 48.0f, length, 96.0f }
+            : Rectangle{ fixed - 48.0f, p, 96.0f, length };
+            DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+        }
+        };
+
+    auto drawFenceWithGaps = [&](bool horizontal, float fixed, float spanStart, float spanEnd, std::vector<Vector2> gaps) {
+        std::sort(gaps.begin(), gaps.end(), [](const Vector2& a, const Vector2& b) { return a.x < b.x; });
+        float cursor = spanStart;
+
+        for (const auto& gap : gaps) {
+            float gapStart = ClampFloat(gap.x - 22.0f, spanStart, spanEnd);
+            float gapEnd = ClampFloat(gap.y + 22.0f, spanStart, spanEnd);
+            if (gapStart > cursor) {
+                drawFenceStrip(horizontal, fixed, cursor, gapStart);
+            }
+            if (gapEnd > cursor) {
+                cursor = gapEnd;
+            }
+        }
+
+        if (cursor < spanEnd) {
+            drawFenceStrip(horizontal, fixed, cursor, spanEnd);
+        }
+        };
+
+    auto drawRoomEdgeFences = [&](const DungeonArea& room) {
+        std::vector<Vector2> leftGaps;
+        std::vector<Vector2> rightGaps;
+        std::vector<Vector2> topGaps;
+        std::vector<Vector2> bottomGaps;
+        Vector2 roomCenter = SafeZoneCenter(room.rect);
+
+        for (const auto& corridor : dungeon.corridors) {
+            float overlapLeft = std::max(room.rect.x, corridor.x);
+            float overlapTop = std::max(room.rect.y, corridor.y);
+            float overlapRight = std::min(room.rect.x + room.rect.width, corridor.x + corridor.width);
+            float overlapBottom = std::min(room.rect.y + room.rect.height, corridor.y + corridor.height);
+            float overlapW = overlapRight - overlapLeft;
+            float overlapH = overlapBottom - overlapTop;
+
+            if (overlapW <= 18.0f || overlapH <= 18.0f) {
+                continue;
+            }
+
+            if (corridor.width > corridor.height) {
+                if (corridor.x + corridor.width * 0.5f < roomCenter.x) leftGaps.push_back({ overlapTop, overlapBottom });
+                else rightGaps.push_back({ overlapTop, overlapBottom });
+            }
+            else {
+                if (corridor.y + corridor.height * 0.5f < roomCenter.y) topGaps.push_back({ overlapLeft, overlapRight });
+                else bottomGaps.push_back({ overlapLeft, overlapRight });
+            }
+        }
+
+        drawFenceWithGaps(true, room.rect.y, room.rect.x + 20.0f, room.rect.x + room.rect.width - 20.0f, topGaps);
+        drawFenceWithGaps(true, room.rect.y + room.rect.height, room.rect.x + 20.0f, room.rect.x + room.rect.width - 20.0f, bottomGaps);
+        drawFenceWithGaps(false, room.rect.x, room.rect.y + 20.0f, room.rect.y + room.rect.height - 20.0f, leftGaps);
+        drawFenceWithGaps(false, room.rect.x + room.rect.width, room.rect.y + 20.0f, room.rect.y + room.rect.height - 20.0f, rightGaps);
         };
 
     int minTileX = (int)((camera.target.x - screenW * 0.6f - tileMap.originX) / tileMap.tileSize) - 1;
@@ -1539,15 +1724,25 @@ void Game::DrawWorld() const {
         }
     }
 
+    for (const auto& corridor : dungeon.corridors) {
+        DrawRectangleLinesEx(corridor, 2.0f, Fade({ 160, 126, 78, 255 }, 0.18f));
+    }
+
+    for (const auto& obstacle : dungeon.obstacles) {
+        DrawRectangleRounded(obstacle.rect, 0.16f, 6, Fade({ 77, 57, 38, 255 }, 0.12f));
+        DrawRectangleLinesEx(obstacle.rect, 2.0f, Fade({ 101, 78, 51, 255 }, 0.34f));
+    }
+
     for (const auto& prop : decorProps) {
         drawProp(prop);
     }
 
     for (const auto& room : dungeon.rooms) {
-        DrawRectangleLinesEx(room.rect, 2.0f, Fade({ 93, 125, 58, 255 }, 0.30f));
+        DrawRectangleLinesEx(room.rect, 2.0f, Fade({ 93, 125, 58, 255 }, 0.18f));
+        drawRoomEdgeFences(room);
         int labelSize = room.isSafeZone ? 24 : 20;
         int labelX = (int)(room.rect.x + room.rect.width * 0.5f) - MeasureText(room.name.c_str(), labelSize) / 2;
-        DrawText(room.name.c_str(), labelX, (int)room.rect.y + 12, labelSize, { 92, 78, 56, 255 });
+        DrawText(room.name.c_str(), labelX, (int)room.rect.y + 14, labelSize, { 92, 78, 56, 255 });
     }
 
     std::vector<PropInstance> sortedProps = worldProps;
@@ -1559,12 +1754,9 @@ void Game::DrawWorld() const {
     }
 
     for (const auto& barrier : GetActiveBarrierRects()) {
-        if (propAtlas.id != 0) {
-            int spriteIndex = barrier.width > barrier.height ? 7 : 8;
-            Rectangle src = PropSourceRect(spriteIndex);
-            Rectangle dst = { barrier.x - 8.0f, barrier.y - 8.0f, barrier.width + 16.0f, barrier.height + 16.0f };
-            DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
-        }
+        DrawRectangleRounded(barrier, 0.12f, 4, Fade({ 97, 72, 48, 255 }, 0.18f));
+        if (barrier.width > barrier.height) drawFenceStrip(true, barrier.y + barrier.height * 0.5f, barrier.x, barrier.x + barrier.width);
+        else drawFenceStrip(false, barrier.x + barrier.width * 0.5f, barrier.y, barrier.y + barrier.height);
     }
 
     if (rewardChestActive && propAtlas.id != 0) {
@@ -1635,7 +1827,7 @@ void Game::DrawWorld() const {
 
 void Game::DrawHud() const {
     DrawPanel({ 18.0f, 18.0f, 420.0f, 158.0f }, panel, neonBlue);
-    DrawText("OPERATIVE STATUS", 34, 28, 20, neonCyan);
+    DrawText("ADVENTURER'S KIT", 34, 28, 20, neonCyan);
     DrawText(TextFormat("WEAPON: %s", weaponDB[player.equippedWeaponIdx].name.c_str()), 34, 54, 18, WHITE);
     DrawText(TextFormat("WAVE %d", player.wave), 300, 28, 20, neonGold);
     DrawText(TextFormat("KILLS %d", player.kills), 300, 54, 18, RAYWHITE);
@@ -1647,34 +1839,34 @@ void Game::DrawHud() const {
 
     DrawRectangle(34, 118, 250, 12, Fade(WHITE, 0.12f));
     DrawRectangle(34, 118, (int)ClampFloat((float)player.xp / 3000.0f * 250.0f, 0.0f, 250.0f), 12, neonGold);
-    DrawText(TextFormat("XP BANK %d", player.xp), 294, 112, 16, neonGold);
+    DrawText(TextFormat("RENOWN %d", player.xp), 294, 112, 16, neonGold);
 
     DrawPanel({ 18.0f, 188.0f, 300.0f, 118.0f }, panel, neonPink);
     DrawText("ABILITIES", 32, 200, 18, neonPink);
     DrawText(TextFormat("1 DASH    %.1fs", player.dashCd), 32, 226, 18, player.dashCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("2 EMP     %.1fs", player.empCd), 32, 250, 18, player.empCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("3 TURRET  %.1fs", player.turretCd), 32, 274, 18, player.turretCd <= 0.0f ? neonCyan : GRAY);
+    DrawText(TextFormat("2 NOVA    %.1fs", player.empCd), 32, 250, 18, player.empCd <= 0.0f ? neonCyan : GRAY);
+    DrawText(TextFormat("3 TOTEM   %.1fs", player.turretCd), 32, 274, 18, player.turretCd <= 0.0f ? neonCyan : GRAY);
 
     DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 150.0f }, panel, safeGreen);
-    DrawText("FIELD DATA", screenW - 334, 28, 20, safeGreen);
-    DrawText(TextFormat("HOSTILES %d", (int)monsters.size()), screenW - 334, 58, 18, WHITE);
-    DrawText(TextFormat("TURRETS  %d", (int)turrets.size()), screenW - 334, 82, 18, WHITE);
+    DrawText("REGION READOUT", screenW - 334, 28, 20, safeGreen);
+    DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 58, 18, WHITE);
+    DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 82, 18, WHITE);
 
     bool inSafeZone = CheckCollisionPointRec(player.pos, safeZone);
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
     DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 106, 18, inSafeZone ? safeGreen : softRed);
-    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "ACCESS TUNNEL"), screenW - 334, 130, 16, RAYWHITE);
+    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 130, 16, RAYWHITE);
 
     DrawMiniMap();
 
     if (rewardChestActive && !rewardSelectionOpen && Distance(player.pos, rewardChestPos) < 72.0f) {
-        DrawText("DATA CACHE READY // PRESS E TO CHOOSE A RELIC", 22, screenH - 34, 18, neonGold);
+        DrawText("RELIC CHEST READY // PRESS E TO CLAIM A BLESSING", 22, screenH - 34, 18, neonGold);
     }
     else if (inSafeZone) {
-        DrawText("SAFE ZONE // PRESS E FOR ARSENAL // LEAVE NEXUS THROUGH ANY GLOWING GATE", 22, screenH - 34, 18, safeGreen);
+        DrawText("SAFE COURTYARD // PRESS E FOR THE KEEP ARMORY // RIDE OUT THROUGH ANY OPEN ROAD", 22, screenH - 34, 18, safeGreen);
     }
     else {
-        DrawText("WASD MOVE   SPACE ATTACK   1 DASH   2 EMP   3 TURRET   CLEAR ROOMS, HOLD ANGLES, DON'T GET PINCHED", 22, screenH - 34, 18, RAYWHITE);
+        DrawText("WASD MOVE   SPACE SWING   1 DASH   2 NOVA   3 TOTEM   HOLD THE ROADS, CLEAR THE COURTS", 22, screenH - 34, 18, RAYWHITE);
     }
 
     if (announcementTimer > 0.0f) {
@@ -1685,11 +1877,11 @@ void Game::DrawHud() const {
 }
 
 void Game::DrawMiniMap() const {
-    Rectangle panelRect = { screenW - 250.0f, 184.0f, 232.0f, 232.0f };
+    Rectangle panelRect = { screenW - 292.0f, 176.0f, 274.0f, 274.0f };
     DrawPanel(panelRect, panel, neonBlue);
-    DrawText("TACTICAL MAP", (int)panelRect.x + 18, (int)panelRect.y + 14, 18, neonBlue);
+    DrawText("KINGDOM MAP", (int)panelRect.x + 20, (int)panelRect.y + 16, 18, neonBlue);
 
-    Rectangle mapRect = { panelRect.x + 16.0f, panelRect.y + 40.0f, panelRect.width - 32.0f, panelRect.height - 56.0f };
+    Rectangle mapRect = { panelRect.x + 16.0f, panelRect.y + 42.0f, panelRect.width - 32.0f, panelRect.height - 60.0f };
     DrawRectangleRec(mapRect, Fade(BLACK, 0.28f));
     DrawRectangleLinesEx(mapRect, 1.0f, Fade(WHITE, 0.16f));
 
@@ -1756,7 +1948,7 @@ void Game::DrawMiniMap() const {
             obstacle.rect.width * scale,
             obstacle.rect.height * scale
         };
-        DrawRectangleRec(mini, Fade(softRed, 0.30f));
+        DrawRectangleRec(mini, Fade(obstacle.color, 0.24f));
     }
 
     int monsterDots = 0;
@@ -1769,6 +1961,12 @@ void Game::DrawMiniMap() const {
         }
     }
 
+    if (rewardChestActive) {
+        Vector2 chestMini = WorldToMap(rewardChestPos);
+        DrawCircleV(chestMini, 4.2f, neonGold);
+        DrawCircleLines((int)chestMini.x, (int)chestMini.y, 7.0f, WHITE);
+    }
+
     Vector2 playerMini = WorldToMap(player.pos);
     DrawCircleV(playerMini, 4.6f, WHITE);
     DrawCircleV(playerMini, 3.2f, neonCyan);
@@ -1779,8 +1977,8 @@ void Game::DrawRewardOverlay() const {
 
     Rectangle panelRect = { screenW * 0.5f - 470.0f, screenH * 0.5f - 210.0f, 940.0f, 420.0f };
     DrawPanel(panelRect, panel2, neonGold);
-    DrawText("DATA CACHE ACQUIRED", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonGold);
-    DrawText("CHOOSE ONE RELIC", (int)panelRect.x + 30, (int)panelRect.y + 58, 18, RAYWHITE);
+    DrawText("RELIC CHEST OPENED", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonGold);
+    DrawText("CHOOSE ONE BLESSING", (int)panelRect.x + 30, (int)panelRect.y + 58, 18, RAYWHITE);
 
     for (int i = 0; i < (int)rewardChoices.size(); ++i) {
         Rectangle card = { panelRect.x + 28.0f + i * 295.0f, panelRect.y + 108.0f, 265.0f, 250.0f };
@@ -1802,18 +2000,18 @@ void Game::DrawShop() const {
     Rectangle panelRect = { screenW / 2.0f - 390.0f, screenH / 2.0f - 240.0f, 780.0f, 480.0f };
     DrawPanel(panelRect, panel2, neonGold);
 
-    DrawText("NEXUS ARSENAL", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
-    DrawText(TextFormat("XP AVAILABLE: %d", player.xp), (int)panelRect.x + 540, (int)panelRect.y + 28, 20, safeGreen);
+    DrawText("KEEP ARMORY", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
+    DrawText(TextFormat("RENOWN HELD: %d", player.xp), (int)panelRect.x + 518, (int)panelRect.y + 28, 20, safeGreen);
 
     int hpUpgradeCost = 100 + player.hpUpgradeLevel * 90;
     DrawPanel({ panelRect.x + 24.0f, panelRect.y + 72.0f, 732.0f, 94.0f }, panel, safeGreen);
-    DrawText("BIOMETRIC UPGRADES", (int)panelRect.x + 40, (int)panelRect.y + 88, 22, safeGreen);
-    DrawText(TextFormat("MAX HP BOOST +30   COST: %d XP   LEVEL: %d", hpUpgradeCost, player.hpUpgradeLevel), (int)panelRect.x + 40, (int)panelRect.y + 122, 20, WHITE);
-    DrawText("PRESS H TO PURCHASE", (int)panelRect.x + 520, (int)panelRect.y + 122, 20, neonCyan);
+    DrawText("HEARTH BLESSINGS", (int)panelRect.x + 40, (int)panelRect.y + 88, 22, safeGreen);
+    DrawText(TextFormat("VIGOR +30   COST: %d RENOWN   RANK: %d", hpUpgradeCost, player.hpUpgradeLevel), (int)panelRect.x + 40, (int)panelRect.y + 122, 20, WHITE);
+    DrawText("PRESS H TO INVEST", (int)panelRect.x + 536, (int)panelRect.y + 122, 20, neonCyan);
 
     const Weapon& browseWeapon = weaponDB[shop.browseWeaponIdx];
     DrawPanel({ panelRect.x + 24.0f, panelRect.y + 186.0f, 732.0f, 188.0f }, panel, browseWeapon.color);
-    DrawText("WEAPON VAULT", (int)panelRect.x + 40, (int)panelRect.y + 204, 22, browseWeapon.color);
+    DrawText("ARMORY RACK", (int)panelRect.x + 40, (int)panelRect.y + 204, 22, browseWeapon.color);
     DrawText(browseWeapon.name.c_str(), (int)panelRect.x + 40, (int)panelRect.y + 238, 30, WHITE);
     DrawText(TextFormat("RARITY: %s", browseWeapon.rarity.c_str()), (int)panelRect.x + 40, (int)panelRect.y + 278, 20, browseWeapon.color);
     DrawText(TextFormat("DAMAGE: %d", browseWeapon.damage), (int)panelRect.x + 260, (int)panelRect.y + 278, 20, WHITE);
@@ -1821,18 +2019,18 @@ void Game::DrawShop() const {
     DrawText(TextFormat("COST: %d XP", browseWeapon.cost), (int)panelRect.x + 600, (int)panelRect.y + 278, 20, neonGold);
 
     std::string stateLabel = shop.ownedWeapons[shop.browseWeaponIdx]
-        ? (player.equippedWeaponIdx == shop.browseWeaponIdx ? "EQUIPPED" : "OWNED")
-        : "UNOWNED";
+        ? (player.equippedWeaponIdx == shop.browseWeaponIdx ? "READIED" : "CLAIMED")
+        : "LOCKED";
     Color stateColor = shop.ownedWeapons[shop.browseWeaponIdx]
         ? (player.equippedWeaponIdx == shop.browseWeaponIdx ? neonCyan : safeGreen)
         : softRed;
 
     DrawText(TextFormat("STATUS: %s", stateLabel.c_str()), (int)panelRect.x + 40, (int)panelRect.y + 318, 22, stateColor);
-    DrawText("LEFT / RIGHT TO BROWSE   B TO BUY OR EQUIP", (int)panelRect.x + 300, (int)panelRect.y + 318, 20, RAYWHITE);
+    DrawText("LEFT / RIGHT TO BROWSE   B TO CLAIM OR READY", (int)panelRect.x + 246, (int)panelRect.y + 318, 20, RAYWHITE);
 
     DrawPanel({ panelRect.x + 24.0f, panelRect.y + 392.0f, 732.0f, 56.0f }, panel, neonBlue);
-    DrawText("E CLOSE", (int)panelRect.x + 40, (int)panelRect.y + 408, 20, neonBlue);
-    DrawText("BUY ONCE, EQUIP ANYTIME", (int)panelRect.x + 250, (int)panelRect.y + 408, 20, RAYWHITE);
+    DrawText("E LEAVE", (int)panelRect.x + 40, (int)panelRect.y + 408, 20, neonBlue);
+    DrawText("CLAIM ONCE, BEAR IT FOREVER", (int)panelRect.x + 220, (int)panelRect.y + 408, 20, RAYWHITE);
 
     if (shop.messageTimer > 0.0f) {
         DrawText(shop.message.c_str(), (int)panelRect.x + 560, (int)panelRect.y + 408, 20, shop.messageColor);
@@ -1841,11 +2039,11 @@ void Game::DrawShop() const {
 
 void Game::DrawGameOver() const {
     DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.72f));
-    DrawText("SIGNAL LOST", screenW / 2 - MeasureText("SIGNAL LOST", 56) / 2, 180, 56, softRed);
+    DrawText("FALLEN IN BATTLE", screenW / 2 - MeasureText("FALLEN IN BATTLE", 56) / 2, 180, 56, softRed);
     DrawText(TextFormat("WAVE REACHED: %d", player.wave), screenW / 2 - MeasureText(TextFormat("WAVE REACHED: %d", player.wave), 28) / 2, 280, 28, WHITE);
     DrawText(TextFormat("TOTAL KILLS: %d", player.kills), screenW / 2 - MeasureText(TextFormat("TOTAL KILLS: %d", player.kills), 28) / 2, 320, 28, WHITE);
     DrawText(TextFormat("XP BANKED: %d", player.xp), screenW / 2 - MeasureText(TextFormat("XP BANKED: %d", player.xp), 28) / 2, 360, 28, neonGold);
-    DrawText("PRESS ENTER TO REBOOT RUN", screenW / 2 - MeasureText("PRESS ENTER TO REBOOT RUN", 26) / 2, 450, 26, neonCyan);
+    DrawText("PRESS ENTER TO RIDE OUT AGAIN", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT AGAIN", 26) / 2, 450, 26, neonCyan);
 }
 
 void Game::DrawEnemySprite(const ActiveMonster& monster) const {
