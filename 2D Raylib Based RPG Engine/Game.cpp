@@ -64,6 +64,7 @@ Game::Game() {
 
     BuildColorTheme();
     BuildDatabases();
+    BuildQuestData();
     LoadProfile();
     BuildStars();
     BuildDungeon();
@@ -176,6 +177,33 @@ void Game::BuildDatabases() {
         {"THE ASHEN WYRM", 1100, 36, 1.3f, 42.0f, MAROON, true, 550},
         {"THE THORN KING", 1800, 48, 1.05f, 48.0f, bossPurple, true, 900}
     };
+}
+
+void Game::BuildQuestData() {
+    mainQuestDB = {
+        { "Path of the First Hunt", "Slay raiders and beasts beyond the keep.", QuestObjective::SlayFoes, 8, 10 },
+        { "Seal the Wild Courts", "Cleanse battle courts and make the roads safe.", QuestObjective::ClearCourts, 2, 14 },
+        { "Gather Old Blessings", "Claim relic blessings from conquered courts.", QuestObjective::ClaimBlessings, 2, 16 },
+        { "Break the Warband", "Bring down elite foes leading the assault.", QuestObjective::DefeatElites, 3, 20 },
+        { "Strike the Tyrant", "Defeat a roaming boss and return with proof.", QuestObjective::DefeatBosses, 1, 30 }
+    };
+
+    sideQuestDB = {
+        { "Ratcatcher's Call", "Cull wandering vermin and road trash.", QuestObjective::SlayFoes, 6, 5 },
+        { "Banner Road Patrol", "Clear courts so caravans can move again.", QuestObjective::ClearCourts, 1, 7 },
+        { "Relic Tithe", "Bring a blessing back to the keep.", QuestObjective::ClaimBlessings, 1, 6 },
+        { "Elite Hunt", "Track down hardened champions.", QuestObjective::DefeatElites, 1, 8 },
+        { "Warlord Bounty", "Claim a bounty on a great foe.", QuestObjective::DefeatBosses, 1, 14 },
+        { "Long Road Sweep", "Thin out a larger wave of hostiles.", QuestObjective::SlayFoes, 14, 9 },
+        { "Border Skirmish", "Clear repeated pressure from the roads.", QuestObjective::ClearCourts, 2, 11 }
+    };
+
+    if (sideQuestOfferIndices.size() != 3) {
+        sideQuestOfferIndices.assign(3, -1);
+        sideQuestProgress.assign(3, 0);
+        sideQuestAccepted.assign(3, false);
+        sideQuestReady.assign(3, false);
+    }
 }
 
 void Game::BuildStars() {
@@ -738,6 +766,82 @@ void Game::ApplyRelic(RelicType type) {
         player.maxHp += 18;
         player.hp = std::min(player.maxHp, player.hp + 24);
     }
+
+    AdvanceQuestObjective(QuestObjective::ClaimBlessings, 1);
+}
+
+void Game::AdvanceQuestObjective(QuestObjective objective, int amount) {
+    bool changed = false;
+
+    if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size() && !mainQuestReady) {
+        const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
+        if (mainQuest.objective == objective) {
+            int oldProgress = mainQuestProgress;
+            mainQuestProgress = std::min(mainQuest.target, mainQuestProgress + amount);
+            if (mainQuestProgress != oldProgress) {
+                changed = true;
+                if (mainQuestProgress >= mainQuest.target) {
+                    mainQuestReady = true;
+                    announcement = mainQuest.title + " // READY TO TURN IN";
+                    announcementTimer = 2.2f;
+                }
+            }
+        }
+    }
+
+    for (size_t i = 0; i < sideQuestOfferIndices.size(); ++i) {
+        int defIndex = sideQuestOfferIndices[i];
+        if (defIndex < 0 || defIndex >= (int)sideQuestDB.size() || !sideQuestAccepted[i] || sideQuestReady[i]) {
+            continue;
+        }
+
+        const QuestDefinition& quest = sideQuestDB[defIndex];
+        if (quest.objective != objective) {
+            continue;
+        }
+
+        int oldProgress = sideQuestProgress[i];
+        sideQuestProgress[i] = std::min(quest.target, sideQuestProgress[i] + amount);
+        if (sideQuestProgress[i] != oldProgress) {
+            changed = true;
+            if (sideQuestProgress[i] >= quest.target) {
+                sideQuestReady[i] = true;
+                announcement = quest.title + " // BOUNTY READY";
+                announcementTimer = 1.8f;
+            }
+        }
+    }
+
+    if (changed) {
+        SaveProfile();
+    }
+}
+
+void Game::RefreshSideQuestOffer(int slot) {
+    if (slot < 0 || slot >= (int)sideQuestOfferIndices.size() || sideQuestDB.empty()) {
+        return;
+    }
+
+    int candidate = std::rand() % (int)sideQuestDB.size();
+    for (int attempt = 0; attempt < 32; ++attempt) {
+        int test = std::rand() % (int)sideQuestDB.size();
+        bool alreadyUsed = false;
+        for (int i = 0; i < (int)sideQuestOfferIndices.size(); ++i) {
+            if (i != slot && sideQuestOfferIndices[i] == test) {
+                alreadyUsed = true;
+                break;
+            }
+        }
+        if (!alreadyUsed) {
+            candidate = test;
+            break;
+        }
+    }
+
+    sideQuestOfferIndices[slot] = candidate;
+    sideQuestProgress[slot] = 0;
+    sideQuestAccepted[slot] = false;
+    sideQuestReady[slot] = false;
 }
 
 bool Game::LoadProfile() {
@@ -748,42 +852,132 @@ bool Game::LoadProfile() {
     persistentHpUpgradeLevel = 0;
     persistentEquippedWeaponIdx = 0;
     legacyRenown = 0;
+    euro = 0;
+    mainQuestIndex = 0;
+    mainQuestProgress = 0;
+    mainQuestReady = false;
+    sideQuestOfferIndices.assign(3, -1);
+    sideQuestProgress.assign(3, 0);
+    sideQuestAccepted.assign(3, false);
+    sideQuestReady.assign(3, false);
 
     std::ifstream in("profile.txt");
     if (!in.is_open()) {
+        for (int i = 0; i < 3; ++i) RefreshSideQuestOffer(i);
         return false;
     }
 
     std::string header;
     in >> header;
-    if (header != "CROWNHEART_PROFILE_V1") {
+    if (header == "CROWNHEART_PROFILE_V1") {
+        in >> legacyRenown >> persistentHpUpgradeLevel >> persistentEquippedWeaponIdx;
+
+        size_t ownedCount = 0;
+        in >> ownedCount;
+        for (size_t i = 0; i < ownedCount; ++i) {
+            int owned = 0;
+            in >> owned;
+            if (i < persistentOwnedWeapons.size()) {
+                persistentOwnedWeapons[i] = (owned != 0);
+            }
+        }
+
+        for (int i = 0; i < 3; ++i) RefreshSideQuestOffer(i);
+    }
+    else if (header == "CROWNHEART_PROFILE_V2") {
+        in >> legacyRenown >> persistentHpUpgradeLevel >> persistentEquippedWeaponIdx >> euro;
+
+        size_t ownedCount = 0;
+        in >> ownedCount;
+        for (size_t i = 0; i < ownedCount; ++i) {
+            int owned = 0;
+            in >> owned;
+            if (i < persistentOwnedWeapons.size()) {
+                persistentOwnedWeapons[i] = (owned != 0);
+            }
+        }
+
+        in >> mainQuestIndex >> mainQuestProgress;
+        int mainReadyInt = 0;
+        in >> mainReadyInt;
+        mainQuestReady = (mainReadyInt != 0);
+
+        size_t offerCount = 0;
+        in >> offerCount;
+        for (size_t i = 0; i < offerCount; ++i) {
+            int value = -1;
+            in >> value;
+            if (i < sideQuestOfferIndices.size()) sideQuestOfferIndices[i] = value;
+        }
+
+        size_t progressCount = 0;
+        in >> progressCount;
+        for (size_t i = 0; i < progressCount; ++i) {
+            int value = 0;
+            in >> value;
+            if (i < sideQuestProgress.size()) sideQuestProgress[i] = value;
+        }
+
+        size_t acceptedCount = 0;
+        in >> acceptedCount;
+        for (size_t i = 0; i < acceptedCount; ++i) {
+            int value = 0;
+            in >> value;
+            if (i < sideQuestAccepted.size()) sideQuestAccepted[i] = (value != 0);
+        }
+
+        size_t readyCount = 0;
+        in >> readyCount;
+        for (size_t i = 0; i < readyCount; ++i) {
+            int value = 0;
+            in >> value;
+            if (i < sideQuestReady.size()) sideQuestReady[i] = (value != 0);
+        }
+    }
+    else {
+        for (int i = 0; i < 3; ++i) RefreshSideQuestOffer(i);
         return false;
     }
 
-    in >> legacyRenown >> persistentHpUpgradeLevel >> persistentEquippedWeaponIdx;
     if (legacyRenown < 0) legacyRenown = 0;
+    if (euro < 0) euro = 0;
     if (persistentHpUpgradeLevel < 0) persistentHpUpgradeLevel = 0;
     if (persistentEquippedWeaponIdx < 0 || persistentEquippedWeaponIdx >= (int)weaponDB.size()) {
         persistentEquippedWeaponIdx = 0;
     }
-
-    size_t ownedCount = 0;
-    in >> ownedCount;
-    for (size_t i = 0; i < ownedCount; ++i) {
-        int owned = 0;
-        in >> owned;
-        if (i < persistentOwnedWeapons.size()) {
-            persistentOwnedWeapons[i] = (owned != 0);
-        }
-    }
-
     if (!persistentOwnedWeapons.empty()) {
         persistentOwnedWeapons[0] = true;
         if (!persistentOwnedWeapons[persistentEquippedWeaponIdx]) {
             persistentEquippedWeaponIdx = 0;
         }
     }
+    if (mainQuestIndex < 0) mainQuestIndex = 0;
+    if (mainQuestIndex >= (int)mainQuestDB.size()) {
+        mainQuestIndex = (int)mainQuestDB.size();
+        mainQuestProgress = 0;
+        mainQuestReady = false;
+    }
+    else if (!mainQuestDB.empty()) {
+        mainQuestProgress = std::min(mainQuestProgress, mainQuestDB[mainQuestIndex].target);
+        if (mainQuestProgress < mainQuestDB[mainQuestIndex].target) {
+            mainQuestReady = false;
+        }
+    }
 
+    for (int i = 0; i < 3; ++i) {
+        if (sideQuestOfferIndices[i] < 0 || sideQuestOfferIndices[i] >= (int)sideQuestDB.size()) {
+            RefreshSideQuestOffer(i);
+            continue;
+        }
+
+        sideQuestProgress[i] = std::max(0, sideQuestProgress[i]);
+        int target = sideQuestDB[sideQuestOfferIndices[i]].target;
+        if (sideQuestProgress[i] > target) sideQuestProgress[i] = target;
+        if (!sideQuestAccepted[i]) sideQuestReady[i] = false;
+        if (sideQuestAccepted[i] && sideQuestProgress[i] >= target) sideQuestReady[i] = true;
+    }
+
+    SaveProfile();
     return true;
 }
 
@@ -793,12 +987,31 @@ void Game::SaveProfile() const {
         return;
     }
 
-    out << "CROWNHEART_PROFILE_V1\n";
-    out << legacyRenown << ' ' << persistentHpUpgradeLevel << ' ' << persistentEquippedWeaponIdx << '\n';
+    out << "CROWNHEART_PROFILE_V2\n";
+    out << legacyRenown << ' ' << persistentHpUpgradeLevel << ' ' << persistentEquippedWeaponIdx << ' ' << euro << '\n';
+
     out << persistentOwnedWeapons.size();
     for (bool owned : persistentOwnedWeapons) {
         out << ' ' << (owned ? 1 : 0);
     }
+    out << '\n';
+
+    out << mainQuestIndex << ' ' << mainQuestProgress << ' ' << (mainQuestReady ? 1 : 0) << '\n';
+
+    out << sideQuestOfferIndices.size();
+    for (int value : sideQuestOfferIndices) out << ' ' << value;
+    out << '\n';
+
+    out << sideQuestProgress.size();
+    for (int value : sideQuestProgress) out << ' ' << value;
+    out << '\n';
+
+    out << sideQuestAccepted.size();
+    for (bool value : sideQuestAccepted) out << ' ' << (value ? 1 : 0);
+    out << '\n';
+
+    out << sideQuestReady.size();
+    for (bool value : sideQuestReady) out << ' ' << (value ? 1 : 0);
     out << '\n';
 }
 
@@ -899,6 +1112,7 @@ bool Game::LoadRun() {
 
     rewardChestActive = (rewardChestFlag != 0);
     rewardSelectionOpen = false;
+    questBoardOpen = false;
 
     if (player.equippedWeaponIdx < 0 || player.equippedWeaponIdx >= (int)weaponDB.size()) {
         player.equippedWeaponIdx = 0;
@@ -989,6 +1203,11 @@ bool Game::LoadRun() {
         return false;
     }
 
+    persistentOwnedWeapons = shop.ownedWeapons;
+    persistentHpUpgradeLevel = player.hpUpgradeLevel;
+    persistentEquippedWeaponIdx = player.equippedWeaponIdx;
+    SaveProfile();
+
     shop.isOpen = false;
     shop.message.clear();
     shop.messageTimer = 0.0f;
@@ -1028,6 +1247,7 @@ void Game::ResetRun() {
     rewardChoices.clear();
     rewardChestActive = false;
     rewardSelectionOpen = false;
+    questBoardOpen = false;
     rewardChestPos = { 0.0f, 0.0f };
     waveTargetRoomIndex = -1;
     lockedRoomIndex = -1;
@@ -1242,14 +1462,65 @@ void Game::UpdatePlaying(float dt) {
     if (rewardChestActive && !rewardSelectionOpen && Distance(player.pos, rewardChestPos) < 72.0f && IsKeyPressed(KEY_E)) {
         BuildRewardChoices();
         rewardSelectionOpen = true;
+        questBoardOpen = false;
+        shop.isOpen = false;
     }
 
-    if (inSafeZone && !rewardSelectionOpen && IsKeyPressed(KEY_E)) {
+    if (inSafeZone && !rewardSelectionOpen && IsKeyPressed(KEY_Q)) {
+        questBoardOpen = !questBoardOpen;
+        if (questBoardOpen) {
+            shop.isOpen = false;
+        }
+    }
+
+    if (questBoardOpen) {
+        if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size() && mainQuestReady && IsKeyPressed(KEY_E)) {
+            euro += mainQuestDB[mainQuestIndex].euroReward;
+            announcement = mainQuestDB[mainQuestIndex].title + " // EURO CLAIMED";
+            announcementTimer = 2.2f;
+            mainQuestIndex++;
+            mainQuestProgress = 0;
+            mainQuestReady = false;
+            SaveProfile();
+        }
+
+        const int sideKeys[3] = { KEY_ONE, KEY_TWO, KEY_THREE };
+        for (int i = 0; i < 3; ++i) {
+            if (!IsKeyPressed(sideKeys[i])) {
+                continue;
+            }
+
+            int defIndex = sideQuestOfferIndices[i];
+            if (defIndex < 0 || defIndex >= (int)sideQuestDB.size()) {
+                continue;
+            }
+
+            const QuestDefinition& quest = sideQuestDB[defIndex];
+            if (!sideQuestAccepted[i]) {
+                sideQuestAccepted[i] = true;
+                sideQuestProgress[i] = 0;
+                sideQuestReady[i] = false;
+                announcement = quest.title + " // CONTRACT TAKEN";
+                announcementTimer = 2.0f;
+                SaveProfile();
+            }
+            else if (sideQuestReady[i]) {
+                euro += quest.euroReward;
+                announcement = quest.title + " // EURO CLAIMED";
+                announcementTimer = 2.0f;
+                RefreshSideQuestOffer(i);
+                SaveProfile();
+            }
+        }
+    }
+
+    if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_E)) {
         shop.isOpen = !shop.isOpen;
         shop.browseWeaponIdx = player.equippedWeaponIdx;
     }
     if (!inSafeZone) {
         shop.isOpen = false;
+        questBoardOpen = false;
     }
 
     if (!rewardChestActive && lockedRoomIndex < 0 && currentArea != nullptr) {
@@ -1281,7 +1552,7 @@ void Game::UpdatePlaying(float dt) {
     }
 
     Vector2 moveInput = { 0.0f, 0.0f };
-    if (!shop.isOpen && !rewardSelectionOpen) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen) {
         if (IsKeyDown(KEY_W)) moveInput.y -= 1.0f;
         if (IsKeyDown(KEY_S)) moveInput.y += 1.0f;
         if (IsKeyDown(KEY_A)) moveInput.x -= 1.0f;
@@ -1305,7 +1576,7 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && IsKeyPressed(KEY_SPACE) && player.attackCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_SPACE) && player.attackCd <= 0.0f) {
         player.attackCd = GetAttackCooldown();
         const Weapon& weapon = weaponDB[player.equippedWeaponIdx];
         bool hitSomething = false;
@@ -1343,7 +1614,7 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && IsKeyPressed(KEY_ONE) && player.dashCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_ONE) && player.dashCd <= 0.0f) {
         player.dashCd = GetDashCooldown();
         Vector2 dashDir = player.aimDir;
         if (dashDir.x == 0.0f && dashDir.y == 0.0f) {
@@ -1360,7 +1631,7 @@ void Game::UpdatePlaying(float dt) {
         screenShake = std::max(screenShake, 6.0f);
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && IsKeyPressed(KEY_TWO) && player.empCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_TWO) && player.empCd <= 0.0f) {
         player.empCd = 30.0f;
         int empDamage = GetEmpDamage();
         float empRadius = GetEmpRadius();
@@ -1381,7 +1652,7 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && IsKeyPressed(KEY_THREE) && player.turretCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_THREE) && player.turretCd <= 0.0f) {
         player.turretCd = 12.0f;
         turrets.push_back({ player.pos, GetTurretLifetime(), 0.25f });
         EmitBurst(player.pos, 18, 3.0f, neonBlue, 3.8f);
@@ -1492,6 +1763,13 @@ void Game::UpdatePlaying(float dt) {
             shockwaves.push_back({ it->pos, 12.0f, it->isBoss ? 220.0f : (it->isElite ? 120.0f : 90.0f), it->isBoss ? 0.55f : 0.22f, it->isBoss ? 0.55f : 0.22f, Fade(it->color, 0.8f) });
             AddFloatingText(it->pos, it->name + " DOWN", it->isBoss ? neonGold : (it->isElite ? neonPink : WHITE));
             player.kills++;
+            AdvanceQuestObjective(QuestObjective::SlayFoes, 1);
+            if (it->isElite) {
+                AdvanceQuestObjective(QuestObjective::DefeatElites, 1);
+            }
+            if (it->isBoss) {
+                AdvanceQuestObjective(QuestObjective::DefeatBosses, 1);
+            }
             hitStopTimer = std::max(hitStopTimer, it->isBoss ? 0.08f : (it->isElite ? 0.05f : 0.0f));
             screenShake = std::max(screenShake, it->isBoss ? 14.0f : (it->isElite ? 7.0f : 4.0f));
             it = monsters.erase(it);
@@ -1596,6 +1874,7 @@ void Game::UpdatePlaying(float dt) {
             rewardChestPos = { room.x + room.width * 0.5f, room.y + room.height * 0.5f };
             announcement = dungeon.rooms[lockedRoomIndex].name + " // PATH SECURED";
             announcementTimer = 2.2f;
+            AdvanceQuestObjective(QuestObjective::ClearCourts, 1);
             lockedRoomIndex = -1;
             hitStopTimer = std::max(hitStopTimer, 0.06f);
             SaveRun();
@@ -1728,6 +2007,10 @@ void Game::Draw() const {
 
         if (shop.isOpen) {
             DrawShop();
+        }
+
+        if (questBoardOpen) {
+            DrawQuestBoard();
         }
 
         if (gameState == GameState::GameOver) {
@@ -1992,7 +2275,7 @@ void Game::DrawWorld() const {
 }
 
 void Game::DrawHud() const {
-    DrawPanel({ 18.0f, 18.0f, 420.0f, 158.0f }, panel, neonBlue);
+    DrawPanel({ 18.0f, 18.0f, 420.0f, 172.0f }, panel, neonBlue);
     DrawText("ADVENTURER'S KIT", 34, 28, 20, neonCyan);
     DrawText(TextFormat("WEAPON: %s", weaponDB[player.equippedWeaponIdx].name.c_str()), 34, 54, 18, WHITE);
     DrawText(TextFormat("WAVE %d", player.wave), 300, 28, 20, neonGold);
@@ -2006,12 +2289,45 @@ void Game::DrawHud() const {
     DrawRectangle(34, 118, 250, 12, Fade(WHITE, 0.12f));
     DrawRectangle(34, 118, (int)ClampFloat((float)player.xp / 3000.0f * 250.0f, 0.0f, 250.0f), 12, neonGold);
     DrawText(TextFormat("RENOWN %d", player.xp), 294, 112, 16, neonGold);
+    DrawText(TextFormat("EURO %d", euro), 34, 142, 18, { 85, 140, 86, 255 });
+    DrawText(TextFormat("HEIRLOOM %d", legacyRenown), 170, 142, 18, { 130, 104, 60, 255 });
 
-    DrawPanel({ 18.0f, 188.0f, 300.0f, 118.0f }, panel, neonPink);
-    DrawText("ABILITIES", 32, 200, 18, neonPink);
-    DrawText(TextFormat("1 DASH    %.1fs", player.dashCd), 32, 226, 18, player.dashCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("2 NOVA    %.1fs", player.empCd), 32, 250, 18, player.empCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("3 TOTEM   %.1fs", player.turretCd), 32, 274, 18, player.turretCd <= 0.0f ? neonCyan : GRAY);
+    DrawPanel({ 18.0f, 198.0f, 300.0f, 118.0f }, panel, neonPink);
+    DrawText("ABILITIES", 32, 210, 18, neonPink);
+    DrawText(TextFormat("1 DASH    %.1fs", player.dashCd), 32, 236, 18, player.dashCd <= 0.0f ? neonCyan : GRAY);
+    DrawText(TextFormat("2 NOVA    %.1fs", player.empCd), 32, 260, 18, player.empCd <= 0.0f ? neonCyan : GRAY);
+    DrawText(TextFormat("3 TOTEM   %.1fs", player.turretCd), 32, 284, 18, player.turretCd <= 0.0f ? neonCyan : GRAY);
+
+    DrawPanel({ 18.0f, 328.0f, 420.0f, 188.0f }, panel, neonGold);
+    DrawText("QUEST LEDGER", 34, 340, 20, neonGold);
+    if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size()) {
+        const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
+        DrawText(mainQuest.title.c_str(), 34, 366, 18, WHITE);
+        DrawText(mainQuest.description.c_str(), 34, 388, 16, RAYWHITE);
+        DrawText(TextFormat("MAIN %d / %d %s", mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), 34, 410, 16, mainQuestReady ? safeGreen : neonGold);
+        if (mainQuestReady) {
+            DrawText(TextFormat("READY: RETURN TO QUEST BOARD FOR %d EURO", mainQuest.euroReward), 34, 432, 16, safeGreen);
+        }
+    }
+    else {
+        DrawText("The current main charter is complete.", 34, 374, 18, WHITE);
+        DrawText("More story quests will arrive with the next world batch.", 34, 404, 16, RAYWHITE);
+    }
+
+    int sideRowY = 454;
+    bool hasSideQuest = false;
+    for (int i = 0; i < 3; ++i) {
+        if (!sideQuestAccepted[i]) {
+            continue;
+        }
+        hasSideQuest = true;
+        const QuestDefinition& sideQuest = sideQuestDB[sideQuestOfferIndices[i]];
+        DrawText(TextFormat("SIDE: %s  %d/%d", sideQuest.title.c_str(), sideQuestProgress[i], sideQuest.target), 34, sideRowY, 16, sideQuestReady[i] ? safeGreen : neonCyan);
+        sideRowY += 18;
+    }
+    if (!hasSideQuest) {
+        DrawText("No side contracts taken. Visit the board in the keep.", 34, 454, 16, RAYWHITE);
+    }
 
     DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 150.0f }, panel, safeGreen);
     DrawText("REGION READOUT", screenW - 334, 28, 20, safeGreen);
@@ -2028,8 +2344,11 @@ void Game::DrawHud() const {
     if (rewardChestActive && !rewardSelectionOpen && Distance(player.pos, rewardChestPos) < 72.0f) {
         DrawText("RELIC CHEST READY // PRESS E TO CLAIM A BLESSING", 22, screenH - 34, 18, neonGold);
     }
+    else if (questBoardOpen) {
+        DrawText("QUEST BOARD OPEN // E CLAIM MAIN QUEST // 1-3 ACCEPT OR TURN IN SIDE CONTRACTS // Q CLOSE", 22, screenH - 34, 18, neonGold);
+    }
     else if (inSafeZone) {
-        DrawText("SAFE COURTYARD // PRESS E FOR THE KEEP ARMORY // RIDE OUT THROUGH ANY OPEN ROAD", 22, screenH - 34, 18, safeGreen);
+        DrawText("SAFE COURTYARD // PRESS E FOR THE KEEP ARMORY // PRESS Q FOR THE QUEST BOARD", 22, screenH - 34, 18, safeGreen);
     }
     else {
         DrawText("WASD MOVE   SPACE SWING   1 DASH   2 NOVA   3 TOTEM   HOLD THE ROADS, CLEAR THE COURTS", 22, screenH - 34, 18, RAYWHITE);
@@ -2180,7 +2499,8 @@ void Game::DrawShop() const {
     DrawPanel(panelRect, panel2, neonGold);
 
     DrawText("KEEP ARMORY", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
-    DrawText(TextFormat("RENOWN HELD: %d", player.xp), (int)panelRect.x + 518, (int)panelRect.y + 28, 20, safeGreen);
+    DrawText(TextFormat("RENOWN HELD: %d", player.xp), (int)panelRect.x + 472, (int)panelRect.y + 24, 20, safeGreen);
+    DrawText(TextFormat("EURO: %d", euro), (int)panelRect.x + 600, (int)panelRect.y + 52, 18, neonGold);
 
     int hpUpgradeCost = 100 + player.hpUpgradeLevel * 90;
     DrawPanel({ panelRect.x + 24.0f, panelRect.y + 72.0f, 732.0f, 94.0f }, panel, safeGreen);
@@ -2195,7 +2515,7 @@ void Game::DrawShop() const {
     DrawText(TextFormat("RARITY: %s", browseWeapon.rarity.c_str()), (int)panelRect.x + 40, (int)panelRect.y + 278, 20, browseWeapon.color);
     DrawText(TextFormat("DAMAGE: %d", browseWeapon.damage), (int)panelRect.x + 260, (int)panelRect.y + 278, 20, WHITE);
     DrawText(TextFormat("RANGE: %.0f", browseWeapon.range), (int)panelRect.x + 430, (int)panelRect.y + 278, 20, WHITE);
-    DrawText(TextFormat("COST: %d XP", browseWeapon.cost), (int)panelRect.x + 600, (int)panelRect.y + 278, 20, neonGold);
+    DrawText(TextFormat("COST: %d RENOWN", browseWeapon.cost), (int)panelRect.x + 520, (int)panelRect.y + 278, 20, neonGold);
 
     std::string stateLabel = shop.ownedWeapons[shop.browseWeaponIdx]
         ? (player.equippedWeaponIdx == shop.browseWeaponIdx ? "READIED" : "CLAIMED")
@@ -2216,13 +2536,63 @@ void Game::DrawShop() const {
     }
 }
 
+void Game::DrawQuestBoard() const {
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.58f));
+
+    Rectangle panelRect = { screenW * 0.5f - 470.0f, screenH * 0.5f - 250.0f, 940.0f, 500.0f };
+    DrawPanel(panelRect, panel2, neonGold);
+    DrawText("KEEP QUEST BOARD", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonGold);
+    DrawText(TextFormat("EURO HELD: %d", euro), (int)panelRect.x + 700, (int)panelRect.y + 28, 22, safeGreen);
+
+    Rectangle mainCard = { panelRect.x + 26.0f, panelRect.y + 72.0f, panelRect.width - 52.0f, 128.0f };
+    DrawPanel(mainCard, panel, neonGold);
+    DrawText("MAIN CHARTER", (int)mainCard.x + 18, (int)mainCard.y + 14, 20, neonGold);
+    if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size()) {
+        const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
+        DrawText(mainQuest.title.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 42, 24, WHITE);
+        DrawText(mainQuest.description.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 74, 18, RAYWHITE);
+        DrawText(TextFormat("PROGRESS %d / %d %s", mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), (int)mainCard.x + 18, (int)mainCard.y + 98, 18, mainQuestReady ? safeGreen : neonBlue);
+        DrawText(mainQuestReady ? TextFormat("PRESS E TO CLAIM %d EURO", mainQuest.euroReward) : "ADVANCE THIS QUEST OUT IN THE WILDS", (int)mainCard.x + 560, (int)mainCard.y + 98, 18, mainQuestReady ? safeGreen : RAYWHITE);
+    }
+    else {
+        DrawText("ALL CURRENT MAIN CHARTERS ARE COMPLETE", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, WHITE);
+        DrawText("MORE WILL ARRIVE WITH THE NEXT CONTENT BATCH.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, RAYWHITE);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        Rectangle card = { panelRect.x + 28.0f + i * 295.0f, panelRect.y + 226.0f, 265.0f, 214.0f };
+        DrawPanel(card, panel, neonBlue);
+
+        int defIndex = sideQuestOfferIndices[i];
+        if (defIndex < 0 || defIndex >= (int)sideQuestDB.size()) {
+            DrawText("EMPTY NOTICE", (int)card.x + 18, (int)card.y + 36, 22, WHITE);
+            continue;
+        }
+
+        const QuestDefinition& quest = sideQuestDB[defIndex];
+        DrawText(TextFormat("SIDE %d", i + 1), (int)card.x + 18, (int)card.y + 14, 18, neonBlue);
+        DrawText(quest.title.c_str(), (int)card.x + 18, (int)card.y + 42, 22, WHITE);
+        DrawText(quest.description.c_str(), (int)card.x + 18, (int)card.y + 76, 18, RAYWHITE);
+        DrawText(TextFormat("GOAL %d / %d %s", sideQuestProgress[i], quest.target, QuestObjectiveLabel(quest.objective)), (int)card.x + 18, (int)card.y + 120, 18, sideQuestReady[i] ? safeGreen : neonGold);
+        DrawText(TextFormat("REWARD %d EURO", quest.euroReward), (int)card.x + 18, (int)card.y + 150, 18, safeGreen);
+
+        const char* status = sideQuestAccepted[i] ? (sideQuestReady[i] ? "PRESS TO TURN IN" : "CONTRACT ACTIVE") : "PRESS TO ACCEPT";
+        Color statusColor = sideQuestAccepted[i] ? (sideQuestReady[i] ? safeGreen : neonCyan) : neonBlue;
+        DrawText(TextFormat("%d  %s", i + 1, status), (int)card.x + 18, (int)card.y + 178, 18, statusColor);
+    }
+
+    DrawText("Q CLOSE BOARD", (int)panelRect.x + 30, (int)panelRect.y + 460, 18, neonBlue);
+    DrawText("COMPLETE CHARTERS TO EARN EURO. EURO WILL MATTER FOR PETS IN THE NEXT BATCH.", (int)panelRect.x + 210, (int)panelRect.y + 460, 18, RAYWHITE);
+}
+
 void Game::DrawGameOver() const {
     DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.72f));
     DrawText("FALLEN IN BATTLE", screenW / 2 - MeasureText("FALLEN IN BATTLE", 56) / 2, 180, 56, softRed);
     DrawText(TextFormat("WAVE REACHED: %d", player.wave), screenW / 2 - MeasureText(TextFormat("WAVE REACHED: %d", player.wave), 28) / 2, 280, 28, WHITE);
     DrawText(TextFormat("TOTAL KILLS: %d", player.kills), screenW / 2 - MeasureText(TextFormat("TOTAL KILLS: %d", player.kills), 28) / 2, 320, 28, WHITE);
     DrawText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), screenW / 2 - MeasureText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), 28) / 2, 360, 28, neonGold);
-    DrawText("WEAPONS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 404, 22, RAYWHITE);
+    DrawText(TextFormat("EURO KEPT: %d", euro), screenW / 2 - MeasureText(TextFormat("EURO KEPT: %d", euro), 24) / 2, 396, 24, safeGreen);
+    DrawText("WEAPONS, EURO, QUESTS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS, EURO, QUESTS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 430, 22, RAYWHITE);
     DrawText("PRESS ENTER TO RIDE OUT AGAIN", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT AGAIN", 26) / 2, 456, 26, neonCyan);
 }
 

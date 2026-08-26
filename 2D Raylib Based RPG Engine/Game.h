@@ -10,6 +10,7 @@
 #include "Dungeon.h"
 #include "Relic.h"
 #include "Tilemap.h"
+#include "Quest.h"
 
 enum class GameState {
     Title,
@@ -58,12 +59,23 @@ private:
     int lockedRoomIndex = -1;
     bool rewardChestActive = false;
     bool rewardSelectionOpen = false;
+    bool questBoardOpen = false;
     Vector2 rewardChestPos = { 0.0f, 0.0f };
     std::vector<RelicType> relics;
     std::vector<RelicChoice> rewardChoices;
+    int euro = 0;
+    int mainQuestIndex = 0;
+    int mainQuestProgress = 0;
+    bool mainQuestReady = false;
 
     std::vector<Weapon> weaponDB;
     std::vector<MonsterType> monsterTypes;
+    std::vector<QuestDefinition> mainQuestDB;
+    std::vector<QuestDefinition> sideQuestDB;
+    std::vector<int> sideQuestOfferIndices;
+    std::vector<int> sideQuestProgress;
+    std::vector<bool> sideQuestAccepted;
+    std::vector<bool> sideQuestReady;
     std::vector<Star> stars;
     std::vector<bool> persistentOwnedWeapons;
     int persistentHpUpgradeLevel = 0;
@@ -86,6 +98,7 @@ private:
 
     void BuildColorTheme();
     void BuildDatabases();
+    void BuildQuestData();
     void BuildStars();
     void BuildDungeon();
     void BuildTileMap();
@@ -111,6 +124,8 @@ private:
     int GetHealPickupValue(int baseValue) const;
     void BuildRewardChoices();
     void ApplyRelic(RelicType type);
+    void AdvanceQuestObjective(QuestObjective objective, int amount = 1);
+    void RefreshSideQuestOffer(int slot);
     bool HasSaveFile() const;
     bool LoadRun();
     bool LoadProfile();
@@ -140,6 +155,7 @@ private:
     void DrawMiniMap() const;
     void DrawRewardOverlay() const;
     void DrawShop() const;
+    void DrawQuestBoard() const;
     void DrawGameOver() const;
     void DrawEnemySprite(const ActiveMonster& monster) const;
 };
