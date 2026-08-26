@@ -12,6 +12,13 @@
 #include "Tilemap.h"
 #include "Quest.h"
 
+enum class WorldId {
+    Crownheart = 0,
+    Frostveil = 1,
+    Sunscar = 2,
+    Mirethorn = 3
+};
+
 enum class GameState {
     Title,
     Playing,
@@ -60,10 +67,12 @@ private:
     bool rewardChestActive = false;
     bool rewardSelectionOpen = false;
     bool questBoardOpen = false;
+    bool realmMapOpen = false;
     Vector2 rewardChestPos = { 0.0f, 0.0f };
     std::vector<RelicType> relics;
     std::vector<RelicChoice> rewardChoices;
     int euro = 0;
+    WorldId currentWorld = WorldId::Crownheart;
     int mainQuestIndex = 0;
     int mainQuestProgress = 0;
     bool mainQuestReady = false;
@@ -126,6 +135,8 @@ private:
     void ApplyRelic(RelicType type);
     void AdvanceQuestObjective(QuestObjective objective, int amount = 1);
     void RefreshSideQuestOffer(int slot);
+    bool IsWorldUnlocked(WorldId world) const;
+    void TravelToWorld(WorldId world);
     bool HasSaveFile() const;
     bool LoadRun();
     bool LoadProfile();
@@ -156,6 +167,7 @@ private:
     void DrawRewardOverlay() const;
     void DrawShop() const;
     void DrawQuestBoard() const;
+    void DrawRealmMap() const;
     void DrawGameOver() const;
     void DrawEnemySprite(const ActiveMonster& monster) const;
 };

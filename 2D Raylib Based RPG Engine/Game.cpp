@@ -52,6 +52,56 @@ static std::string FindAssetPath(const std::string& relativePath) {
     return relativePath;
 }
 
+static const char* WorldLabel(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return "CROWNHEART KEEP";
+    case WorldId::Frostveil: return "FROSTVEIL PASS";
+    case WorldId::Sunscar: return "SUNSCAR DUNES";
+    case WorldId::Mirethorn: return "MIRETHORN HOLLOW";
+    }
+    return "UNKNOWN REALM";
+}
+
+static const char* WorldBlurb(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return "Green courts, safe roads, and the keep at the heart of the realm.";
+    case WorldId::Frostveil: return "Frozen trails, pale shrines, and narrow passes haunted by the cold.";
+    case WorldId::Sunscar: return "Wide dunes, caravan ruins, and bright stone roads under harsh suns.";
+    case WorldId::Mirethorn: return "Bog paths, rotten bridges, and marsh courts wrapped in fog.";
+    }
+    return "";
+}
+
+static Color WorldGrassTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return WHITE;
+    case WorldId::Frostveil: return { 214, 232, 255, 255 };
+    case WorldId::Sunscar: return { 228, 212, 135, 255 };
+    case WorldId::Mirethorn: return { 160, 184, 122, 255 };
+    }
+    return WHITE;
+}
+
+static Color WorldRoadTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return WHITE;
+    case WorldId::Frostveil: return { 232, 240, 252, 255 };
+    case WorldId::Sunscar: return { 243, 218, 157, 255 };
+    case WorldId::Mirethorn: return { 193, 177, 125, 255 };
+    }
+    return WHITE;
+}
+
+static Color WorldAccentTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 88, 128, 204, 255 };
+    case WorldId::Frostveil: return { 116, 160, 220, 255 };
+    case WorldId::Sunscar: return { 201, 142, 63, 255 };
+    case WorldId::Mirethorn: return { 100, 128, 82, 255 };
+    }
+    return WHITE;
+}
+
 Game::Game() {
     std::srand((unsigned int)std::time(nullptr));
 
@@ -221,37 +271,6 @@ void Game::BuildStars() {
 void Game::BuildDungeon() {
     dungeon = DungeonMap{};
 
-    dungeon.rooms = {
-        { { -480.0f, -360.0f, 960.0f, 720.0f }, "CROWNHEART KEEP", true, false },
-        { { 760.0f, -300.0f, 760.0f, 600.0f }, "SUNFORGE COURT", false, true },
-        { { -1520.0f, -300.0f, 760.0f, 600.0f }, "BRAMBLE WARD", false, true },
-        { { -360.0f, -1360.0f, 720.0f, 560.0f }, "MOONSPRING ASCENT", false, true },
-        { { -360.0f, 800.0f, 720.0f, 560.0f }, "EMBER ROAD", false, true },
-        { { 760.0f, -1260.0f, 760.0f, 520.0f }, "WYVERN WATCH", false, true },
-        { { 760.0f, 740.0f, 760.0f, 520.0f }, "GILDED FIELDS", false, true },
-        { { -1520.0f, -1260.0f, 760.0f, 520.0f }, "WHISPER GROVE", false, true },
-        { { -1520.0f, 740.0f, 760.0f, 520.0f }, "ROOTGLEN HOLD", false, true },
-        { { 180.0f, -820.0f, 320.0f, 240.0f }, "PILGRIM'S NOOK", false, false },
-        { { -560.0f, 470.0f, 320.0f, 220.0f }, "MOSSY CELLAR", false, false },
-        { { 1560.0f, -1040.0f, 300.0f, 220.0f }, "FALCONER'S LEDGE", false, false },
-        { { -1860.0f, 900.0f, 300.0f, 220.0f }, "SMUGGLER'S COVE", false, false }
-    };
-
-    dungeon.corridors = {
-        { 420.0f, -110.0f, 420.0f, 220.0f },
-        { -840.0f, -110.0f, 420.0f, 220.0f },
-        { -110.0f, -860.0f, 220.0f, 560.0f },
-        { -110.0f, 300.0f, 220.0f, 560.0f },
-        { 1040.0f, -860.0f, 200.0f, 620.0f },
-        { 1040.0f, 240.0f, 200.0f, 620.0f },
-        { -1240.0f, -860.0f, 200.0f, 620.0f },
-        { -1240.0f, 240.0f, 200.0f, 620.0f },
-        { 110.0f, -710.0f, 110.0f, 120.0f },
-        { -240.0f, 520.0f, 130.0f, 120.0f },
-        { 1490.0f, -970.0f, 140.0f, 80.0f },
-        { -1600.0f, 970.0f, 100.0f, 80.0f }
-    };
-
     auto AddObstacle = [&](Rectangle rect, Color color, int spriteIndex, float spriteScale, std::initializer_list<Rectangle> colliders) {
         DungeonObstacle obstacle{};
         obstacle.rect = rect;
@@ -281,48 +300,191 @@ void Game::BuildDungeon() {
         return Rectangle{ rect.x + rect.width * 0.27f, rect.y + rect.height * 0.48f, rect.width * 0.42f, rect.height * 0.28f };
         };
 
-    AddObstacle({ -96.0f, -44.0f, 192.0f, 168.0f }, { 114, 101, 85, 255 }, 5, 1.82f, {
-        { -72.0f, 34.0f, 30.0f, 60.0f },
-        { -22.0f, 54.0f, 44.0f, 42.0f },
-        { 42.0f, 34.0f, 30.0f, 60.0f }
-        });
-    AddObstacle({ -258.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f, { TowerCollider({ -258.0f, 46.0f, 76.0f, 118.0f }) });
-    AddObstacle({ 182.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f, { TowerCollider({ 182.0f, 46.0f, 76.0f, 118.0f }) });
-    AddObstacle({ -328.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f, { SignCollider({ -328.0f, 136.0f, 42.0f, 62.0f }) });
-    AddObstacle({ 286.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f, { SignCollider({ 286.0f, 136.0f, 42.0f, 62.0f }) });
+    switch (currentWorld) {
+    case WorldId::Crownheart:
+        dungeon.rooms = {
+            { { -480.0f, -360.0f, 960.0f, 720.0f }, "CROWNHEART KEEP", true, false },
+            { { 760.0f, -300.0f, 760.0f, 600.0f }, "SUNFORGE COURT", false, true },
+            { { -1520.0f, -300.0f, 760.0f, 600.0f }, "BRAMBLE WARD", false, true },
+            { { -360.0f, -1360.0f, 720.0f, 560.0f }, "MOONSPRING ASCENT", false, true },
+            { { -360.0f, 800.0f, 720.0f, 560.0f }, "EMBER ROAD", false, true },
+            { { 760.0f, -1260.0f, 760.0f, 520.0f }, "WYVERN WATCH", false, true },
+            { { 760.0f, 740.0f, 760.0f, 520.0f }, "GILDED FIELDS", false, true },
+            { { -1520.0f, -1260.0f, 760.0f, 520.0f }, "WHISPER GROVE", false, true },
+            { { -1520.0f, 740.0f, 760.0f, 520.0f }, "ROOTGLEN HOLD", false, true },
+            { { 180.0f, -820.0f, 320.0f, 240.0f }, "PILGRIM'S NOOK", false, false },
+            { { -560.0f, 470.0f, 320.0f, 220.0f }, "MOSSY CELLAR", false, false },
+            { { 1560.0f, -1040.0f, 300.0f, 220.0f }, "FALCONER'S LEDGE", false, false },
+            { { -1860.0f, 900.0f, 300.0f, 220.0f }, "SMUGGLER'S COVE", false, false }
+        };
+        dungeon.corridors = {
+            { 420.0f, -110.0f, 420.0f, 220.0f },
+            { -840.0f, -110.0f, 420.0f, 220.0f },
+            { -110.0f, -860.0f, 220.0f, 560.0f },
+            { -110.0f, 300.0f, 220.0f, 560.0f },
+            { 1040.0f, -860.0f, 200.0f, 620.0f },
+            { 1040.0f, 240.0f, 200.0f, 620.0f },
+            { -1240.0f, -860.0f, 200.0f, 620.0f },
+            { -1240.0f, 240.0f, 200.0f, 620.0f },
+            { 110.0f, -710.0f, 110.0f, 120.0f },
+            { -240.0f, 520.0f, 130.0f, 120.0f },
+            { 1490.0f, -970.0f, 140.0f, 80.0f },
+            { -1600.0f, 970.0f, 100.0f, 80.0f }
+        };
 
-    AddObstacle({ 930.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f, { TreeTrunk({ 930.0f, -186.0f, 92.0f, 126.0f }), TreeRoots({ 930.0f, -186.0f, 92.0f, 126.0f }) });
-    AddObstacle({ 1162.0f, -34.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 1162.0f, -34.0f, 96.0f, 78.0f }) });
-    AddObstacle({ 1272.0f, 92.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1272.0f, 92.0f, 110.0f, 104.0f }) });
+        AddObstacle({ -96.0f, -44.0f, 192.0f, 168.0f }, { 114, 101, 85, 255 }, 5, 1.82f, {
+            { -72.0f, 34.0f, 30.0f, 60.0f }, { -22.0f, 54.0f, 44.0f, 42.0f }, { 42.0f, 34.0f, 30.0f, 60.0f }
+            });
+        AddObstacle({ -258.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f, { TowerCollider({ -258.0f, 46.0f, 76.0f, 118.0f }) });
+        AddObstacle({ 182.0f, 46.0f, 76.0f, 118.0f }, { 116, 104, 91, 255 }, 4, 1.06f, { TowerCollider({ 182.0f, 46.0f, 76.0f, 118.0f }) });
+        AddObstacle({ -328.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f, { SignCollider({ -328.0f, 136.0f, 42.0f, 62.0f }) });
+        AddObstacle({ 286.0f, 136.0f, 42.0f, 62.0f }, { 120, 100, 62, 255 }, 9, 0.92f, { SignCollider({ 286.0f, 136.0f, 42.0f, 62.0f }) });
+        AddObstacle({ 930.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f, { TreeTrunk({ 930.0f, -186.0f, 92.0f, 126.0f }), TreeRoots({ 930.0f, -186.0f, 92.0f, 126.0f }) });
+        AddObstacle({ 1162.0f, -34.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 1162.0f, -34.0f, 96.0f, 78.0f }) });
+        AddObstacle({ 1272.0f, 92.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1272.0f, 92.0f, 110.0f, 104.0f }) });
+        AddObstacle({ -1282.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f, { TreeTrunk({ -1282.0f, -186.0f, 92.0f, 126.0f }), TreeRoots({ -1282.0f, -186.0f, 92.0f, 126.0f }) });
+        AddObstacle({ -1058.0f, 42.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ -1058.0f, 42.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -1410.0f, 88.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1410.0f, 88.0f, 110.0f, 104.0f }) });
+        AddObstacle({ -202.0f, -1216.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f, { TreeTrunk({ -202.0f, -1216.0f, 88.0f, 122.0f }), TreeRoots({ -202.0f, -1216.0f, 88.0f, 122.0f }) });
+        AddObstacle({ 94.0f, -1078.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 94.0f, -1078.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -26.0f, -970.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f, { TowerCollider({ -26.0f, -970.0f, 82.0f, 128.0f }) });
+        AddObstacle({ -198.0f, 904.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f, { TreeTrunk({ -198.0f, 904.0f, 88.0f, 122.0f }), TreeRoots({ -198.0f, 904.0f, 88.0f, 122.0f }) });
+        AddObstacle({ 90.0f, 1040.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 90.0f, 1040.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -30.0f, 1126.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f, { TowerCollider({ -30.0f, 1126.0f, 82.0f, 128.0f }) });
+        AddObstacle({ 906.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ 906.0f, -1112.0f, 92.0f, 124.0f }), TreeRoots({ 906.0f, -1112.0f, 92.0f, 124.0f }) });
+        AddObstacle({ 1228.0f, -976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1228.0f, -976.0f, 112.0f, 100.0f }) });
+        AddObstacle({ 904.0f, 852.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ 904.0f, 852.0f, 92.0f, 124.0f }), TreeRoots({ 904.0f, 852.0f, 92.0f, 124.0f }) });
+        AddObstacle({ 1224.0f, 976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1224.0f, 976.0f, 112.0f, 100.0f }) });
+        AddObstacle({ -1374.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ -1374.0f, -1112.0f, 92.0f, 124.0f }), TreeRoots({ -1374.0f, -1112.0f, 92.0f, 124.0f }) });
+        AddObstacle({ -1098.0f, -974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1098.0f, -974.0f, 112.0f, 100.0f }) });
+        AddObstacle({ -1378.0f, 854.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ -1378.0f, 854.0f, 92.0f, 124.0f }), TreeRoots({ -1378.0f, 854.0f, 92.0f, 124.0f }) });
+        AddObstacle({ -1102.0f, 974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1102.0f, 974.0f, 112.0f, 100.0f }) });
+        AddObstacle({ 286.0f, -748.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.10f, { TreeTrunk({ 286.0f, -748.0f, 92.0f, 124.0f }), TreeRoots({ 286.0f, -748.0f, 92.0f, 124.0f }) });
+        AddObstacle({ -432.0f, 540.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.94f, { HutCollider({ -432.0f, 540.0f, 112.0f, 100.0f }) });
+        AddObstacle({ 1678.0f, -976.0f, 86.0f, 120.0f }, { 116, 104, 91, 255 }, 4, 0.98f, { TowerCollider({ 1678.0f, -976.0f, 86.0f, 120.0f }) });
+        AddObstacle({ -1768.0f, 964.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.90f, { RockCollider({ -1768.0f, 964.0f, 96.0f, 78.0f }) });
+        break;
 
-    AddObstacle({ -1282.0f, -186.0f, 92.0f, 126.0f }, { 69, 125, 70, 255 }, 0, 1.18f, { TreeTrunk({ -1282.0f, -186.0f, 92.0f, 126.0f }), TreeRoots({ -1282.0f, -186.0f, 92.0f, 126.0f }) });
-    AddObstacle({ -1058.0f, 42.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ -1058.0f, 42.0f, 96.0f, 78.0f }) });
-    AddObstacle({ -1410.0f, 88.0f, 110.0f, 104.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1410.0f, 88.0f, 110.0f, 104.0f }) });
+    case WorldId::Frostveil:
+        dungeon.rooms = {
+            { { -460.0f, -340.0f, 920.0f, 680.0f }, "WHITEGATE CAMP", true, false },
+            { { 760.0f, -260.0f, 720.0f, 540.0f }, "GLACIER YARD", false, true },
+            { { -1480.0f, -260.0f, 720.0f, 540.0f }, "WOLFPINE RISE", false, true },
+            { { -340.0f, -1320.0f, 680.0f, 520.0f }, "CHAPEL APPROACH", false, true },
+            { { -340.0f, 780.0f, 680.0f, 520.0f }, "ICEFLOW CROSSING", false, true },
+            { { 740.0f, -1180.0f, 720.0f, 460.0f }, "HAILWATCH OVERLOOK", false, true },
+            { { -1480.0f, 740.0f, 720.0f, 460.0f }, "WHITEBARROW", false, true },
+            { { 180.0f, -820.0f, 300.0f, 220.0f }, "PILGRIM'S HEARTH", false, false },
+            { { -520.0f, 500.0f, 300.0f, 220.0f }, "SNOWMELT CACHE", false, false }
+        };
+        dungeon.corridors = {
+            { 400.0f, -100.0f, 400.0f, 200.0f },
+            { -840.0f, -100.0f, 400.0f, 200.0f },
+            { -100.0f, -840.0f, 200.0f, 500.0f },
+            { -100.0f, 300.0f, 200.0f, 520.0f },
+            { 1020.0f, -780.0f, 180.0f, 520.0f },
+            { -1240.0f, 240.0f, 180.0f, 520.0f },
+            { 110.0f, -720.0f, 110.0f, 120.0f },
+            { -220.0f, 560.0f, 120.0f, 100.0f }
+        };
 
-    AddObstacle({ -202.0f, -1216.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f, { TreeTrunk({ -202.0f, -1216.0f, 88.0f, 122.0f }), TreeRoots({ -202.0f, -1216.0f, 88.0f, 122.0f }) });
-    AddObstacle({ 94.0f, -1078.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 94.0f, -1078.0f, 96.0f, 78.0f }) });
-    AddObstacle({ -26.0f, -970.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f, { TowerCollider({ -26.0f, -970.0f, 82.0f, 128.0f }) });
+        AddObstacle({ -84.0f, -26.0f, 168.0f, 148.0f }, { 143, 150, 168, 255 }, 5, 1.58f, {
+            { -56.0f, 38.0f, 26.0f, 56.0f }, { -14.0f, 54.0f, 28.0f, 36.0f }, { 30.0f, 38.0f, 26.0f, 56.0f }
+            });
+        AddObstacle({ -236.0f, 42.0f, 74.0f, 116.0f }, { 162, 166, 182, 255 }, 4, 1.00f, { TowerCollider({ -236.0f, 42.0f, 74.0f, 116.0f }) });
+        AddObstacle({ 162.0f, 42.0f, 74.0f, 116.0f }, { 162, 166, 182, 255 }, 4, 1.00f, { TowerCollider({ 162.0f, 42.0f, 74.0f, 116.0f }) });
+        AddObstacle({ 930.0f, -118.0f, 94.0f, 126.0f }, { 136, 154, 164, 255 }, 0, 1.12f, { TreeTrunk({ 930.0f, -118.0f, 94.0f, 126.0f }), TreeRoots({ 930.0f, -118.0f, 94.0f, 126.0f }) });
+        AddObstacle({ 1180.0f, -16.0f, 96.0f, 78.0f }, { 168, 174, 186, 255 }, 2, 0.94f, { RockCollider({ 1180.0f, -16.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -1260.0f, -126.0f, 94.0f, 126.0f }, { 136, 154, 164, 255 }, 0, 1.12f, { TreeTrunk({ -1260.0f, -126.0f, 94.0f, 126.0f }), TreeRoots({ -1260.0f, -126.0f, 94.0f, 126.0f }) });
+        AddObstacle({ -1030.0f, 24.0f, 96.0f, 78.0f }, { 168, 174, 186, 255 }, 2, 0.94f, { RockCollider({ -1030.0f, 24.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -150.0f, -1170.0f, 90.0f, 122.0f }, { 136, 154, 164, 255 }, 0, 1.08f, { TreeTrunk({ -150.0f, -1170.0f, 90.0f, 122.0f }), TreeRoots({ -150.0f, -1170.0f, 90.0f, 122.0f }) });
+        AddObstacle({ 70.0f, -1010.0f, 98.0f, 80.0f }, { 168, 174, 186, 255 }, 2, 0.94f, { RockCollider({ 70.0f, -1010.0f, 98.0f, 80.0f }) });
+        AddObstacle({ -156.0f, 918.0f, 90.0f, 122.0f }, { 136, 154, 164, 255 }, 0, 1.08f, { TreeTrunk({ -156.0f, 918.0f, 90.0f, 122.0f }), TreeRoots({ -156.0f, 918.0f, 90.0f, 122.0f }) });
+        AddObstacle({ 60.0f, 1050.0f, 98.0f, 80.0f }, { 168, 174, 186, 255 }, 2, 0.94f, { RockCollider({ 60.0f, 1050.0f, 98.0f, 80.0f }) });
+        AddObstacle({ 1020.0f, -1040.0f, 108.0f, 104.0f }, { 170, 160, 150, 255 }, 3, 0.96f, { HutCollider({ 1020.0f, -1040.0f, 108.0f, 104.0f }) });
+        AddObstacle({ -1280.0f, 890.0f, 108.0f, 104.0f }, { 170, 160, 150, 255 }, 3, 0.96f, { HutCollider({ -1280.0f, 890.0f, 108.0f, 104.0f }) });
+        AddObstacle({ 298.0f, -760.0f, 42.0f, 62.0f }, { 186, 176, 142, 255 }, 9, 0.90f, { SignCollider({ 298.0f, -760.0f, 42.0f, 62.0f }) });
+        AddObstacle({ -416.0f, 560.0f, 42.0f, 62.0f }, { 186, 176, 142, 255 }, 9, 0.90f, { SignCollider({ -416.0f, 560.0f, 42.0f, 62.0f }) });
+        break;
 
-    AddObstacle({ -198.0f, 904.0f, 88.0f, 122.0f }, { 69, 125, 70, 255 }, 0, 1.14f, { TreeTrunk({ -198.0f, 904.0f, 88.0f, 122.0f }), TreeRoots({ -198.0f, 904.0f, 88.0f, 122.0f }) });
-    AddObstacle({ 90.0f, 1040.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.92f, { RockCollider({ 90.0f, 1040.0f, 96.0f, 78.0f }) });
-    AddObstacle({ -30.0f, 1126.0f, 82.0f, 128.0f }, { 116, 104, 91, 255 }, 4, 1.00f, { TowerCollider({ -30.0f, 1126.0f, 82.0f, 128.0f }) });
+    case WorldId::Sunscar:
+        dungeon.rooms = {
+            { { -460.0f, -340.0f, 920.0f, 680.0f }, "SAFFRON OASIS", true, false },
+            { { 760.0f, -260.0f, 740.0f, 560.0f }, "CARAVAN GATE", false, true },
+            { { -1500.0f, -260.0f, 740.0f, 560.0f }, "DUNE GRAVE", false, true },
+            { { -340.0f, -1320.0f, 700.0f, 520.0f }, "SUNSTEP TERRACE", false, true },
+            { { -340.0f, 780.0f, 700.0f, 520.0f }, "CINDER BASIN", false, true },
+            { { 760.0f, 760.0f, 700.0f, 460.0f }, "AMBER BAZAAR", false, true },
+            { { -1480.0f, -1180.0f, 700.0f, 460.0f }, "SCORPION HOLLOW", false, true },
+            { { 200.0f, 500.0f, 280.0f, 220.0f }, "WIND SHRINE", false, false },
+            { { -520.0f, -800.0f, 280.0f, 220.0f }, "BROKEN CISTERN", false, false }
+        };
+        dungeon.corridors = {
+            { 400.0f, -100.0f, 420.0f, 200.0f },
+            { -860.0f, -100.0f, 420.0f, 200.0f },
+            { -100.0f, -840.0f, 200.0f, 500.0f },
+            { -100.0f, 300.0f, 200.0f, 520.0f },
+            { 1040.0f, 240.0f, 180.0f, 540.0f },
+            { -1240.0f, -780.0f, 180.0f, 520.0f },
+            { 160.0f, 500.0f, 80.0f, 120.0f },
+            { -300.0f, -720.0f, 80.0f, 120.0f }
+        };
 
-    AddObstacle({ 906.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ 906.0f, -1112.0f, 92.0f, 124.0f }), TreeRoots({ 906.0f, -1112.0f, 92.0f, 124.0f }) });
-    AddObstacle({ 1228.0f, -976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1228.0f, -976.0f, 112.0f, 100.0f }) });
+        AddObstacle({ -80.0f, -18.0f, 160.0f, 140.0f }, { 146, 126, 82, 255 }, 3, 1.10f, { HutCollider({ -80.0f, -18.0f, 160.0f, 140.0f }) });
+        AddObstacle({ -250.0f, 54.0f, 42.0f, 62.0f }, { 140, 112, 70, 255 }, 9, 0.92f, { SignCollider({ -250.0f, 54.0f, 42.0f, 62.0f }) });
+        AddObstacle({ 208.0f, 54.0f, 42.0f, 62.0f }, { 140, 112, 70, 255 }, 9, 0.92f, { SignCollider({ 208.0f, 54.0f, 42.0f, 62.0f }) });
+        AddObstacle({ 930.0f, -78.0f, 112.0f, 100.0f }, { 158, 134, 94, 255 }, 3, 0.98f, { HutCollider({ 930.0f, -78.0f, 112.0f, 100.0f }) });
+        AddObstacle({ 1182.0f, 38.0f, 96.0f, 78.0f }, { 168, 152, 122, 255 }, 2, 0.96f, { RockCollider({ 1182.0f, 38.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -1270.0f, -64.0f, 112.0f, 100.0f }, { 158, 134, 94, 255 }, 3, 0.98f, { HutCollider({ -1270.0f, -64.0f, 112.0f, 100.0f }) });
+        AddObstacle({ -1024.0f, 52.0f, 96.0f, 78.0f }, { 168, 152, 122, 255 }, 2, 0.96f, { RockCollider({ -1024.0f, 52.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -64.0f, -1180.0f, 96.0f, 78.0f }, { 168, 152, 122, 255 }, 2, 0.96f, { RockCollider({ -64.0f, -1180.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -8.0f, 930.0f, 96.0f, 78.0f }, { 168, 152, 122, 255 }, 2, 0.96f, { RockCollider({ -8.0f, 930.0f, 96.0f, 78.0f }) });
+        AddObstacle({ 1050.0f, 884.0f, 110.0f, 104.0f }, { 158, 134, 94, 255 }, 3, 0.98f, { HutCollider({ 1050.0f, 884.0f, 110.0f, 104.0f }) });
+        AddObstacle({ -1240.0f, -1040.0f, 90.0f, 124.0f }, { 170, 148, 118, 255 }, 0, 1.10f, { TreeTrunk({ -1240.0f, -1040.0f, 90.0f, 124.0f }), TreeRoots({ -1240.0f, -1040.0f, 90.0f, 124.0f }) });
+        AddObstacle({ 298.0f, 562.0f, 74.0f, 116.0f }, { 152, 120, 82, 255 }, 4, 0.98f, { TowerCollider({ 298.0f, 562.0f, 74.0f, 116.0f }) });
+        AddObstacle({ -420.0f, -744.0f, 74.0f, 116.0f }, { 152, 120, 82, 255 }, 4, 0.98f, { TowerCollider({ -420.0f, -744.0f, 74.0f, 116.0f }) });
+        break;
 
-    AddObstacle({ 904.0f, 852.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ 904.0f, 852.0f, 92.0f, 124.0f }), TreeRoots({ 904.0f, 852.0f, 92.0f, 124.0f }) });
-    AddObstacle({ 1224.0f, 976.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ 1224.0f, 976.0f, 112.0f, 100.0f }) });
+    case WorldId::Mirethorn:
+        dungeon.rooms = {
+            { { -460.0f, -340.0f, 920.0f, 680.0f }, "LANTERN FEN", true, false },
+            { { 760.0f, -260.0f, 720.0f, 560.0f }, "REEDWATCH", false, true },
+            { { -1480.0f, -260.0f, 720.0f, 560.0f }, "ROTROOT STAND", false, true },
+            { { -340.0f, -1320.0f, 700.0f, 520.0f }, "WITCHLIGHT CAUSEWAY", false, true },
+            { { -340.0f, 780.0f, 700.0f, 520.0f }, "MUDGRAVE BEND", false, true },
+            { { 760.0f, -1180.0f, 700.0f, 460.0f }, "CANKER BRIDGE", false, true },
+            { { -1480.0f, 760.0f, 700.0f, 460.0f }, "HOLLOWMERE", false, true },
+            { { 180.0f, 500.0f, 300.0f, 220.0f }, "CROAKING NOOK", false, false },
+            { { -520.0f, -820.0f, 300.0f, 220.0f }, "BOGKEEPER'S SHED", false, false }
+        };
+        dungeon.corridors = {
+            { 400.0f, -100.0f, 400.0f, 200.0f },
+            { -840.0f, -100.0f, 400.0f, 200.0f },
+            { -100.0f, -840.0f, 200.0f, 500.0f },
+            { -100.0f, 300.0f, 200.0f, 520.0f },
+            { 1020.0f, -780.0f, 180.0f, 520.0f },
+            { -1240.0f, 240.0f, 180.0f, 540.0f },
+            { 130.0f, 520.0f, 110.0f, 120.0f },
+            { -300.0f, -740.0f, 100.0f, 120.0f }
+        };
 
-    AddObstacle({ -1374.0f, -1112.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ -1374.0f, -1112.0f, 92.0f, 124.0f }), TreeRoots({ -1374.0f, -1112.0f, 92.0f, 124.0f }) });
-    AddObstacle({ -1098.0f, -974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1098.0f, -974.0f, 112.0f, 100.0f }) });
-
-    AddObstacle({ -1378.0f, 854.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.16f, { TreeTrunk({ -1378.0f, 854.0f, 92.0f, 124.0f }), TreeRoots({ -1378.0f, 854.0f, 92.0f, 124.0f }) });
-    AddObstacle({ -1102.0f, 974.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.98f, { HutCollider({ -1102.0f, 974.0f, 112.0f, 100.0f }) });
-
-    AddObstacle({ 286.0f, -748.0f, 92.0f, 124.0f }, { 69, 125, 70, 255 }, 0, 1.10f, { TreeTrunk({ 286.0f, -748.0f, 92.0f, 124.0f }), TreeRoots({ 286.0f, -748.0f, 92.0f, 124.0f }) });
-    AddObstacle({ -432.0f, 540.0f, 112.0f, 100.0f }, { 118, 98, 78, 255 }, 3, 0.94f, { HutCollider({ -432.0f, 540.0f, 112.0f, 100.0f }) });
-    AddObstacle({ 1678.0f, -976.0f, 86.0f, 120.0f }, { 116, 104, 91, 255 }, 4, 0.98f, { TowerCollider({ 1678.0f, -976.0f, 86.0f, 120.0f }) });
-    AddObstacle({ -1768.0f, 964.0f, 96.0f, 78.0f }, { 116, 112, 104, 255 }, 2, 0.90f, { RockCollider({ -1768.0f, 964.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -80.0f, -16.0f, 158.0f, 138.0f }, { 110, 120, 84, 255 }, 3, 1.05f, { HutCollider({ -80.0f, -16.0f, 158.0f, 138.0f }) });
+        AddObstacle({ -250.0f, 56.0f, 42.0f, 62.0f }, { 108, 96, 64, 255 }, 9, 0.92f, { SignCollider({ -250.0f, 56.0f, 42.0f, 62.0f }) });
+        AddObstacle({ 208.0f, 56.0f, 42.0f, 62.0f }, { 108, 96, 64, 255 }, 9, 0.92f, { SignCollider({ 208.0f, 56.0f, 42.0f, 62.0f }) });
+        AddObstacle({ 942.0f, -132.0f, 92.0f, 126.0f }, { 74, 112, 72, 255 }, 0, 1.16f, { TreeTrunk({ 942.0f, -132.0f, 92.0f, 126.0f }), TreeRoots({ 942.0f, -132.0f, 92.0f, 126.0f }) });
+        AddObstacle({ 1178.0f, 12.0f, 96.0f, 78.0f }, { 116, 124, 102, 255 }, 2, 0.92f, { RockCollider({ 1178.0f, 12.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -1260.0f, -132.0f, 92.0f, 126.0f }, { 74, 112, 72, 255 }, 0, 1.16f, { TreeTrunk({ -1260.0f, -132.0f, 92.0f, 126.0f }), TreeRoots({ -1260.0f, -132.0f, 92.0f, 126.0f }) });
+        AddObstacle({ -1028.0f, 18.0f, 96.0f, 78.0f }, { 116, 124, 102, 255 }, 2, 0.92f, { RockCollider({ -1028.0f, 18.0f, 96.0f, 78.0f }) });
+        AddObstacle({ -134.0f, -1160.0f, 92.0f, 126.0f }, { 74, 112, 72, 255 }, 0, 1.14f, { TreeTrunk({ -134.0f, -1160.0f, 92.0f, 126.0f }), TreeRoots({ -134.0f, -1160.0f, 92.0f, 126.0f }) });
+        AddObstacle({ 52.0f, -1034.0f, 110.0f, 104.0f }, { 110, 120, 84, 255 }, 3, 0.94f, { HutCollider({ 52.0f, -1034.0f, 110.0f, 104.0f }) });
+        AddObstacle({ -144.0f, 932.0f, 92.0f, 126.0f }, { 74, 112, 72, 255 }, 0, 1.14f, { TreeTrunk({ -144.0f, 932.0f, 92.0f, 126.0f }), TreeRoots({ -144.0f, 932.0f, 92.0f, 126.0f }) });
+        AddObstacle({ 54.0f, 1048.0f, 110.0f, 104.0f }, { 110, 120, 84, 255 }, 3, 0.94f, { HutCollider({ 54.0f, 1048.0f, 110.0f, 104.0f }) });
+        AddObstacle({ 1030.0f, -1036.0f, 74.0f, 116.0f }, { 122, 112, 92, 255 }, 4, 0.98f, { TowerCollider({ 1030.0f, -1036.0f, 74.0f, 116.0f }) });
+        AddObstacle({ -1260.0f, 886.0f, 74.0f, 116.0f }, { 122, 112, 92, 255 }, 4, 0.98f, { TowerCollider({ -1260.0f, 886.0f, 74.0f, 116.0f }) });
+        AddObstacle({ 300.0f, 556.0f, 42.0f, 62.0f }, { 108, 96, 64, 255 }, 9, 0.90f, { SignCollider({ 300.0f, 556.0f, 42.0f, 62.0f }) });
+        AddObstacle({ -420.0f, -756.0f, 42.0f, 62.0f }, { 108, 96, 64, 255 }, 9, 0.90f, { SignCollider({ -420.0f, -756.0f, 42.0f, 62.0f }) });
+        break;
+    }
 
     safeZone = dungeon.rooms.front().rect;
 }
@@ -844,6 +1006,54 @@ void Game::RefreshSideQuestOffer(int slot) {
     sideQuestReady[slot] = false;
 }
 
+bool Game::IsWorldUnlocked(WorldId world) const {
+    switch (world) {
+    case WorldId::Crownheart: return true;
+    case WorldId::Frostveil: return mainQuestIndex >= 1;
+    case WorldId::Sunscar: return mainQuestIndex >= 2;
+    case WorldId::Mirethorn: return mainQuestIndex >= 4;
+    }
+    return false;
+}
+
+void Game::TravelToWorld(WorldId world) {
+    if (!IsWorldUnlocked(world)) {
+        announcement = std::string(WorldLabel(world)) + " // STILL SEALED";
+        announcementTimer = 2.0f;
+        return;
+    }
+
+    currentWorld = world;
+    BuildDungeon();
+    BuildTileMap();
+
+    player.pos = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.72f };
+    player.aimDir = { 0.0f, -1.0f };
+    shop.isOpen = false;
+    questBoardOpen = false;
+    realmMapOpen = false;
+    rewardChestActive = false;
+    rewardSelectionOpen = false;
+    waveTargetRoomIndex = -1;
+    lockedRoomIndex = -1;
+    safeZoneHealBuffer = 0.0f;
+
+    monsters.clear();
+    particles.clear();
+    orbs.clear();
+    healthPickups.clear();
+    floatingTexts.clear();
+    turrets.clear();
+    shockwaves.clear();
+    beams.clear();
+
+    announcement = std::string(WorldLabel(world)) + " // ROADS OPEN";
+    announcementTimer = 2.4f;
+    SpawnWave(player.wave);
+    SaveRun();
+    SaveProfile();
+}
+
 bool Game::LoadProfile() {
     persistentOwnedWeapons.assign(weaponDB.size(), false);
     if (!persistentOwnedWeapons.empty()) {
@@ -1030,7 +1240,8 @@ void Game::SaveRun() const {
         return;
     }
 
-    out << "NEON_ABYSS_SAVE_V2\n";
+    out << "NEON_ABYSS_SAVE_V3\n";
+    out << (int)currentWorld << '\n';
     out << player.pos.x << ' ' << player.pos.y << ' ' << player.aimDir.x << ' ' << player.aimDir.y << '\n';
     out << player.hp << ' ' << player.maxHp << ' ' << player.xp << ' ' << player.kills << ' '
         << player.wave << ' ' << player.hpUpgradeLevel << ' ' << player.equippedWeaponIdx << ' '
@@ -1087,11 +1298,23 @@ bool Game::LoadRun() {
 
     std::string header;
     in >> header;
-    if (header != "NEON_ABYSS_SAVE_V2") {
+    bool isV2 = (header == "NEON_ABYSS_SAVE_V2");
+    bool isV3 = (header == "NEON_ABYSS_SAVE_V3");
+    if (!isV2 && !isV3) {
         return false;
     }
 
     ResetRun();
+
+    if (isV3) {
+        int worldValue = 0;
+        in >> worldValue;
+        if (worldValue >= 0 && worldValue <= 3) {
+            currentWorld = (WorldId)worldValue;
+            BuildDungeon();
+            BuildTileMap();
+        }
+    }
     monsters.clear();
     orbs.clear();
     healthPickups.clear();
@@ -1113,6 +1336,7 @@ bool Game::LoadRun() {
     rewardChestActive = (rewardChestFlag != 0);
     rewardSelectionOpen = false;
     questBoardOpen = false;
+    realmMapOpen = false;
 
     if (player.equippedWeaponIdx < 0 || player.equippedWeaponIdx >= (int)weaponDB.size()) {
         player.equippedWeaponIdx = 0;
@@ -1219,6 +1443,10 @@ bool Game::LoadRun() {
 }
 
 void Game::ResetRun() {
+    currentWorld = WorldId::Crownheart;
+    BuildDungeon();
+    BuildTileMap();
+
     player = Player{};
     player.pos = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.72f };
     player.aimDir = { 0.0f, -1.0f };
@@ -1248,6 +1476,7 @@ void Game::ResetRun() {
     rewardChestActive = false;
     rewardSelectionOpen = false;
     questBoardOpen = false;
+    realmMapOpen = false;
     rewardChestPos = { 0.0f, 0.0f };
     waveTargetRoomIndex = -1;
     lockedRoomIndex = -1;
@@ -1372,21 +1601,41 @@ void Game::SpawnWave(int waveNumber) {
         waveTargetRoomIndex = spawnRoomIndices[std::rand() % (int)spawnRoomIndices.size()];
     }
 
+    std::vector<int> worldPool;
+    int bossType = 10;
+    switch (currentWorld) {
+    case WorldId::Crownheart:
+        worldPool = { 0, 2, 3, 4, 7, 9 };
+        bossType = 10;
+        break;
+    case WorldId::Frostveil:
+        worldPool = { 1, 4, 5, 6, 8 };
+        bossType = 11;
+        break;
+    case WorldId::Sunscar:
+        worldPool = { 0, 2, 3, 5, 7, 9 };
+        bossType = 10;
+        break;
+    case WorldId::Mirethorn:
+        worldPool = { 0, 1, 4, 5, 8, 9 };
+        bossType = 11;
+        break;
+    }
+
     int normalCount = 5 + waveNumber * 2;
-    int maxRegularType = 4 + waveNumber / 2;
-    if (maxRegularType > 10) {
-        maxRegularType = 10;
+    int allowedTypes = std::min((int)worldPool.size(), 2 + waveNumber / 2);
+    if (allowedTypes < 1) {
+        allowedTypes = 1;
     }
 
     for (int i = 0; i < normalCount; ++i) {
-        int typeIndex = std::rand() % maxRegularType;
+        int typeIndex = worldPool[std::rand() % allowedTypes];
         SpawnMonsterByType(typeIndex, GetSpawnPointInCombatRoom());
     }
 
     if (waveNumber % 5 == 0) {
-        int bossType = (waveNumber % 10 == 0) ? 11 : 10;
         SpawnMonsterByType(bossType, GetSpawnPointInCombatRoom());
-        announcement = monsterTypes[bossType].name + " // BOSS STIRS";
+        announcement = std::string(WorldLabel(currentWorld)) + " // " + monsterTypes[bossType].name + " STIRS";
         announcementTimer = 3.8f;
     }
 }
@@ -1463,24 +1712,53 @@ void Game::UpdatePlaying(float dt) {
         BuildRewardChoices();
         rewardSelectionOpen = true;
         questBoardOpen = false;
+        realmMapOpen = false;
         shop.isOpen = false;
     }
 
-    if (inSafeZone && !rewardSelectionOpen && IsKeyPressed(KEY_Q)) {
+    if (inSafeZone && !rewardSelectionOpen && !realmMapOpen && IsKeyPressed(KEY_Q)) {
         questBoardOpen = !questBoardOpen;
         if (questBoardOpen) {
             shop.isOpen = false;
         }
     }
 
+    if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_R)) {
+        realmMapOpen = !realmMapOpen;
+        if (realmMapOpen) {
+            shop.isOpen = false;
+        }
+    }
+
+    if (realmMapOpen) {
+        if (IsKeyPressed(KEY_ONE)) TravelToWorld(WorldId::Crownheart);
+        else if (IsKeyPressed(KEY_TWO)) TravelToWorld(WorldId::Frostveil);
+        else if (IsKeyPressed(KEY_THREE)) TravelToWorld(WorldId::Sunscar);
+        else if (IsKeyPressed(KEY_FOUR)) TravelToWorld(WorldId::Mirethorn);
+    }
+
     if (questBoardOpen) {
         if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size() && mainQuestReady && IsKeyPressed(KEY_E)) {
+            bool frostWasUnlocked = IsWorldUnlocked(WorldId::Frostveil);
+            bool sunWasUnlocked = IsWorldUnlocked(WorldId::Sunscar);
+            bool mireWasUnlocked = IsWorldUnlocked(WorldId::Mirethorn);
             euro += mainQuestDB[mainQuestIndex].euroReward;
-            announcement = mainQuestDB[mainQuestIndex].title + " // EURO CLAIMED";
-            announcementTimer = 2.2f;
             mainQuestIndex++;
             mainQuestProgress = 0;
             mainQuestReady = false;
+            if (!frostWasUnlocked && IsWorldUnlocked(WorldId::Frostveil)) {
+                announcement = "FROSTVEIL PASS // WORLD UNLOCKED";
+            }
+            else if (!sunWasUnlocked && IsWorldUnlocked(WorldId::Sunscar)) {
+                announcement = "SUNSCAR DUNES // WORLD UNLOCKED";
+            }
+            else if (!mireWasUnlocked && IsWorldUnlocked(WorldId::Mirethorn)) {
+                announcement = "MIRETHORN HOLLOW // WORLD UNLOCKED";
+            }
+            else {
+                announcement = "CHARTER FULFILLED // EURO CLAIMED";
+            }
+            announcementTimer = 2.2f;
             SaveProfile();
         }
 
@@ -1514,13 +1792,14 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_E)) {
+    if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_E)) {
         shop.isOpen = !shop.isOpen;
         shop.browseWeaponIdx = player.equippedWeaponIdx;
     }
     if (!inSafeZone) {
         shop.isOpen = false;
         questBoardOpen = false;
+        realmMapOpen = false;
     }
 
     if (!rewardChestActive && lockedRoomIndex < 0 && currentArea != nullptr) {
@@ -1552,7 +1831,7 @@ void Game::UpdatePlaying(float dt) {
     }
 
     Vector2 moveInput = { 0.0f, 0.0f };
-    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen) {
         if (IsKeyDown(KEY_W)) moveInput.y -= 1.0f;
         if (IsKeyDown(KEY_S)) moveInput.y += 1.0f;
         if (IsKeyDown(KEY_A)) moveInput.x -= 1.0f;
@@ -1576,7 +1855,7 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_SPACE) && player.attackCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_SPACE) && player.attackCd <= 0.0f) {
         player.attackCd = GetAttackCooldown();
         const Weapon& weapon = weaponDB[player.equippedWeaponIdx];
         bool hitSomething = false;
@@ -1614,7 +1893,7 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_ONE) && player.dashCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_ONE) && player.dashCd <= 0.0f) {
         player.dashCd = GetDashCooldown();
         Vector2 dashDir = player.aimDir;
         if (dashDir.x == 0.0f && dashDir.y == 0.0f) {
@@ -1631,7 +1910,7 @@ void Game::UpdatePlaying(float dt) {
         screenShake = std::max(screenShake, 6.0f);
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_TWO) && player.empCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_TWO) && player.empCd <= 0.0f) {
         player.empCd = 30.0f;
         int empDamage = GetEmpDamage();
         float empRadius = GetEmpRadius();
@@ -1652,7 +1931,7 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_THREE) && player.turretCd <= 0.0f) {
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_THREE) && player.turretCd <= 0.0f) {
         player.turretCd = 12.0f;
         turrets.push_back({ player.pos, GetTurretLifetime(), 0.25f });
         EmitBurst(player.pos, 18, 3.0f, neonBlue, 3.8f);
@@ -2013,6 +2292,10 @@ void Game::Draw() const {
             DrawQuestBoard();
         }
 
+        if (realmMapOpen) {
+            DrawRealmMap();
+        }
+
         if (gameState == GameState::GameOver) {
             DrawGameOver();
         }
@@ -2044,10 +2327,10 @@ void Game::DrawTitleScreen() const {
 
     DrawPanel({ screenW / 2.0f - 360.0f, 360.0f, 720.0f, 190.0f }, panel, { 118, 105, 80, 255 });
     DrawText("WHAT'S IN THE BUILD", screenW / 2 - MeasureText("WHAT'S IN THE BUILD", 24) / 2, 384, 24, { 92, 78, 58, 255 });
-    DrawText("- A kingdom crossroads with keeps, side paths and hidden pockets", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
+    DrawText("- Four connected realms with distinct road networks and hidden pockets", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
     DrawText("- Real-time combat with dash, nova burst and guardian totems", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
-    DrawText("- Sealed-court battles, relic blessings and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
-    DrawText("- Save and continue support across your campaign", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
+    DrawText("- Sealed-court battles, relic blessings, quests and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
+    DrawText("- Travel between Frostveil, Sunscar and Mirethorn as you unlock them", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
     DrawText("PRESS ENTER TO BEGIN A NEW QUEST", screenW / 2 - MeasureText("PRESS ENTER TO BEGIN A NEW QUEST", 28) / 2, 586, 28, pulse);
@@ -2061,6 +2344,10 @@ void Game::DrawTitleScreen() const {
 
 void Game::DrawWorld() const {
     BeginMode2D(camera);
+
+    Color grassTint = WorldGrassTint(currentWorld);
+    Color roadTint = WorldRoadTint(currentWorld);
+    Color accentTint = WorldAccentTint(currentWorld);
 
     auto drawProp = [&](const PropInstance& prop) {
         if (propAtlas.id == 0) {
@@ -2170,16 +2457,18 @@ void Game::DrawWorld() const {
     for (int y = minTileY; y <= maxTileY; ++y) {
         for (int x = minTileX; x <= maxTileX; ++x) {
             Rectangle dst = TileWorldRect(tileMap, x, y);
-            Rectangle src = TileSourceRect(TileAt(tileMap, x, y));
+            int tileIndex = TileAt(tileMap, x, y);
+            Rectangle src = TileSourceRect(tileIndex);
+            Color tint = (tileIndex == (int)TileType::Path) ? roadTint : grassTint;
 
             if (tileAtlas.id != 0) {
-                DrawTexturePro(tileAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+                DrawTexturePro(tileAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, tint);
             }
         }
     }
 
     for (const auto& corridor : dungeon.corridors) {
-        DrawRectangleLinesEx(corridor, 2.0f, Fade({ 160, 126, 78, 255 }, 0.18f));
+        DrawRectangleLinesEx(corridor, 2.0f, Fade(accentTint, 0.18f));
     }
 
     for (const auto& prop : decorProps) {
@@ -2187,11 +2476,11 @@ void Game::DrawWorld() const {
     }
 
     for (const auto& room : dungeon.rooms) {
-        DrawRectangleLinesEx(room.rect, 2.0f, Fade({ 93, 125, 58, 255 }, 0.18f));
+        DrawRectangleLinesEx(room.rect, 2.0f, Fade(accentTint, 0.18f));
         drawRoomEdgeFences(room);
         int labelSize = room.isSafeZone ? 24 : 20;
         int labelX = (int)(room.rect.x + room.rect.width * 0.5f) - MeasureText(room.name.c_str(), labelSize) / 2;
-        DrawText(room.name.c_str(), labelX, (int)room.rect.y + 14, labelSize, { 92, 78, 56, 255 });
+        DrawText(room.name.c_str(), labelX, (int)room.rect.y + 14, labelSize, room.isSafeZone ? Color{ 92, 78, 56, 255 } : accentTint);
     }
 
     std::vector<PropInstance> sortedProps = worldProps;
@@ -2329,26 +2618,30 @@ void Game::DrawHud() const {
         DrawText("No side contracts taken. Visit the board in the keep.", 34, 454, 16, RAYWHITE);
     }
 
-    DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 150.0f }, panel, safeGreen);
+    DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 172.0f }, panel, safeGreen);
     DrawText("REGION READOUT", screenW - 334, 28, 20, safeGreen);
-    DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 58, 18, WHITE);
-    DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 82, 18, WHITE);
+    DrawText(TextFormat("REALM: %s", WorldLabel(currentWorld)), screenW - 334, 56, 18, WHITE);
+    DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 82, 18, WHITE);
+    DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 106, 18, WHITE);
 
     bool inSafeZone = CheckCollisionPointRec(player.pos, safeZone);
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
-    DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 106, 18, inSafeZone ? safeGreen : softRed);
-    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 130, 16, RAYWHITE);
+    DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 132, 18, inSafeZone ? safeGreen : softRed);
+    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 154, 16, RAYWHITE);
 
     DrawMiniMap();
 
     if (rewardChestActive && !rewardSelectionOpen && Distance(player.pos, rewardChestPos) < 72.0f) {
         DrawText("RELIC CHEST READY // PRESS E TO CLAIM A BLESSING", 22, screenH - 34, 18, neonGold);
     }
+    else if (realmMapOpen) {
+        DrawText("REALM MAP OPEN // 1 CROWNHEART // 2 FROSTVEIL // 3 SUNSCAR // 4 MIRETHORN // R CLOSE", 22, screenH - 34, 18, neonBlue);
+    }
     else if (questBoardOpen) {
         DrawText("QUEST BOARD OPEN // E CLAIM MAIN QUEST // 1-3 ACCEPT OR TURN IN SIDE CONTRACTS // Q CLOSE", 22, screenH - 34, 18, neonGold);
     }
     else if (inSafeZone) {
-        DrawText("SAFE COURTYARD // PRESS E FOR THE KEEP ARMORY // PRESS Q FOR THE QUEST BOARD", 22, screenH - 34, 18, safeGreen);
+        DrawText("SAFE COURTYARD // E ARMORY // Q QUEST BOARD // R REALM GATE MAP", 22, screenH - 34, 18, safeGreen);
     }
     else {
         DrawText("WASD MOVE   SPACE SWING   1 DASH   2 NOVA   3 TOTEM   HOLD THE ROADS, CLEAR THE COURTS", 22, screenH - 34, 18, RAYWHITE);
@@ -2362,9 +2655,10 @@ void Game::DrawHud() const {
 }
 
 void Game::DrawMiniMap() const {
-    Rectangle panelRect = { screenW - 292.0f, 176.0f, 274.0f, 274.0f };
-    DrawPanel(panelRect, panel, neonBlue);
-    DrawText("KINGDOM MAP", (int)panelRect.x + 20, (int)panelRect.y + 16, 18, neonBlue);
+    Color accentTint = WorldAccentTint(currentWorld);
+    Rectangle panelRect = { screenW - 292.0f, 198.0f, 274.0f, 274.0f };
+    DrawPanel(panelRect, panel, accentTint);
+    DrawText("KINGDOM MAP", (int)panelRect.x + 20, (int)panelRect.y + 16, 18, accentTint);
 
     Rectangle mapRect = { panelRect.x + 16.0f, panelRect.y + 42.0f, panelRect.width - 32.0f, panelRect.height - 60.0f };
     DrawRectangleRec(mapRect, Fade(BLACK, 0.28f));
@@ -2400,7 +2694,7 @@ void Game::DrawMiniMap() const {
             corridor.width * scale,
             corridor.height * scale
         };
-        DrawRectangleRec(mini, Fade(neonBlue, 0.16f));
+        DrawRectangleRec(mini, Fade(accentTint, 0.16f));
     }
 
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
@@ -2412,7 +2706,7 @@ void Game::DrawMiniMap() const {
             room.rect.width * scale,
             room.rect.height * scale
         };
-        Color fill = room.isSafeZone ? Fade(safeGreen, 0.26f) : Fade(neonBlue, 0.12f);
+        Color fill = room.isSafeZone ? Fade(safeGreen, 0.26f) : Fade(accentTint, 0.12f);
         Color border = room.isSafeZone ? safeGreen : Fade(WHITE, 0.28f);
         if (i == waveTargetRoomIndex && !rewardChestActive) {
             border = neonGold;
@@ -2583,6 +2877,45 @@ void Game::DrawQuestBoard() const {
 
     DrawText("Q CLOSE BOARD", (int)panelRect.x + 30, (int)panelRect.y + 460, 18, neonBlue);
     DrawText("COMPLETE CHARTERS TO EARN EURO. EURO WILL MATTER FOR PETS IN THE NEXT BATCH.", (int)panelRect.x + 210, (int)panelRect.y + 460, 18, RAYWHITE);
+}
+
+void Game::DrawRealmMap() const {
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.56f));
+
+    Rectangle panelRect = { screenW * 0.5f - 470.0f, screenH * 0.5f - 230.0f, 940.0f, 460.0f };
+    DrawPanel(panelRect, panel2, neonBlue);
+    DrawText("REALM GATE MAP", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonBlue);
+    DrawText("Choose where the next hunt will unfold.", (int)panelRect.x + 28, (int)panelRect.y + 58, 18, RAYWHITE);
+
+    const WorldId worlds[4] = { WorldId::Crownheart, WorldId::Frostveil, WorldId::Sunscar, WorldId::Mirethorn };
+    for (int i = 0; i < 4; ++i) {
+        WorldId world = worlds[i];
+        bool unlocked = IsWorldUnlocked(world);
+        bool active = (world == currentWorld);
+        Rectangle card = { panelRect.x + 26.0f + i * 222.0f, panelRect.y + 108.0f, 202.0f, 278.0f };
+        Color accent = WorldAccentTint(world);
+        DrawPanel(card, panel, active ? accent : Fade(accent, 0.75f));
+        DrawRectangleGradientV((int)card.x + 12, (int)card.y + 42, (int)card.width - 24, 82, Fade(WorldGrassTint(world), 0.95f), Fade(WorldRoadTint(world), 0.95f));
+        DrawText(TextFormat("%d", i + 1), (int)card.x + 16, (int)card.y + 12, 22, accent);
+        DrawText(WorldLabel(world), (int)card.x + 16, (int)card.y + 136, 22, unlocked ? WHITE : GRAY);
+        DrawText(WorldBlurb(world), (int)card.x + 16, (int)card.y + 172, 18, unlocked ? RAYWHITE : GRAY);
+
+        if (active) {
+            DrawText("CURRENT REALM", (int)card.x + 16, (int)card.y + 236, 18, safeGreen);
+        }
+        else if (unlocked) {
+            DrawText("PRESS NUMBER TO TRAVEL", (int)card.x + 16, (int)card.y + 236, 18, accent);
+        }
+        else {
+            const char* rule = (world == WorldId::Frostveil) ? "Unlock: 1 main charter"
+                : (world == WorldId::Sunscar) ? "Unlock: 2 main charters"
+                : "Unlock: 4 main charters";
+            DrawText(rule, (int)card.x + 16, (int)card.y + 236, 18, softRed);
+        }
+    }
+
+    DrawText("R CLOSE MAP", (int)panelRect.x + 28, (int)panelRect.y + 408, 18, neonBlue);
+    DrawText("Travel rebuilds the field, keeps your run power, and spawns the next hunt in that realm.", (int)panelRect.x + 176, (int)panelRect.y + 408, 18, RAYWHITE);
 }
 
 void Game::DrawGameOver() const {
