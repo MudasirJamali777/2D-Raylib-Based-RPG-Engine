@@ -691,11 +691,11 @@ int Game::GetFlatDamageBonus() const {
 }
 
 int Game::GetEmpDamage() const {
-    return 100 + player.wave * 6 + 35 * CountRelic(RelicType::EMPCapacitor);
+    return 45 + player.wave * 3 + 18 * CountRelic(RelicType::EMPCapacitor);
 }
 
 float Game::GetEmpRadius() const {
-    return 260.0f + 18.0f * (float)CountRelic(RelicType::EMPCapacitor);
+    return 170.0f + 10.0f * (float)CountRelic(RelicType::EMPCapacitor);
 }
 
 int Game::GetTurretDamage() const {
@@ -1361,7 +1361,7 @@ void Game::UpdatePlaying(float dt) {
     }
 
     if (!shop.isOpen && !rewardSelectionOpen && IsKeyPressed(KEY_TWO) && player.empCd <= 0.0f) {
-        player.empCd = 6.0f;
+        player.empCd = 30.0f;
         int empDamage = GetEmpDamage();
         float empRadius = GetEmpRadius();
 
