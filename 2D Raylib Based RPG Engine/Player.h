@@ -1,5 +1,5 @@
 #pragma once
-#include "raylib.h"
+#include <raylib.h>
 
 struct Player {
     Vector2 pos = { 0.0f, 0.0f };

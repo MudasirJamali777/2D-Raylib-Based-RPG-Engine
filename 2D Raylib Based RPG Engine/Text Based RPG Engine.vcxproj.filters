@@ -56,10 +56,7 @@
     <ClInclude Include="Pet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="raylib_stub.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="raylib.h">
+    <ClInclude Include="Dungeon.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

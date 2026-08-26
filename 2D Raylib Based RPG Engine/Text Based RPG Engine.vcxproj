@@ -23,14 +23,13 @@
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Dungeon.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="Monster.h" />
     <ClInclude Include="Particle.h" />
     <ClInclude Include="Pet.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Quest.h" />
-    <ClInclude Include="raylib.h" />
-    <ClInclude Include="raylib_stub.h" />
     <ClInclude Include="Relic.h" />
     <ClInclude Include="Shop.h" />
     <ClInclude Include="Tilemap.h" />
