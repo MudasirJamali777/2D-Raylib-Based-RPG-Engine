@@ -148,6 +148,88 @@ static const char* WeaponSourceLabel(int weaponIndex) {
     return "KEEP FORGE";
 }
 
+static const char* WorldTileAtlasRelativePath(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return "assets/world_tiles_crownheart.png";
+    case WorldId::Frostveil: return "assets/world_tiles_frostveil.png";
+    case WorldId::Sunscar: return "assets/world_tiles_sunscar.png";
+    case WorldId::Mirethorn: return "assets/world_tiles_mirethorn.png";
+    }
+    return "assets/world_tiles.png";
+}
+
+static const char* WorldPropAtlasRelativePath(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return "assets/props_atlas_crownheart.png";
+    case WorldId::Frostveil: return "assets/props_atlas_frostveil.png";
+    case WorldId::Sunscar: return "assets/props_atlas_sunscar.png";
+    case WorldId::Mirethorn: return "assets/props_atlas_mirethorn.png";
+    }
+    return "assets/props_atlas.png";
+}
+
+static const char* WorldEnemyAtlasRelativePath(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return "assets/enemy_atlas_crownheart.png";
+    case WorldId::Frostveil: return "assets/enemy_atlas_frostveil.png";
+    case WorldId::Sunscar: return "assets/enemy_atlas_sunscar.png";
+    case WorldId::Mirethorn: return "assets/enemy_atlas_mirethorn.png";
+    }
+    return "assets/enemy_atlas_crownheart.png";
+}
+
+static const char* WeaponTraitLabel(WeaponTrait trait) {
+    switch (trait) {
+    case WeaponTrait::Balanced: return "Balanced";
+    case WeaponTrait::Swift: return "Swift";
+    case WeaponTrait::Heavy: return "Heavy";
+    case WeaponTrait::Frost: return "Frostbite";
+    case WeaponTrait::Chain: return "Storm Arc";
+    case WeaponTrait::Sunfire: return "Sunfire";
+    case WeaponTrait::Venom: return "Venom";
+    case WeaponTrait::Guardian: return "Guardian";
+    case WeaponTrait::Executioner: return "Executioner";
+    case WeaponTrait::Royal: return "Royal";
+    }
+    return "Balanced";
+}
+
+static const char* WeaponTraitDesc(WeaponTrait trait) {
+    switch (trait) {
+    case WeaponTrait::Balanced: return "Steady steel with no drawback.";
+    case WeaponTrait::Swift: return "Faster swings and sharp tempo.";
+    case WeaponTrait::Heavy: return "Hits harder but winds up slower.";
+    case WeaponTrait::Frost: return "Strikes chill and slow foes.";
+    case WeaponTrait::Chain: return "Arc damage jumps to nearby targets.";
+    case WeaponTrait::Sunfire: return "Leaves burning damage behind.";
+    case WeaponTrait::Venom: return "Poisons foes over time.";
+    case WeaponTrait::Guardian: return "Restores a little life on hit.";
+    case WeaponTrait::Executioner: return "Punishes wounded enemies.";
+    case WeaponTrait::Royal: return "Adds splash and higher crit pressure.";
+    }
+    return "Steady steel with no drawback.";
+}
+
+static const char* WorldBlurbLine1(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return "Green courts and safe roads.";
+    case WorldId::Frostveil: return "Frozen trails and pale shrines.";
+    case WorldId::Sunscar: return "Wide dunes and caravan ruins.";
+    case WorldId::Mirethorn: return "Bog paths and rotten bridges.";
+    }
+    return "";
+}
+
+static const char* WorldBlurbLine2(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return "The keep still anchors the realm.";
+    case WorldId::Frostveil: return "Cold halls close around each hunt.";
+    case WorldId::Sunscar: return "Bright stone roads cut the sands.";
+    case WorldId::Mirethorn: return "Fog and roots twist every lane.";
+    }
+    return "";
+}
+
 Game::Game() {
     std::srand((unsigned int)std::time(nullptr));
 
@@ -240,35 +322,42 @@ void Game::BuildColorTheme() {
 
 void Game::BuildDatabases() {
     weaponDB = {
-        {"Rusty Cudgel", 14, 65.0f, "Common", 0, LIGHTGRAY},
-        {"Iron Mace", 18, 72.0f, "Common", 60, GRAY},
-        {"Pilgrim's Hatchet", 24, 82.0f, "Common", 120, neonCyan},
-        {"Raider Flail", 34, 88.0f, "Common", 200, ORANGE},
-        {"Hearthblade", 44, 96.0f, "Rare", 300, SKYBLUE},
-        {"Knight Saber", 56, 104.0f, "Rare", 430, BLUE},
-        {"Sunsteel Blade", 70, 112.0f, "Rare", 620, RED},
-        {"Storm Fang", 86, 118.0f, "Rare", 850, LIME},
-        {"Raven Pike", 102, 126.0f, "Rare", 1100, neonCyan},
-        {"Grave Reaper", 126, 138.0f, "Legendary", 1450, PURPLE},
-        {"Arc Halberd", 152, 146.0f, "Legendary", 1850, YELLOW},
-        {"Starforged Brand", 184, 154.0f, "Legendary", 2350, VIOLET},
-        {"King's Greatsword", 220, 164.0f, "Legendary", 3000, GOLD},
-        {"Wyrmtooth Cleaver", 262, 174.0f, "Exotic", 3800, GREEN},
-        {"Moonveil Edge", 308, 188.0f, "Exotic", 4800, bossPurple},
-        {"Celestial Cleaver", 370, 205.0f, "Exotic", 6200, WHITE},
-        {"Crownfall", 460, 225.0f, "Exotic", 8200, neonPink},
-        {"Crownsent Pike", 78, 120.0f, "Realmforged", 780, neonBlue},
-        {"Gatekeeper Hammer", 96, 132.0f, "Realmforged", 1040, { 100, 110, 128, 255 }},
-        {"Hailhook", 108, 136.0f, "Realmforged", 1220, { 132, 182, 236, 255 }},
-        {"Winterglass Rapier", 136, 148.0f, "Legendary", 1700, { 202, 236, 255, 255 }},
-        {"Whiteout Halberd", 178, 164.0f, "Exotic", 2500, { 150, 208, 255, 255 }},
-        {"Dune Carver", 104, 134.0f, "Realmforged", 1180, { 194, 143, 80, 255 }},
-        {"Sirocco Saber", 132, 146.0f, "Legendary", 1720, { 226, 182, 86, 255 }},
-        {"Pharaoh's Hookblade", 186, 168.0f, "Exotic", 2580, { 235, 188, 73, 255 }},
-        {"Boghook", 100, 132.0f, "Realmforged", 1160, { 98, 122, 72, 255 }},
-        {"Witchreed Glaive", 142, 150.0f, "Legendary", 1860, { 118, 164, 108, 255 }},
-        {"Hollowroot Scythe", 194, 172.0f, "Exotic", 2720, { 164, 208, 132, 255 }},
-        {"Marsh Lantern Spear", 158, 156.0f, "Legendary", 2140, { 160, 178, 118, 255 }}
+        {"Rusty Cudgel", 16, 64.0f, "Common", 0, LIGHTGRAY, 0, WeaponTrait::Heavy, 1.08f},
+        {"Iron Mace", 22, 72.0f, "Common", 70, GRAY, 1, WeaponTrait::Heavy, 1.10f},
+        {"Pilgrim's Hatchet", 29, 78.0f, "Common", 150, neonCyan, 2, WeaponTrait::Swift, 0.90f},
+        {"Raider Flail", 36, 86.0f, "Common", 250, ORANGE, 3, WeaponTrait::Chain, 1.00f},
+        {"Hearthblade", 46, 94.0f, "Rare", 360, SKYBLUE, 4, WeaponTrait::Guardian, 1.00f},
+        {"Knight Saber", 58, 102.0f, "Rare", 500, BLUE, 5, WeaponTrait::Balanced, 0.98f},
+        {"Sunsteel Blade", 70, 110.0f, "Rare", 700, RED, 6, WeaponTrait::Sunfire, 1.00f},
+        {"Storm Fang", 84, 118.0f, "Rare", 930, LIME, 7, WeaponTrait::Chain, 0.95f},
+        {"Raven Pike", 100, 126.0f, "Rare", 1200, neonCyan, 8, WeaponTrait::Swift, 0.92f},
+        {"Grave Reaper", 118, 134.0f, "Legendary", 1500, PURPLE, 9, WeaponTrait::Executioner, 1.05f},
+        {"Arc Halberd", 138, 142.0f, "Legendary", 1850, YELLOW, 10, WeaponTrait::Chain, 1.04f},
+        {"Starforged Brand", 160, 150.0f, "Legendary", 2250, VIOLET, 11, WeaponTrait::Royal, 1.00f},
+        {"King's Greatsword", 184, 158.0f, "Legendary", 2700, GOLD, 12, WeaponTrait::Heavy, 1.12f},
+        {"Wyrmtooth Cleaver", 210, 166.0f, "Exotic", 3200, GREEN, 13, WeaponTrait::Executioner, 1.08f},
+        {"Moonveil Edge", 238, 174.0f, "Exotic", 3800, bossPurple, 14, WeaponTrait::Frost, 0.96f},
+        {"Celestial Cleaver", 270, 182.0f, "Exotic", 4500, WHITE, 15, WeaponTrait::Guardian, 1.04f},
+        {"Crownfall", 308, 190.0f, "Exotic", 5400, neonPink, 16, WeaponTrait::Royal, 1.08f},
+        {"Crownsent Pike", 74, 122.0f, "Realmforged", 880, neonBlue, 17, WeaponTrait::Guardian, 0.98f},
+        {"Gatekeeper Hammer", 90, 130.0f, "Realmforged", 1080, { 100, 110, 128, 255 }, 18, WeaponTrait::Heavy, 1.10f},
+        {"Hailhook", 110, 132.0f, "Realmforged", 1320, { 132, 182, 236, 255 }, 19, WeaponTrait::Frost, 0.96f},
+        {"Winterglass Rapier", 132, 140.0f, "Legendary", 1620, { 202, 236, 255, 255 }, 20, WeaponTrait::Swift, 0.82f},
+        {"Whiteout Halberd", 160, 152.0f, "Exotic", 2050, { 150, 208, 255, 255 }, 21, WeaponTrait::Frost, 1.00f},
+        {"Dune Carver", 124, 138.0f, "Realmforged", 1460, { 194, 143, 80, 255 }, 22, WeaponTrait::Sunfire, 0.94f},
+        {"Sirocco Saber", 148, 146.0f, "Legendary", 1840, { 226, 182, 86, 255 }, 23, WeaponTrait::Swift, 0.88f},
+        {"Pharaoh's Hookblade", 178, 158.0f, "Exotic", 2320, { 235, 188, 73, 255 }, 24, WeaponTrait::Sunfire, 1.02f},
+        {"Boghook", 134, 140.0f, "Realmforged", 1540, { 98, 122, 72, 255 }, 25, WeaponTrait::Venom, 0.98f},
+        {"Witchreed Glaive", 156, 150.0f, "Legendary", 1950, { 118, 164, 108, 255 }, 26, WeaponTrait::Guardian, 1.00f},
+        {"Hollowroot Scythe", 190, 164.0f, "Exotic", 2480, { 164, 208, 132, 255 }, 27, WeaponTrait::Venom, 1.02f},
+        {"Marsh Lantern Spear", 172, 156.0f, "Legendary", 2200, { 160, 178, 118, 255 }, 28, WeaponTrait::Guardian, 0.96f}
+    };
+
+    petDB = {
+        {"Ember Fox", "Spits cinders that burn hunted foes.", 12, 16, 0.90f, 32.0f, { 214, 118, 62, 255 }, 0},
+        {"Frost Finch", "Pecks icy shards that slow enemies.", 20, 20, 1.05f, 34.0f, { 164, 214, 255, 255 }, 1},
+        {"Dune Scarab", "Launches bright darts in quick bursts.", 30, 24, 0.72f, 30.0f, { 224, 186, 76, 255 }, 2},
+        {"Mireling", "Spits venom globs that poison targets.", 42, 30, 1.12f, 36.0f, { 122, 166, 104, 255 }, 3}
     };
 
     monsterTypes = {
@@ -646,14 +735,42 @@ void Game::BuildTileMap() {
         }
     }
 
-    worldProps.push_back({ { 0.0f, -520.0f }, 9, 0.90f });
-    worldProps.push_back({ { 0.0f, 520.0f }, 9, 0.90f });
-    worldProps.push_back({ { 650.0f, 0.0f }, 9, 0.90f });
-    worldProps.push_back({ { -650.0f, 0.0f }, 9, 0.90f });
-    worldProps.push_back({ { 126.0f, -636.0f }, 9, 0.82f });
-    worldProps.push_back({ { -148.0f, 592.0f }, 9, 0.82f });
-    worldProps.push_back({ { 1544.0f, -930.0f }, 9, 0.82f });
-    worldProps.push_back({ { -1618.0f, 1008.0f }, 9, 0.82f });
+    switch (currentWorld) {
+    case WorldId::Crownheart:
+        worldProps.push_back({ { 0.0f, -520.0f }, 9, 0.90f });
+        worldProps.push_back({ { 0.0f, 520.0f }, 9, 0.90f });
+        worldProps.push_back({ { 650.0f, 0.0f }, 9, 0.90f });
+        worldProps.push_back({ { -650.0f, 0.0f }, 9, 0.90f });
+        worldProps.push_back({ { 126.0f, -636.0f }, 9, 0.82f });
+        worldProps.push_back({ { -148.0f, 592.0f }, 9, 0.82f });
+        worldProps.push_back({ { 1544.0f, -930.0f }, 9, 0.82f });
+        worldProps.push_back({ { -1618.0f, 1008.0f }, 9, 0.82f });
+        break;
+    case WorldId::Frostveil:
+        worldProps.push_back({ { 0.0f, -508.0f }, 4, 0.88f });
+        worldProps.push_back({ { 0.0f, 510.0f }, 4, 0.88f });
+        worldProps.push_back({ { 642.0f, 0.0f }, 9, 0.84f });
+        worldProps.push_back({ { -642.0f, 0.0f }, 9, 0.84f });
+        worldProps.push_back({ { 112.0f, -636.0f }, 2, 0.88f });
+        worldProps.push_back({ { -146.0f, 600.0f }, 2, 0.88f });
+        break;
+    case WorldId::Sunscar:
+        worldProps.push_back({ { 0.0f, -522.0f }, 3, 0.92f });
+        worldProps.push_back({ { 0.0f, 520.0f }, 3, 0.92f });
+        worldProps.push_back({ { 660.0f, 0.0f }, 9, 0.84f });
+        worldProps.push_back({ { -660.0f, 0.0f }, 9, 0.84f });
+        worldProps.push_back({ { 182.0f, 612.0f }, 4, 0.86f });
+        worldProps.push_back({ { -360.0f, -710.0f }, 2, 0.88f });
+        break;
+    case WorldId::Mirethorn:
+        worldProps.push_back({ { 0.0f, -520.0f }, 9, 0.88f });
+        worldProps.push_back({ { 0.0f, 520.0f }, 9, 0.88f });
+        worldProps.push_back({ { 652.0f, 0.0f }, 0, 1.02f });
+        worldProps.push_back({ { -652.0f, 0.0f }, 0, 1.02f });
+        worldProps.push_back({ { 180.0f, 602.0f }, 1, 0.94f });
+        worldProps.push_back({ { -360.0f, -730.0f }, 1, 0.94f });
+        break;
+    }
 
     for (size_t i = 0; i < dungeon.obstacles.size(); ++i) {
         const auto& obstacle = dungeon.obstacles[i];
@@ -675,18 +792,61 @@ void Game::BuildTileMap() {
 }
 
 void Game::LoadAssets() {
-    tileAtlas = LoadTexture(FindAssetPath("assets/world_tiles.png").c_str());
-    propAtlas = LoadTexture(FindAssetPath("assets/props_atlas.png").c_str());
-    actorAtlas = LoadTexture(FindAssetPath("assets/actors_atlas.png").c_str());
+    if (tileAtlas.id != 0) {
+        UnloadTexture(tileAtlas);
+        tileAtlas = {};
+    }
+    if (propAtlas.id != 0) {
+        UnloadTexture(propAtlas);
+        propAtlas = {};
+    }
+    if (enemyAtlas.id != 0) {
+        UnloadTexture(enemyAtlas);
+        enemyAtlas = {};
+    }
+
+    std::string tilePath = FindAssetPath(WorldTileAtlasRelativePath(currentWorld));
+    std::string propPath = FindAssetPath(WorldPropAtlasRelativePath(currentWorld));
+    std::string enemyPath = FindAssetPath(WorldEnemyAtlasRelativePath(currentWorld));
+
+    if (!FileExistsPortable(tilePath)) {
+        tilePath = FindAssetPath("assets/world_tiles.png");
+    }
+    if (!FileExistsPortable(propPath)) {
+        propPath = FindAssetPath("assets/props_atlas.png");
+    }
+    if (!FileExistsPortable(enemyPath)) {
+        enemyPath = FindAssetPath("assets/enemy_atlas_crownheart.png");
+    }
+
+    tileAtlas = LoadTexture(tilePath.c_str());
+    propAtlas = LoadTexture(propPath.c_str());
+    enemyAtlas = LoadTexture(enemyPath.c_str());
+
+    if (actorAtlas.id == 0) {
+        actorAtlas = LoadTexture(FindAssetPath("assets/actors_atlas.png").c_str());
+    }
+    if (weaponAtlas.id == 0) {
+        weaponAtlas = LoadTexture(FindAssetPath("assets/weapons_atlas.png").c_str());
+    }
+    if (petAtlas.id == 0) {
+        petAtlas = LoadTexture(FindAssetPath("assets/pets_atlas.png").c_str());
+    }
 }
 
 void Game::UnloadAssets() {
     if (tileAtlas.id != 0) UnloadTexture(tileAtlas);
     if (propAtlas.id != 0) UnloadTexture(propAtlas);
     if (actorAtlas.id != 0) UnloadTexture(actorAtlas);
+    if (enemyAtlas.id != 0) UnloadTexture(enemyAtlas);
+    if (weaponAtlas.id != 0) UnloadTexture(weaponAtlas);
+    if (petAtlas.id != 0) UnloadTexture(petAtlas);
     tileAtlas = {};
     propAtlas = {};
     actorAtlas = {};
+    enemyAtlas = {};
+    weaponAtlas = {};
+    petAtlas = {};
 }
 
 Rectangle Game::TileSourceRect(int index) const {
@@ -700,6 +860,24 @@ Rectangle Game::PropSourceRect(int index) const {
 }
 
 Rectangle Game::ActorSourceRect(int index) const {
+    const int cell = 64;
+    const int cols = 4;
+    return { (float)((index % cols) * cell), (float)((index / cols) * cell), (float)cell, (float)cell };
+}
+
+Rectangle Game::EnemySourceRect(int index) const {
+    const int cell = 64;
+    const int cols = 4;
+    return { (float)((index % cols) * cell), (float)((index / cols) * cell), (float)cell, (float)cell };
+}
+
+Rectangle Game::WeaponSourceRect(int index) const {
+    const int cell = 64;
+    const int cols = 6;
+    return { (float)((index % cols) * cell), (float)((index / cols) * cell), (float)cell, (float)cell };
+}
+
+Rectangle Game::PetSourceRect(int index) const {
     const int cell = 64;
     const int cols = 4;
     return { (float)((index % cols) * cell), (float)((index / cols) * cell), (float)cell, (float)cell };
@@ -918,6 +1096,14 @@ float Game::GetAttackCooldown() const {
     return value;
 }
 
+float Game::GetWeaponAttackCooldown(const Weapon& weapon) const {
+    float value = GetAttackCooldown() * weapon.cooldownScale;
+    if (value < 0.10f) {
+        value = 0.10f;
+    }
+    return value;
+}
+
 float Game::GetDashCooldown() const {
     float value = 3.0f - 0.12f * (float)CountRelic(RelicType::PhaseBoots);
     if (value < 1.8f) {
@@ -936,6 +1122,34 @@ float Game::GetCritMultiplier() const {
 
 int Game::GetFlatDamageBonus() const {
     return 8 * CountRelic(RelicType::RazorPrism);
+}
+
+int Game::GetWeaponDamageAgainst(const Weapon& weapon, const ActiveMonster& monster) const {
+    int damage = weapon.damage + GetFlatDamageBonus() + (std::rand() % 7);
+
+    switch (weapon.trait) {
+    case WeaponTrait::Heavy:
+        damage += 10;
+        break;
+    case WeaponTrait::Guardian:
+        damage += 4;
+        break;
+    case WeaponTrait::Royal:
+        damage += 12;
+        break;
+    case WeaponTrait::Executioner:
+        if (monster.hp <= monster.maxHp / 2) {
+            damage = (int)std::round((float)damage * 1.35f);
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (damage < 1) {
+        damage = 1;
+    }
+    return damage;
 }
 
 int Game::GetEmpDamage() const {
@@ -1084,6 +1298,7 @@ void Game::TravelToWorld(WorldId world) {
     currentWorld = world;
     BuildDungeon();
     BuildTileMap();
+    LoadAssets();
 
     player.pos = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.72f };
     player.aimDir = { 0.0f, -1.0f };
@@ -1104,6 +1319,8 @@ void Game::TravelToWorld(WorldId world) {
     turrets.clear();
     shockwaves.clear();
     beams.clear();
+
+    SyncPetState(true);
 
     announcement = std::string(WorldLabel(world)) + " // ROADS OPEN";
     announcementTimer = 2.4f;
@@ -1157,8 +1374,10 @@ bool Game::LoadProfile() {
         persistentOwnedWeapons[0] = true;
     }
     realmSignatureClaimed.assign(4, false);
+    persistentOwnedPets.assign(petDB.size(), false);
     persistentHpUpgradeLevel = 0;
     persistentEquippedWeaponIdx = 0;
+    persistentEquippedPetIdx = -1;
     legacyRenown = 0;
     euro = 0;
     mainQuestIndex = 0;
@@ -1192,7 +1411,7 @@ bool Game::LoadProfile() {
 
         for (int i = 0; i < 3; ++i) RefreshSideQuestOffer(i);
     }
-    else if (header == "CROWNHEART_PROFILE_V2" || header == "CROWNHEART_PROFILE_V3") {
+    else if (header == "CROWNHEART_PROFILE_V2" || header == "CROWNHEART_PROFILE_V3" || header == "CROWNHEART_PROFILE_V4") {
         in >> legacyRenown >> persistentHpUpgradeLevel >> persistentEquippedWeaponIdx >> euro;
 
         size_t ownedCount = 0;
@@ -1242,7 +1461,7 @@ bool Game::LoadProfile() {
             if (i < sideQuestReady.size()) sideQuestReady[i] = (value != 0);
         }
 
-        if (header == "CROWNHEART_PROFILE_V3") {
+        if (header == "CROWNHEART_PROFILE_V3" || header == "CROWNHEART_PROFILE_V4") {
             size_t signatureCount = 0;
             in >> signatureCount;
             for (size_t i = 0; i < signatureCount; ++i) {
@@ -1250,6 +1469,20 @@ bool Game::LoadProfile() {
                 in >> value;
                 if (i < realmSignatureClaimed.size()) {
                     realmSignatureClaimed[i] = (value != 0);
+                }
+            }
+        }
+
+        if (header == "CROWNHEART_PROFILE_V4") {
+            in >> persistentEquippedPetIdx;
+
+            size_t petOwnedCount = 0;
+            in >> petOwnedCount;
+            for (size_t i = 0; i < petOwnedCount; ++i) {
+                int value = 0;
+                in >> value;
+                if (i < persistentOwnedPets.size()) {
+                    persistentOwnedPets[i] = (value != 0);
                 }
             }
         }
@@ -1304,6 +1537,16 @@ bool Game::LoadProfile() {
         }
     }
 
+    if (persistentEquippedPetIdx < -1 || persistentEquippedPetIdx >= (int)petDB.size()) {
+        persistentEquippedPetIdx = -1;
+    }
+    if (persistentOwnedPets.size() != petDB.size()) {
+        persistentOwnedPets.resize(petDB.size(), false);
+    }
+    if (persistentEquippedPetIdx >= 0 && !persistentOwnedPets[persistentEquippedPetIdx]) {
+        persistentEquippedPetIdx = -1;
+    }
+
     SaveProfile();
     return true;
 }
@@ -1314,7 +1557,7 @@ void Game::SaveProfile() const {
         return;
     }
 
-    out << "CROWNHEART_PROFILE_V3\n";
+    out << "CROWNHEART_PROFILE_V4\n";
     out << legacyRenown << ' ' << persistentHpUpgradeLevel << ' ' << persistentEquippedWeaponIdx << ' ' << euro << '\n';
 
     out << persistentOwnedWeapons.size();
@@ -1343,6 +1586,11 @@ void Game::SaveProfile() const {
 
     out << realmSignatureClaimed.size();
     for (bool value : realmSignatureClaimed) out << ' ' << (value ? 1 : 0);
+    out << '\n';
+
+    out << persistentEquippedPetIdx << '\n';
+    out << persistentOwnedPets.size();
+    for (bool value : persistentOwnedPets) out << ' ' << (value ? 1 : 0);
     out << '\n';
 }
 
@@ -1434,6 +1682,7 @@ bool Game::LoadRun() {
             currentWorld = (WorldId)worldValue;
             BuildDungeon();
             BuildTileMap();
+            LoadAssets();
         }
     }
     monsters.clear();
@@ -1557,6 +1806,7 @@ bool Game::LoadRun() {
     shop.message.clear();
     shop.messageTimer = 0.0f;
     rewardChoices.clear();
+    SyncPetState(true);
     gameState = GameState::Playing;
     announcement = "CHRONICLE RESTORED";
     announcementTimer = 2.2f;
@@ -1567,6 +1817,7 @@ void Game::ResetRun() {
     currentWorld = WorldId::Crownheart;
     BuildDungeon();
     BuildTileMap();
+    LoadAssets();
 
     if (persistentOwnedWeapons.size() < weaponDB.size()) {
         persistentOwnedWeapons.resize(weaponDB.size(), false);
@@ -1595,11 +1846,23 @@ void Game::ResetRun() {
     if (!shop.ownedWeapons.empty()) {
         shop.ownedWeapons[0] = true;
     }
+    if (petDB.empty()) {
+        shop.browsePetIdx = 0;
+    }
+    else if (persistentEquippedPetIdx >= 0 && persistentEquippedPetIdx < (int)petDB.size()) {
+        shop.browsePetIdx = persistentEquippedPetIdx;
+    }
     player.equippedWeaponIdx = persistentEquippedWeaponIdx;
     if (player.equippedWeaponIdx < 0 || player.equippedWeaponIdx >= (int)weaponDB.size() || !shop.ownedWeapons[player.equippedWeaponIdx]) {
         player.equippedWeaponIdx = 0;
     }
     persistentEquippedWeaponIdx = player.equippedWeaponIdx;
+    if (persistentOwnedPets.size() != petDB.size()) {
+        persistentOwnedPets.resize(petDB.size(), false);
+    }
+    if (persistentEquippedPetIdx < -1 || persistentEquippedPetIdx >= (int)petDB.size()) {
+        persistentEquippedPetIdx = -1;
+    }
     SaveProfile();
 
     relics.clear();
@@ -1626,6 +1889,7 @@ void Game::ResetRun() {
     turrets.clear();
     shockwaves.clear();
     beams.clear();
+    SyncPetState(true);
 
     SpawnWave(player.wave);
 }
@@ -1768,6 +2032,101 @@ void Game::SpawnWave(int waveNumber) {
         SpawnMonsterByType(bossType, GetSpawnPointInCombatRoom());
         announcement = std::string(WorldLabel(currentWorld)) + " // " + monsterTypes[bossType].name + " STIRS";
         announcementTimer = 3.8f;
+    }
+}
+
+void Game::SyncPetState(bool snapToPlayer) {
+    if (persistentOwnedPets.size() != petDB.size()) {
+        persistentOwnedPets.resize(petDB.size(), false);
+    }
+
+    if (persistentEquippedPetIdx < 0 || persistentEquippedPetIdx >= (int)petDB.size()) {
+        pet = ActivePet{};
+        return;
+    }
+
+    if (!persistentOwnedPets[persistentEquippedPetIdx]) {
+        pet = ActivePet{};
+        return;
+    }
+
+    bool wasInactive = !pet.active || pet.petIndex != persistentEquippedPetIdx;
+    pet.active = true;
+    pet.petIndex = persistentEquippedPetIdx;
+    if (wasInactive) {
+        pet.fireTimer = 0.20f;
+        pet.orbitAngle = 0.0f;
+        pet.bob = 0.0f;
+    }
+    if (snapToPlayer || wasInactive) {
+        pet.pos = VecAdd(player.pos, { 26.0f, -20.0f });
+    }
+}
+
+void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, int damage, bool isCrit) {
+    switch (weapon.trait) {
+    case WeaponTrait::Frost:
+        monster.slowTimer = std::max(monster.slowTimer, 1.8f);
+        EmitBurst(monster.pos, 5, 2.8f, Fade({ 206, 236, 255, 255 }, 0.95f), 2.2f);
+        break;
+    case WeaponTrait::Chain: {
+        int arcs = 0;
+        for (auto& other : monsters) {
+            if (&other == &monster || other.hp <= 0) {
+                continue;
+            }
+            if (Distance(other.pos, monster.pos) <= 86.0f) {
+                int arcDamage = std::max(6, damage / 3);
+                other.hp -= arcDamage;
+                other.hitFlash = 0.08f;
+                beams.push_back({ monster.pos, other.pos, weapon.color, 2.8f, 0.10f });
+                AddFloatingText(other.pos, "ARC " + std::to_string(arcDamage), weapon.color);
+                arcs++;
+                if (arcs >= 2) {
+                    break;
+                }
+            }
+        }
+        break;
+    }
+    case WeaponTrait::Sunfire:
+        monster.burnTimer = std::max(monster.burnTimer, 2.6f);
+        monster.burnTickTimer = 0.18f;
+        EmitBurst(monster.pos, 4, 2.2f, { 236, 170, 78, 255 }, 2.4f);
+        break;
+    case WeaponTrait::Venom:
+        monster.poisonTimer = std::max(monster.poisonTimer, 3.3f);
+        monster.poisonTickTimer = 0.18f;
+        EmitBurst(monster.pos, 4, 2.0f, { 150, 206, 106, 255 }, 2.4f);
+        break;
+    case WeaponTrait::Guardian:
+        if (player.hp < player.maxHp) {
+            player.hp = std::min(player.maxHp, player.hp + 2);
+        }
+        break;
+    case WeaponTrait::Heavy:
+        hitStopTimer = std::max(hitStopTimer, 0.05f);
+        screenShake = std::max(screenShake, 9.0f);
+        break;
+    case WeaponTrait::Royal:
+        shockwaves.push_back({ monster.pos, 14.0f, 92.0f, 0.18f, 0.18f, Fade(weapon.color, 0.72f) });
+        for (auto& other : monsters) {
+            if (&other == &monster || other.hp <= 0) {
+                continue;
+            }
+            if (Distance(other.pos, monster.pos) <= 72.0f) {
+                int splashDamage = std::max(8, damage / 4);
+                other.hp -= splashDamage;
+                other.hitFlash = 0.08f;
+            }
+        }
+        break;
+    default:
+        break;
+    }
+
+    if (isCrit) {
+        EmitBurst(monster.pos, 4, 2.8f, neonGold, 2.2f);
     }
 }
 
@@ -1926,6 +2285,9 @@ void Game::UpdatePlaying(float dt) {
     if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_E)) {
         shop.isOpen = !shop.isOpen;
         shop.browseWeaponIdx = player.equippedWeaponIdx;
+        if (!petDB.empty()) {
+            shop.browsePetIdx = persistentEquippedPetIdx >= 0 ? persistentEquippedPetIdx : shop.browsePetIdx % (int)petDB.size();
+        }
     }
     if (!inSafeZone) {
         shop.isOpen = false;
@@ -1986,19 +2348,83 @@ void Game::UpdatePlaying(float dt) {
         }
     }
 
-    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_SPACE) && player.attackCd <= 0.0f) {
-        player.attackCd = GetAttackCooldown();
-        const Weapon& weapon = weaponDB[player.equippedWeaponIdx];
-        bool hitSomething = false;
+    if (pet.active && pet.petIndex >= 0 && pet.petIndex < (int)petDB.size()) {
+        const PetDefinition& petInfo = petDB[pet.petIndex];
+        pet.orbitAngle += dt * 2.4f;
+        pet.bob += dt * 4.0f;
+        Vector2 desired = {
+            player.pos.x + std::cos(pet.orbitAngle) * petInfo.orbitRadius,
+            player.pos.y - 22.0f + std::sin(pet.bob) * 5.0f
+        };
+        pet.pos = VecAdd(pet.pos, VecScale(VecSub(desired, pet.pos), ClampFloat(dt * 8.0f, 0.0f, 1.0f)));
+        pet.fireTimer -= dt;
 
-        shockwaves.push_back({ player.pos, 12.0f, weapon.range + 4.0f * CountRelic(RelicType::RazorPrism), 0.22f, 0.22f, Fade(weapon.color, 0.7f) });
+        if (!inSafeZone && !monsters.empty() && pet.fireTimer <= 0.0f) {
+            int targetIndex = -1;
+            float bestDist = 250.0f;
+            for (int i = 0; i < (int)monsters.size(); ++i) {
+                float dist = Distance(pet.pos, monsters[i].pos);
+                if (dist < bestDist) {
+                    bestDist = dist;
+                    targetIndex = i;
+                }
+            }
+
+            if (targetIndex >= 0) {
+                ActiveMonster& target = monsters[targetIndex];
+                int petDamage = petInfo.damage + player.wave * 2;
+                target.hp -= petDamage;
+                target.hitFlash = 0.10f;
+                beams.push_back({ pet.pos, target.pos, petInfo.color, 2.4f, 0.10f });
+                AddFloatingText(target.pos, petInfo.name + " -" + std::to_string(petDamage), petInfo.color);
+                EmitBurst(target.pos, 6, 3.0f, petInfo.color, 2.4f);
+
+                if (pet.petIndex == 0) {
+                    target.burnTimer = std::max(target.burnTimer, 2.2f);
+                    target.burnTickTimer = 0.15f;
+                }
+                else if (pet.petIndex == 1) {
+                    target.slowTimer = std::max(target.slowTimer, 1.5f);
+                }
+                else if (pet.petIndex == 2) {
+                    for (auto& other : monsters) {
+                        if (&other == &target || other.hp <= 0) continue;
+                        if (Distance(other.pos, target.pos) <= 54.0f) {
+                            other.hp -= std::max(5, petDamage / 2);
+                            other.hitFlash = 0.08f;
+                        }
+                    }
+                }
+                else if (pet.petIndex == 3) {
+                    target.poisonTimer = std::max(target.poisonTimer, 3.0f);
+                    target.poisonTickTimer = 0.15f;
+                }
+
+                pet.fireTimer = petInfo.attackCooldown;
+            }
+        }
+    }
+
+    if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_SPACE) && player.attackCd <= 0.0f) {
+        const Weapon& weapon = weaponDB[player.equippedWeaponIdx];
+        player.attackCd = GetWeaponAttackCooldown(weapon);
+        bool hitSomething = false;
+        float swingRange = weapon.range + 4.0f * CountRelic(RelicType::RazorPrism);
+
+        shockwaves.push_back({ player.pos, 12.0f, swingRange, 0.22f, 0.22f, Fade(weapon.color, 0.7f) });
         EmitBurst(player.pos, 16, 4.6f, weapon.color, 4.0f);
 
         for (auto& monster : monsters) {
             float dist = Distance(player.pos, monster.pos);
-            if (dist <= weapon.range) {
-                int damage = weapon.damage + GetFlatDamageBonus() + (std::rand() % 7);
-                bool isCrit = RandomRange(0.0f, 1.0f) < GetCritChance();
+            if (dist <= swingRange) {
+                int damage = GetWeaponDamageAgainst(weapon, monster);
+                float critChance = GetCritChance();
+                if (weapon.trait == WeaponTrait::Swift) critChance += 0.04f;
+                if (weapon.trait == WeaponTrait::Royal) critChance += 0.08f;
+                if (weapon.trait == WeaponTrait::Heavy) critChance -= 0.02f;
+                if (critChance < 0.02f) critChance = 0.02f;
+
+                bool isCrit = RandomRange(0.0f, 1.0f) < critChance;
                 if (isCrit) {
                     damage = (int)(damage * GetCritMultiplier());
                 }
@@ -2007,6 +2433,7 @@ void Game::UpdatePlaying(float dt) {
                 monster.hitFlash = isCrit ? 0.18f : 0.12f;
                 AddFloatingText(monster.pos, (isCrit ? "CRIT -" : "-") + std::to_string(damage), isCrit ? neonGold : weapon.color);
                 EmitBurst(monster.pos, isCrit ? 16 : 9, isCrit ? 5.5f : 4.2f, isCrit ? neonGold : weapon.color, isCrit ? 4.4f : 3.2f);
+                ApplyWeaponHitEffect(weapon, monster, damage, isCrit);
                 hitSomething = true;
 
                 if (CountRelic(RelicType::BloodCircuit) > 0) {
@@ -2108,20 +2535,44 @@ void Game::UpdatePlaying(float dt) {
     for (auto& monster : monsters) {
         monster.hitFlash = std::max(0.0f, monster.hitFlash - dt);
         monster.attackTimer = std::max(0.0f, monster.attackTimer - dt);
+        monster.slowTimer = std::max(0.0f, monster.slowTimer - dt);
+
+        if (monster.burnTimer > 0.0f) {
+            monster.burnTimer = std::max(0.0f, monster.burnTimer - dt);
+            monster.burnTickTimer -= dt;
+            if (monster.burnTickTimer <= 0.0f) {
+                int burnDamage = std::max(5, monster.maxHp / 24);
+                monster.hp -= burnDamage;
+                monster.burnTickTimer = 0.55f;
+                AddFloatingText(monster.pos, "BURN " + std::to_string(burnDamage), { 236, 170, 78, 255 });
+            }
+        }
+
+        if (monster.poisonTimer > 0.0f) {
+            monster.poisonTimer = std::max(0.0f, monster.poisonTimer - dt);
+            monster.poisonTickTimer -= dt;
+            if (monster.poisonTickTimer <= 0.0f) {
+                int poisonDamage = std::max(4, monster.maxHp / 28);
+                monster.hp -= poisonDamage;
+                monster.poisonTickTimer = 0.62f;
+                AddFloatingText(monster.pos, "VENOM " + std::to_string(poisonDamage), { 150, 206, 106, 255 });
+            }
+        }
 
         Vector2 toPlayer = VecSub(player.pos, monster.pos);
         float dist = VecLength(toPlayer);
         Vector2 dir = VecNormalizeSafe(toPlayer);
+        float moveScale = (monster.slowTimer > 0.0f) ? 0.64f : 1.0f;
 
         bool playerInTargetRoom = (waveTargetRoomIndex >= 0 && waveTargetRoomIndex < (int)dungeon.rooms.size() && currentArea == &dungeon.rooms[waveTargetRoomIndex]);
 
         if (CheckCollisionPointRec(monster.pos, safeZone)) {
             Vector2 away = VecNormalizeSafe(VecSub(monster.pos, SafeZoneCenter(safeZone)));
-            monster.pos = MoveWithCollision(monster.pos, VecScale(away, monster.speed * 80.0f * dt), monster.radius);
+            monster.pos = MoveWithCollision(monster.pos, VecScale(away, monster.speed * 80.0f * moveScale * dt), monster.radius);
         }
         else if (!inSafeZone && dist > 6.0f) {
             if (lockedRoomIndex >= 0 || playerInTargetRoom) {
-                monster.vel = VecScale(dir, monster.speed * 72.0f * dt);
+                monster.vel = VecScale(dir, monster.speed * 72.0f * moveScale * dt);
                 monster.pos = MoveWithCollision(monster.pos, monster.vel, monster.radius);
             }
         }
@@ -2295,12 +2746,25 @@ void Game::UpdatePlaying(float dt) {
 
     if (shop.isOpen) {
         int hpUpgradeCost = 100 + player.hpUpgradeLevel * 90;
+        const int armoryCols = 6;
 
         if (IsKeyPressed(KEY_RIGHT)) {
             shop.browseWeaponIdx = (shop.browseWeaponIdx + 1) % (int)weaponDB.size();
         }
         if (IsKeyPressed(KEY_LEFT)) {
             shop.browseWeaponIdx = (shop.browseWeaponIdx - 1 + (int)weaponDB.size()) % (int)weaponDB.size();
+        }
+        if (IsKeyPressed(KEY_UP)) {
+            shop.browseWeaponIdx -= armoryCols;
+            if (shop.browseWeaponIdx < 0) {
+                shop.browseWeaponIdx = (shop.browseWeaponIdx % (int)weaponDB.size() + (int)weaponDB.size()) % (int)weaponDB.size();
+            }
+        }
+        if (IsKeyPressed(KEY_DOWN)) {
+            shop.browseWeaponIdx += armoryCols;
+            if (shop.browseWeaponIdx >= (int)weaponDB.size()) {
+                shop.browseWeaponIdx %= (int)weaponDB.size();
+            }
         }
 
         WorldId browseWorld = WeaponOriginWorld(shop.browseWeaponIdx);
@@ -2364,6 +2828,43 @@ void Game::UpdatePlaying(float dt) {
             }
             else {
                 shop.message = "NOT ENOUGH RENOWN";
+                shop.messageColor = softRed;
+                shop.messageTimer = 1.2f;
+            }
+        }
+
+        if (!petDB.empty() && IsKeyPressed(KEY_P)) {
+            shop.browsePetIdx = (shop.browsePetIdx + 1) % (int)petDB.size();
+        }
+
+        if (!petDB.empty() && IsKeyPressed(KEY_N)) {
+            const PetDefinition& petInfo = petDB[shop.browsePetIdx];
+            if (persistentOwnedPets.size() != petDB.size()) {
+                persistentOwnedPets.resize(petDB.size(), false);
+            }
+
+            if (persistentOwnedPets[shop.browsePetIdx]) {
+                persistentEquippedPetIdx = shop.browsePetIdx;
+                SyncPetState(true);
+                shop.message = "COMPANION READIED";
+                shop.messageColor = petInfo.color;
+                shop.messageTimer = 1.4f;
+                SaveProfile();
+                SaveRun();
+            }
+            else if (euro >= petInfo.euroCost) {
+                euro -= petInfo.euroCost;
+                persistentOwnedPets[shop.browsePetIdx] = true;
+                persistentEquippedPetIdx = shop.browsePetIdx;
+                SyncPetState(true);
+                shop.message = "BOND FORGED";
+                shop.messageColor = petInfo.color;
+                shop.messageTimer = 1.5f;
+                SaveProfile();
+                SaveRun();
+            }
+            else {
+                shop.message = "NOT ENOUGH EURO";
                 shop.messageColor = softRed;
                 shop.messageTimer = 1.2f;
             }
@@ -2480,7 +2981,7 @@ void Game::DrawTitleScreen() const {
     DrawText("- Four connected realms with distinct road networks and hidden pockets", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
     DrawText("- Real-time combat with dash, nova burst and guardian totems", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
     DrawText("- Sealed-court battles, relic blessings, quests and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
-    DrawText("- Realm-forged weapons now fill the armory, with signature gifts earned in each world", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
+    DrawText("- Realm-forged weapons and companion pets now grow your build between worlds", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
     DrawText("PRESS ENTER TO BEGIN A NEW QUEST", screenW / 2 - MeasureText("PRESS ENTER TO BEGIN A NEW QUEST", 28) / 2, 586, 28, pulse);
@@ -2699,11 +3200,14 @@ void Game::DrawWorld() const {
         DrawCircleV(particle.pos, particle.size, Fade(particle.color, alpha));
     }
 
+    DrawPetSprite();
+
     if (actorAtlas.id != 0) {
         Rectangle src = ActorSourceRect(0);
         Rectangle dst = { player.pos.x - 38.0f, player.pos.y - 52.0f, 76.0f, 76.0f };
         DrawTexturePro(actorAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
     }
+    DrawPlayerWeapon();
     DrawCircleLines((int)player.pos.x, (int)player.pos.y, weaponDB[player.equippedWeaponIdx].range, Fade({ 98, 130, 190, 255 }, 0.12f));
 
     for (const auto& text : floatingTexts) {
@@ -2717,6 +3221,7 @@ void Game::DrawHud() const {
     DrawPanel({ 18.0f, 18.0f, 420.0f, 172.0f }, panel, neonBlue);
     DrawText("ADVENTURER'S KIT", 34, 28, 20, neonCyan);
     DrawText(TextFormat("WEAPON: %s", weaponDB[player.equippedWeaponIdx].name.c_str()), 34, 54, 18, WHITE);
+    DrawText(TextFormat("TRAIT: %s", WeaponTraitLabel(weaponDB[player.equippedWeaponIdx].trait)), 34, 76, 16, weaponDB[player.equippedWeaponIdx].color);
     DrawText(TextFormat("WAVE %d", player.wave), 300, 28, 20, neonGold);
     DrawText(TextFormat("KILLS %d", player.kills), 300, 54, 18, RAYWHITE);
     DrawText(TextFormat("RELICS %d", player.relicsCollected), 300, 78, 18, neonPink);
@@ -2773,11 +3278,12 @@ void Game::DrawHud() const {
     DrawText(TextFormat("REALM: %s", WorldLabel(currentWorld)), screenW - 334, 56, 18, WHITE);
     DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 82, 18, WHITE);
     DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 106, 18, WHITE);
+    DrawText(TextFormat("PET: %s", (pet.active && pet.petIndex >= 0 && pet.petIndex < (int)petDB.size()) ? petDB[pet.petIndex].name.c_str() : "NONE"), screenW - 334, 130, 16, pet.active ? petDB[pet.petIndex].color : RAYWHITE);
 
     bool inSafeZone = CheckCollisionPointRec(player.pos, safeZone);
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
-    DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 132, 18, inSafeZone ? safeGreen : softRed);
-    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 154, 16, RAYWHITE);
+    DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 148, 18, inSafeZone ? safeGreen : softRed);
+    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 168, 16, RAYWHITE);
 
     DrawMiniMap();
 
@@ -2791,7 +3297,7 @@ void Game::DrawHud() const {
         DrawText("QUEST BOARD OPEN // E CLAIM MAIN QUEST // 1-3 ACCEPT OR TURN IN SIDE CONTRACTS // Q CLOSE", 22, screenH - 34, 18, neonGold);
     }
     else if (inSafeZone) {
-        DrawText("SAFE COURTYARD // E ARMORY // Q QUEST BOARD // R REALM GATE MAP", 22, screenH - 34, 18, safeGreen);
+        DrawText("SAFE COURTYARD // E ARMORY & STABLE // Q QUEST BOARD // R REALM GATE MAP", 22, screenH - 34, 18, safeGreen);
     }
     else {
         DrawText("WASD MOVE   SPACE SWING   1 DASH   2 NOVA   3 TOTEM   HOLD THE ROADS, CLEAR THE COURTS", 22, screenH - 34, 18, RAYWHITE);
@@ -2937,9 +3443,9 @@ void Game::DrawRewardOverlay() const {
 }
 
 void Game::DrawShop() const {
-    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.55f));
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.58f));
 
-    Rectangle panelRect = { screenW / 2.0f - 390.0f, screenH / 2.0f - 240.0f, 780.0f, 480.0f };
+    Rectangle panelRect = { screenW * 0.5f - 580.0f, screenH * 0.5f - 290.0f, 1160.0f, 580.0f };
     DrawPanel(panelRect, panel2, neonGold);
 
     int collectedWeapons = 0;
@@ -2949,16 +3455,71 @@ void Game::DrawShop() const {
         }
     }
 
-    DrawText("KEEP ARMORY", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
-    DrawText(TextFormat("RENOWN HELD: %d", player.xp), (int)panelRect.x + 434, (int)panelRect.y + 24, 20, safeGreen);
-    DrawText(TextFormat("COLLECTED: %d / %d", collectedWeapons, (int)weaponDB.size()), (int)panelRect.x + 430, (int)panelRect.y + 52, 18, neonBlue);
-    DrawText(TextFormat("EURO: %d", euro), (int)panelRect.x + 640, (int)panelRect.y + 24, 18, neonGold);
+    int collectedPets = 0;
+    for (size_t i = 0; i < persistentOwnedPets.size(); ++i) {
+        if (persistentOwnedPets[i]) {
+            collectedPets++;
+        }
+    }
+
+    DrawText("KEEP ARMORY & STABLE", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
+    DrawText(TextFormat("RENOWN %d", player.xp), (int)panelRect.x + 764, (int)panelRect.y + 24, 20, safeGreen);
+    DrawText(TextFormat("EURO %d", euro), (int)panelRect.x + 930, (int)panelRect.y + 24, 20, neonGold);
+    DrawText(TextFormat("WEAPONS %d / %d", collectedWeapons, (int)weaponDB.size()), (int)panelRect.x + 748, (int)panelRect.y + 54, 18, neonBlue);
+    DrawText(TextFormat("PETS %d / %d", collectedPets, (int)petDB.size()), (int)panelRect.x + 940, (int)panelRect.y + 54, 18, safeGreen);
 
     int hpUpgradeCost = 100 + player.hpUpgradeLevel * 90;
-    DrawPanel({ panelRect.x + 24.0f, panelRect.y + 72.0f, 732.0f, 94.0f }, panel, safeGreen);
-    DrawText("HEARTH BLESSINGS", (int)panelRect.x + 40, (int)panelRect.y + 88, 22, safeGreen);
-    DrawText(TextFormat("VIGOR +30   COST: %d RENOWN   RANK: %d", hpUpgradeCost, player.hpUpgradeLevel), (int)panelRect.x + 40, (int)panelRect.y + 122, 20, WHITE);
-    DrawText("PRESS H TO INVEST", (int)panelRect.x + 536, (int)panelRect.y + 122, 20, neonCyan);
+    Rectangle blessingRect = { panelRect.x + 24.0f, panelRect.y + 78.0f, 692.0f, 70.0f };
+    DrawPanel(blessingRect, panel, safeGreen);
+    DrawText("HEARTH BLESSING", (int)blessingRect.x + 18, (int)blessingRect.y + 12, 20, safeGreen);
+    DrawText(TextFormat("VIGOR +30   COST %d RENOWN   RANK %d   PRESS H", hpUpgradeCost, player.hpUpgradeLevel), (int)blessingRect.x + 18, (int)blessingRect.y + 40, 18, WHITE);
+
+    Rectangle gridRect = { panelRect.x + 24.0f, panelRect.y + 164.0f, 692.0f, 334.0f };
+    DrawPanel(gridRect, panel, neonBlue);
+    DrawText("ARMORY WALL", (int)gridRect.x + 18, (int)gridRect.y + 14, 22, neonBlue);
+
+    const int cols = 6;
+    const float cardW = 104.0f;
+    const float cardH = 54.0f;
+    const float gap = 8.0f;
+    for (int i = 0; i < (int)weaponDB.size(); ++i) {
+        int row = i / cols;
+        int col = i % cols;
+        Rectangle card = {
+            gridRect.x + 18.0f + col * (cardW + gap),
+            gridRect.y + 46.0f + row * (cardH + gap),
+            cardW,
+            cardH
+        };
+
+        const Weapon& weapon = weaponDB[i];
+        bool owned = i < (int)shop.ownedWeapons.size() ? shop.ownedWeapons[i] : false;
+        bool selected = (i == shop.browseWeaponIdx);
+        bool realmUnlocked = IsWorldUnlocked(WeaponOriginWorld(i));
+        bool signatureLocked = WeaponIsRealmSignature(i)
+            && !owned
+            && !(WorldIndex(WeaponOriginWorld(i)) < (int)realmSignatureClaimed.size() ? realmSignatureClaimed[WorldIndex(WeaponOriginWorld(i))] : false);
+
+        Color border = selected ? weapon.color : (owned ? safeGreen : (!realmUnlocked ? GRAY : (signatureLocked ? neonGold : Fade(weapon.color, 0.75f))));
+        Color fill = selected ? Fade(weapon.color, 0.16f) : Fade(WHITE, 0.02f);
+        DrawRectangleRounded(card, 0.12f, 6, fill);
+        DrawRectangleLinesEx(card, selected ? 3.0f : 2.0f, border);
+
+        if (weaponAtlas.id != 0) {
+            Rectangle src = WeaponSourceRect(weapon.spriteIndex);
+            Rectangle dst = { card.x + 6.0f, card.y + 6.0f, 42.0f, 42.0f };
+            DrawTexturePro(weaponAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+        }
+
+        std::string cardName = weapon.name;
+        if (cardName.size() > 10) {
+            cardName = cardName.substr(0, 9) + ".";
+        }
+        DrawText(cardName.c_str(), (int)card.x + 44, (int)card.y + 8, 12, WHITE);
+        DrawText(TextFormat("%d DMG", weapon.damage), (int)card.x + 44, (int)card.y + 24, 12, weapon.color);
+        const char* state = owned ? "OWNED" : (!realmUnlocked ? "SEALED" : (signatureLocked ? "GIFT" : "SALE"));
+        DrawText(state, (int)card.x + 44, (int)card.y + 38, 12, owned ? safeGreen : (signatureLocked ? neonGold : RAYWHITE));
+    }
 
     const Weapon& browseWeapon = weaponDB[shop.browseWeaponIdx];
     WorldId browseWorld = WeaponOriginWorld(shop.browseWeaponIdx);
@@ -2970,23 +3531,31 @@ void Game::DrawShop() const {
         : false;
     bool signatureLocked = signatureWeapon && !shop.ownedWeapons[shop.browseWeaponIdx] && !signatureClaimed;
 
-    DrawPanel({ panelRect.x + 24.0f, panelRect.y + 186.0f, 732.0f, 188.0f }, panel, browseWeapon.color);
-    DrawText("ARMORY RACK", (int)panelRect.x + 40, (int)panelRect.y + 204, 22, browseWeapon.color);
-    DrawText(browseWeapon.name.c_str(), (int)panelRect.x + 40, (int)panelRect.y + 238, 30, WHITE);
-    DrawText(TextFormat("RARITY: %s", browseWeapon.rarity.c_str()), (int)panelRect.x + 40, (int)panelRect.y + 278, 20, browseWeapon.color);
-    DrawText(TextFormat("DAMAGE: %d", browseWeapon.damage), (int)panelRect.x + 260, (int)panelRect.y + 278, 20, WHITE);
-    DrawText(TextFormat("RANGE: %.0f", browseWeapon.range), (int)panelRect.x + 430, (int)panelRect.y + 278, 20, WHITE);
-    DrawText(TextFormat("COST: %d RENOWN", browseWeapon.cost), (int)panelRect.x + 520, (int)panelRect.y + 278, 20, neonGold);
-    DrawText(TextFormat("SOURCE: %s", WeaponSourceLabel(shop.browseWeaponIdx)), (int)panelRect.x + 40, (int)panelRect.y + 306, 18, RAYWHITE);
+    Rectangle detailRect = { panelRect.x + 734.0f, panelRect.y + 78.0f, 402.0f, 260.0f };
+    DrawPanel(detailRect, panel, browseWeapon.color);
+    DrawText("SELECTED ARMAMENT", (int)detailRect.x + 18, (int)detailRect.y + 14, 22, browseWeapon.color);
+    if (weaponAtlas.id != 0) {
+        Rectangle src = WeaponSourceRect(browseWeapon.spriteIndex);
+        Rectangle dst = { detailRect.x + 18.0f, detailRect.y + 52.0f, 112.0f, 112.0f };
+        DrawTexturePro(weaponAtlas, src, dst, { 0.0f, 0.0f }, -22.0f, WHITE);
+    }
+    DrawText(browseWeapon.name.c_str(), (int)detailRect.x + 144, (int)detailRect.y + 54, 24, WHITE);
+    DrawText(TextFormat("RARITY %s", browseWeapon.rarity.c_str()), (int)detailRect.x + 144, (int)detailRect.y + 82, 18, browseWeapon.color);
+    DrawText(TextFormat("TRAIT %s", WeaponTraitLabel(browseWeapon.trait)), (int)detailRect.x + 144, (int)detailRect.y + 108, 18, neonGold);
+    DrawText(WeaponTraitDesc(browseWeapon.trait), (int)detailRect.x + 144, (int)detailRect.y + 134, 16, RAYWHITE);
+    DrawText(TextFormat("DAMAGE %d", browseWeapon.damage), (int)detailRect.x + 18, (int)detailRect.y + 184, 18, WHITE);
+    DrawText(TextFormat("RANGE %.0f", browseWeapon.range), (int)detailRect.x + 150, (int)detailRect.y + 184, 18, WHITE);
+    DrawText(TextFormat("SWING %.2fs", GetWeaponAttackCooldown(browseWeapon)), (int)detailRect.x + 258, (int)detailRect.y + 184, 18, WHITE);
+    DrawText(TextFormat("SOURCE %s", WeaponSourceLabel(shop.browseWeaponIdx)), (int)detailRect.x + 18, (int)detailRect.y + 212, 18, RAYWHITE);
+    DrawText(TextFormat("COST %d RENOWN", browseWeapon.cost), (int)detailRect.x + 18, (int)detailRect.y + 236, 18, neonGold);
 
     std::string stateLabel;
     Color stateColor = WHITE;
     std::string actionLabel;
-
     if (shop.ownedWeapons[shop.browseWeaponIdx]) {
         stateLabel = (player.equippedWeaponIdx == shop.browseWeaponIdx) ? "READIED" : "CLAIMED";
         stateColor = (player.equippedWeaponIdx == shop.browseWeaponIdx) ? neonCyan : safeGreen;
-        actionLabel = "B TO READY THIS ARMAMENT";
+        actionLabel = "PRESS B TO READY THIS ARMAMENT";
     }
     else if (!browseRealmUnlocked) {
         stateLabel = "SEALED BY REALM";
@@ -2996,23 +3565,44 @@ void Game::DrawShop() const {
     else if (signatureLocked) {
         stateLabel = "REALM GIFT";
         stateColor = neonGold;
-        actionLabel = "CLEAR A SEALED COURT IN THIS REALM TO EARN IT";
+        actionLabel = "CLEAR A SEALED COURT IN THIS REALM TO CLAIM IT";
     }
     else {
         stateLabel = "FOR SALE";
         stateColor = neonGold;
-        actionLabel = "B TO CLAIM THIS ARMAMENT";
+        actionLabel = "PRESS B TO BUY THIS ARMAMENT";
     }
 
-    DrawText(TextFormat("STATUS: %s", stateLabel.c_str()), (int)panelRect.x + 40, (int)panelRect.y + 336, 22, stateColor);
-    DrawText(actionLabel.c_str(), (int)panelRect.x + 250, (int)panelRect.y + 336, 18, RAYWHITE);
+    Rectangle stateRect = { panelRect.x + 734.0f, panelRect.y + 352.0f, 402.0f, 66.0f };
+    DrawPanel(stateRect, panel, stateColor);
+    DrawText(TextFormat("STATUS: %s", stateLabel.c_str()), (int)stateRect.x + 18, (int)stateRect.y + 12, 20, stateColor);
+    DrawText(actionLabel.c_str(), (int)stateRect.x + 18, (int)stateRect.y + 38, 16, RAYWHITE);
 
-    DrawPanel({ panelRect.x + 24.0f, panelRect.y + 392.0f, 732.0f, 56.0f }, panel, neonBlue);
-    DrawText("E LEAVE", (int)panelRect.x + 40, (int)panelRect.y + 408, 20, neonBlue);
-    DrawText("LEFT / RIGHT BROWSE   CLAIM ONCE, BEAR IT FOREVER", (int)panelRect.x + 164, (int)panelRect.y + 408, 20, RAYWHITE);
+    Rectangle petRect = { panelRect.x + 734.0f, panelRect.y + 432.0f, 402.0f, 96.0f };
+    DrawPanel(petRect, panel, safeGreen);
+    DrawText("COMPANION STABLE", (int)petRect.x + 18, (int)petRect.y + 12, 20, safeGreen);
+    if (!petDB.empty()) {
+        const PetDefinition& petInfo = petDB[shop.browsePetIdx];
+        bool ownedPet = shop.browsePetIdx < (int)persistentOwnedPets.size() ? persistentOwnedPets[shop.browsePetIdx] : false;
+        bool activePet = ownedPet && persistentEquippedPetIdx == shop.browsePetIdx;
+        if (petAtlas.id != 0) {
+            Rectangle src = PetSourceRect(petInfo.spriteIndex);
+            Rectangle dst = { petRect.x + 18.0f, petRect.y + 28.0f, 54.0f, 54.0f };
+            DrawTexturePro(petAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+        }
+        DrawText(petInfo.name.c_str(), (int)petRect.x + 84, (int)petRect.y + 28, 20, petInfo.color);
+        DrawText(petInfo.description.c_str(), (int)petRect.x + 84, (int)petRect.y + 50, 16, RAYWHITE);
+        DrawText(TextFormat("%d EURO  %d DMG  %.2fs", petInfo.euroCost, petInfo.damage, petInfo.attackCooldown), (int)petRect.x + 84, (int)petRect.y + 70, 16, WHITE);
+        DrawText(activePet ? "READY" : (ownedPet ? "OWNED" : "FOR HIRE"), (int)petRect.x + 324, (int)petRect.y + 28, 18, activePet ? petInfo.color : (ownedPet ? safeGreen : neonGold));
+        DrawText("P CYCLE   N CLAIM / READY", (int)petRect.x + 236, (int)petRect.y + 68, 16, RAYWHITE);
+    }
+
+    Rectangle footerRect = { panelRect.x + 24.0f, panelRect.y + 518.0f, 1112.0f, 38.0f };
+    DrawPanel(footerRect, panel, neonBlue);
+    DrawText("E LEAVE   ARROWS BROWSE WEAPONS   B BUY/READY   H VIGOR   P CYCLE PETS   N BUY/READY PET", (int)footerRect.x + 18, (int)footerRect.y + 10, 16, RAYWHITE);
 
     if (shop.messageTimer > 0.0f) {
-        DrawText(shop.message.c_str(), (int)panelRect.x + 468, (int)panelRect.y + 408, 20, shop.messageColor);
+        DrawText(shop.message.c_str(), (int)panelRect.x + 792, (int)panelRect.y + 532, 18, shop.messageColor);
     }
 }
 
@@ -3062,13 +3652,13 @@ void Game::DrawQuestBoard() const {
     }
 
     DrawText("Q CLOSE BOARD", (int)panelRect.x + 30, (int)panelRect.y + 460, 18, neonBlue);
-    DrawText("COMPLETE CHARTERS TO EARN EURO. EURO WILL MATTER FOR PETS IN THE NEXT BATCH.", (int)panelRect.x + 210, (int)panelRect.y + 460, 18, RAYWHITE);
+    DrawText("COMPLETE CHARTERS TO EARN EURO. EURO NOW FUNDS COMPANIONS IN THE KEEP STABLE.", (int)panelRect.x + 210, (int)panelRect.y + 460, 18, RAYWHITE);
 }
 
 void Game::DrawRealmMap() const {
     DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.56f));
 
-    Rectangle panelRect = { screenW * 0.5f - 470.0f, screenH * 0.5f - 230.0f, 940.0f, 460.0f };
+    Rectangle panelRect = { screenW * 0.5f - 490.0f, screenH * 0.5f - 230.0f, 980.0f, 460.0f };
     DrawPanel(panelRect, panel2, neonBlue);
     DrawText("REALM GATE MAP", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonBlue);
     DrawText("Choose where the next hunt will unfold.", (int)panelRect.x + 28, (int)panelRect.y + 58, 18, RAYWHITE);
@@ -3078,30 +3668,31 @@ void Game::DrawRealmMap() const {
         WorldId world = worlds[i];
         bool unlocked = IsWorldUnlocked(world);
         bool active = (world == currentWorld);
-        Rectangle card = { panelRect.x + 26.0f + i * 222.0f, panelRect.y + 108.0f, 202.0f, 278.0f };
+        Rectangle card = { panelRect.x + 22.0f + i * 233.0f, panelRect.y + 108.0f, 212.0f, 278.0f };
         Color accent = WorldAccentTint(world);
         DrawPanel(card, panel, active ? accent : Fade(accent, 0.75f));
         DrawRectangleGradientV((int)card.x + 12, (int)card.y + 42, (int)card.width - 24, 82, Fade(WorldGrassTint(world), 0.95f), Fade(WorldRoadTint(world), 0.95f));
         DrawText(TextFormat("%d", i + 1), (int)card.x + 16, (int)card.y + 12, 22, accent);
-        DrawText(WorldLabel(world), (int)card.x + 16, (int)card.y + 136, 22, unlocked ? WHITE : GRAY);
-        DrawText(WorldBlurb(world), (int)card.x + 16, (int)card.y + 172, 18, unlocked ? RAYWHITE : GRAY);
+        DrawText(WorldLabel(world), (int)card.x + 14, (int)card.y + 138, 18, unlocked ? WHITE : GRAY);
+        DrawText(WorldBlurbLine1(world), (int)card.x + 14, (int)card.y + 174, 16, unlocked ? RAYWHITE : GRAY);
+        DrawText(WorldBlurbLine2(world), (int)card.x + 14, (int)card.y + 196, 16, unlocked ? RAYWHITE : GRAY);
 
         if (active) {
-            DrawText("CURRENT REALM", (int)card.x + 16, (int)card.y + 236, 18, safeGreen);
+            DrawText("CURRENT REALM", (int)card.x + 14, (int)card.y + 240, 18, safeGreen);
         }
         else if (unlocked) {
-            DrawText("PRESS NUMBER TO TRAVEL", (int)card.x + 16, (int)card.y + 236, 18, accent);
+            DrawText("PRESS NUMBER TO TRAVEL", (int)card.x + 14, (int)card.y + 240, 16, accent);
         }
         else {
             const char* rule = (world == WorldId::Frostveil) ? "Unlock: 1 main charter"
                 : (world == WorldId::Sunscar) ? "Unlock: 2 main charters"
                 : "Unlock: 4 main charters";
-            DrawText(rule, (int)card.x + 16, (int)card.y + 236, 18, softRed);
+            DrawText(rule, (int)card.x + 14, (int)card.y + 240, 16, softRed);
         }
     }
 
     DrawText("R CLOSE MAP", (int)panelRect.x + 28, (int)panelRect.y + 408, 18, neonBlue);
-    DrawText("Travel rebuilds the field, keeps your run power, and spawns the next hunt in that realm.", (int)panelRect.x + 176, (int)panelRect.y + 408, 18, RAYWHITE);
+    DrawText("Travel keeps your run build, swaps the world art, and starts the next hunt there.", (int)panelRect.x + 184, (int)panelRect.y + 408, 18, RAYWHITE);
 }
 
 void Game::DrawGameOver() const {
@@ -3111,7 +3702,7 @@ void Game::DrawGameOver() const {
     DrawText(TextFormat("TOTAL KILLS: %d", player.kills), screenW / 2 - MeasureText(TextFormat("TOTAL KILLS: %d", player.kills), 28) / 2, 320, 28, WHITE);
     DrawText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), screenW / 2 - MeasureText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), 28) / 2, 360, 28, neonGold);
     DrawText(TextFormat("EURO KEPT: %d", euro), screenW / 2 - MeasureText(TextFormat("EURO KEPT: %d", euro), 24) / 2, 396, 24, safeGreen);
-    DrawText("WEAPONS, EURO, QUESTS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS, EURO, QUESTS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 430, 22, RAYWHITE);
+    DrawText("WEAPONS, EURO, QUESTS, PETS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS, EURO, QUESTS, PETS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 430, 22, RAYWHITE);
     DrawText("PRESS ENTER TO RIDE OUT AGAIN", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT AGAIN", 26) / 2, 456, 26, neonCyan);
 }
 
@@ -3119,15 +3710,47 @@ void Game::DrawEnemySprite(const ActiveMonster& monster) const {
     float t = (float)GetTime();
     DrawCartoonShadow({ monster.pos.x, monster.pos.y + monster.radius + 6.0f }, monster.radius * 0.85f, monster.radius * 0.30f, 0.20f);
 
-    if (actorAtlas.id != 0) {
-        int spriteIndex = monster.isBoss ? 5 : 1 + (monster.typeIndex % 4);
-        float size = monster.isBoss ? 96.0f : 72.0f;
-        Rectangle src = ActorSourceRect(spriteIndex);
-        Rectangle dst = { monster.pos.x - size * 0.5f, monster.pos.y - size * 0.70f, size, size };
-        DrawTexturePro(actorAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, (monster.hitFlash > 0.0f) ? WHITE : WHITE);
+    int spriteIndex = 0;
+    float size = 72.0f;
+    if (monster.isBoss) {
+        spriteIndex = (monster.typeIndex == 11) ? 5 : 4;
+        size = 98.0f;
+    }
+    else if (monster.typeIndex == 0 || monster.typeIndex == 9) {
+        spriteIndex = 0;
+        size = 68.0f;
+    }
+    else if (monster.typeIndex == 1 || monster.typeIndex == 8) {
+        spriteIndex = 1;
+        size = 70.0f;
+    }
+    else if (monster.typeIndex == 2 || monster.typeIndex == 5) {
+        spriteIndex = 2;
+        size = 72.0f;
     }
     else {
-        DrawCircleV(monster.pos, monster.radius, (monster.hitFlash > 0.0f) ? WHITE : monster.color);
+        spriteIndex = 3;
+        size = 80.0f;
+    }
+
+    Color drawTint = (monster.hitFlash > 0.0f) ? WHITE : monster.color;
+    if (enemyAtlas.id != 0) {
+        Rectangle src = EnemySourceRect(spriteIndex);
+        Rectangle dst = { monster.pos.x - size * 0.5f, monster.pos.y - size * 0.70f, size, size };
+        DrawTexturePro(enemyAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, drawTint);
+    }
+    else {
+        DrawCircleV(monster.pos, monster.radius, drawTint);
+    }
+
+    if (monster.slowTimer > 0.0f) {
+        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 4.0f + std::sin(t * 7.0f), Fade({ 200, 234, 255, 255 }, 0.35f));
+    }
+    if (monster.burnTimer > 0.0f) {
+        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 2.0f + std::sin(t * 9.0f), Fade({ 244, 170, 78, 255 }, 0.28f));
+    }
+    if (monster.poisonTimer > 0.0f) {
+        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 1.0f + std::sin(t * 6.0f), Fade({ 150, 206, 106, 255 }, 0.30f));
     }
 
     if (monster.isElite) {
@@ -3137,5 +3760,43 @@ void Game::DrawEnemySprite(const ActiveMonster& monster) const {
     if (monster.isBoss) {
         DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 12.0f + std::sin(t * 3.0f) * 2.0f, Fade(neonGold, 0.34f));
         DrawText(monster.name.c_str(), (int)monster.pos.x - MeasureText(monster.name.c_str(), 16) / 2, (int)(monster.pos.y - monster.radius - 42.0f), 16, neonGold);
+    }
+}
+
+void Game::DrawPlayerWeapon() const {
+    if (weaponAtlas.id == 0 || weaponDB.empty()) {
+        return;
+    }
+
+    const Weapon& weapon = weaponDB[player.equippedWeaponIdx];
+    Vector2 aim = player.aimDir;
+    if (aim.x == 0.0f && aim.y == 0.0f) {
+        aim = { 1.0f, 0.0f };
+    }
+
+    float angle = std::atan2(aim.y, aim.x) * 57.2957795f + 28.0f;
+    Vector2 handPos = { player.pos.x + aim.x * 12.0f, player.pos.y - 20.0f + aim.y * 8.0f };
+    Rectangle src = WeaponSourceRect(weapon.spriteIndex);
+    Rectangle dst = { handPos.x - 14.0f, handPos.y - 10.0f, 72.0f, 72.0f };
+    DrawCartoonShadow({ handPos.x + 6.0f, handPos.y + 18.0f }, 16.0f, 4.0f, 0.12f);
+    DrawTexturePro(weaponAtlas, src, dst, { 20.0f, 44.0f }, angle, WHITE);
+}
+
+void Game::DrawPetSprite() const {
+    if (!pet.active || pet.petIndex < 0 || pet.petIndex >= (int)petDB.size()) {
+        return;
+    }
+
+    const PetDefinition& petInfo = petDB[pet.petIndex];
+    DrawCartoonShadow({ pet.pos.x, pet.pos.y + 12.0f }, 12.0f, 4.0f, 0.14f);
+    DrawCircleLines((int)pet.pos.x, (int)pet.pos.y, 18.0f + std::sin((float)GetTime() * 4.0f) * 1.2f, Fade(petInfo.color, 0.24f));
+
+    if (petAtlas.id != 0) {
+        Rectangle src = PetSourceRect(petInfo.spriteIndex);
+        Rectangle dst = { pet.pos.x - 28.0f, pet.pos.y - 30.0f, 56.0f, 56.0f };
+        DrawTexturePro(petAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+    }
+    else {
+        DrawCircleV(pet.pos, 12.0f, petInfo.color);
     }
 }

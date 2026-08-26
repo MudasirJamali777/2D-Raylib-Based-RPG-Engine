@@ -11,6 +11,7 @@
 #include "Relic.h"
 #include "Tilemap.h"
 #include "Quest.h"
+#include "Pet.h"
 
 enum class WorldId {
     Crownheart = 0,
@@ -81,6 +82,7 @@ private:
     std::vector<MonsterType> monsterTypes;
     std::vector<QuestDefinition> mainQuestDB;
     std::vector<QuestDefinition> sideQuestDB;
+    std::vector<PetDefinition> petDB;
     std::vector<int> sideQuestOfferIndices;
     std::vector<int> sideQuestProgress;
     std::vector<bool> sideQuestAccepted;
@@ -88,13 +90,18 @@ private:
     std::vector<Star> stars;
     std::vector<bool> persistentOwnedWeapons;
     std::vector<bool> realmSignatureClaimed;
+    std::vector<bool> persistentOwnedPets;
     int persistentHpUpgradeLevel = 0;
     int persistentEquippedWeaponIdx = 0;
+    int persistentEquippedPetIdx = -1;
     int legacyRenown = 0;
     TileMap tileMap;
     Texture2D tileAtlas{};
     Texture2D propAtlas{};
     Texture2D actorAtlas{};
+    Texture2D enemyAtlas{};
+    Texture2D weaponAtlas{};
+    Texture2D petAtlas{};
     std::vector<PropInstance> worldProps;
     std::vector<PropInstance> decorProps;
     std::vector<ActiveMonster> monsters;
@@ -105,6 +112,7 @@ private:
     std::vector<Turret> turrets;
     std::vector<Shockwave> shockwaves;
     std::vector<Beam> beams;
+    ActivePet pet;
 
     void BuildColorTheme();
     void BuildDatabases();
@@ -123,10 +131,12 @@ private:
     int CountRelic(RelicType type) const;
     float GetMoveSpeed() const;
     float GetAttackCooldown() const;
+    float GetWeaponAttackCooldown(const Weapon& weapon) const;
     float GetDashCooldown() const;
     float GetCritChance() const;
     float GetCritMultiplier() const;
     int GetFlatDamageBonus() const;
+    int GetWeaponDamageAgainst(const Weapon& weapon, const ActiveMonster& monster) const;
     int GetEmpDamage() const;
     float GetEmpRadius() const;
     int GetTurretDamage() const;
@@ -150,6 +160,8 @@ private:
     void EmitBurst(Vector2 pos, int count, float speed, Color color, float size);
     void SpawnMonsterByType(int typeIndex, Vector2 pos);
     void SpawnWave(int waveNumber);
+    void SyncPetState(bool snapToPlayer);
+    void ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, int damage, bool isCrit);
 
     void UpdateTitle();
     void UpdatePlaying(float dt);
@@ -160,6 +172,9 @@ private:
     Rectangle TileSourceRect(int index) const;
     Rectangle PropSourceRect(int index) const;
     Rectangle ActorSourceRect(int index) const;
+    Rectangle EnemySourceRect(int index) const;
+    Rectangle WeaponSourceRect(int index) const;
+    Rectangle PetSourceRect(int index) const;
 
     void Draw() const;
     void DrawTitleScreen() const;
@@ -172,4 +187,6 @@ private:
     void DrawRealmMap() const;
     void DrawGameOver() const;
     void DrawEnemySprite(const ActiveMonster& monster) const;
+    void DrawPlayerWeapon() const;
+    void DrawPetSprite() const;
 };

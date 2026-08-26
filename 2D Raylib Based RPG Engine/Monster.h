@@ -30,4 +30,9 @@ struct ActiveMonster {
     int eliteKind = -1;
     int typeIndex;
     std::string name;
+    float slowTimer = 0.0f;
+    float burnTimer = 0.0f;
+    float burnTickTimer = 0.0f;
+    float poisonTimer = 0.0f;
+    float poisonTickTimer = 0.0f;
 };

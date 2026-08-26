@@ -26,13 +26,19 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Monster.h" />
     <ClInclude Include="Particle.h" />
+    <ClInclude Include="Pet.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Quest.h" />
+    <ClInclude Include="raylib.h" />
+    <ClInclude Include="raylib_stub.h" />
     <ClInclude Include="Relic.h" />
     <ClInclude Include="Shop.h" />
     <ClInclude Include="Tilemap.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Weapon.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build_fantasy_assets.py" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>

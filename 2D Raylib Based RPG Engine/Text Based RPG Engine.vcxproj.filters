@@ -53,5 +53,17 @@
     <ClInclude Include="Quest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Pet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="raylib_stub.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="raylib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build_fantasy_assets.py" />
   </ItemGroup>
 </Project>
