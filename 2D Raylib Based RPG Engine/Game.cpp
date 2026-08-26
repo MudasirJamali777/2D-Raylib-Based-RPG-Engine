@@ -102,6 +102,52 @@ static Color WorldAccentTint(WorldId world) {
     return WHITE;
 }
 
+static int WorldIndex(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return 0;
+    case WorldId::Frostveil: return 1;
+    case WorldId::Sunscar: return 2;
+    case WorldId::Mirethorn: return 3;
+    }
+    return 0;
+}
+
+static WorldId WeaponOriginWorld(int weaponIndex) {
+    if (weaponIndex >= 25) return WorldId::Mirethorn;
+    if (weaponIndex >= 22) return WorldId::Sunscar;
+    if (weaponIndex >= 19) return WorldId::Frostveil;
+    return WorldId::Crownheart;
+}
+
+static bool WeaponIsRealmSignature(int weaponIndex) {
+    return weaponIndex == 17 || weaponIndex == 21 || weaponIndex == 24 || weaponIndex == 27;
+}
+
+static int SignatureWeaponIndex(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return 17;
+    case WorldId::Frostveil: return 21;
+    case WorldId::Sunscar: return 24;
+    case WorldId::Mirethorn: return 27;
+    }
+    return 17;
+}
+
+static const char* WeaponSourceLabel(int weaponIndex) {
+    if (weaponIndex < 17) {
+        return "KEEP FORGE";
+    }
+
+    switch (WeaponOriginWorld(weaponIndex)) {
+    case WorldId::Crownheart: return "CROWNHEART FORGE";
+    case WorldId::Frostveil: return "FROSTVEIL CACHE";
+    case WorldId::Sunscar: return "SUNSCAR RELIQUARY";
+    case WorldId::Mirethorn: return "MIRETHORN ARMORY";
+    }
+
+    return "KEEP FORGE";
+}
+
 Game::Game() {
     std::srand((unsigned int)std::time(nullptr));
 
@@ -210,7 +256,19 @@ void Game::BuildDatabases() {
         {"Wyrmtooth Cleaver", 262, 174.0f, "Exotic", 3800, GREEN},
         {"Moonveil Edge", 308, 188.0f, "Exotic", 4800, bossPurple},
         {"Celestial Cleaver", 370, 205.0f, "Exotic", 6200, WHITE},
-        {"Crownfall", 460, 225.0f, "Exotic", 8200, neonPink}
+        {"Crownfall", 460, 225.0f, "Exotic", 8200, neonPink},
+        {"Crownsent Pike", 78, 120.0f, "Realmforged", 780, neonBlue},
+        {"Gatekeeper Hammer", 96, 132.0f, "Realmforged", 1040, { 100, 110, 128, 255 }},
+        {"Hailhook", 108, 136.0f, "Realmforged", 1220, { 132, 182, 236, 255 }},
+        {"Winterglass Rapier", 136, 148.0f, "Legendary", 1700, { 202, 236, 255, 255 }},
+        {"Whiteout Halberd", 178, 164.0f, "Exotic", 2500, { 150, 208, 255, 255 }},
+        {"Dune Carver", 104, 134.0f, "Realmforged", 1180, { 194, 143, 80, 255 }},
+        {"Sirocco Saber", 132, 146.0f, "Legendary", 1720, { 226, 182, 86, 255 }},
+        {"Pharaoh's Hookblade", 186, 168.0f, "Exotic", 2580, { 235, 188, 73, 255 }},
+        {"Boghook", 100, 132.0f, "Realmforged", 1160, { 98, 122, 72, 255 }},
+        {"Witchreed Glaive", 142, 150.0f, "Legendary", 1860, { 118, 164, 108, 255 }},
+        {"Hollowroot Scythe", 194, 172.0f, "Exotic", 2720, { 164, 208, 132, 255 }},
+        {"Marsh Lantern Spear", 158, 156.0f, "Legendary", 2140, { 160, 178, 118, 255 }}
     };
 
     monsterTypes = {
@@ -1054,11 +1112,51 @@ void Game::TravelToWorld(WorldId world) {
     SaveProfile();
 }
 
+void Game::GrantRealmSignatureIfNeeded(WorldId world) {
+    if (weaponDB.empty()) {
+        return;
+    }
+
+    if (realmSignatureClaimed.size() < 4) {
+        realmSignatureClaimed.assign(4, false);
+    }
+
+    int worldSlot = WorldIndex(world);
+    if (worldSlot < 0 || worldSlot >= (int)realmSignatureClaimed.size() || realmSignatureClaimed[worldSlot]) {
+        return;
+    }
+
+    int weaponIndex = SignatureWeaponIndex(world);
+    if (weaponIndex < 0 || weaponIndex >= (int)weaponDB.size()) {
+        return;
+    }
+
+    if (persistentOwnedWeapons.size() != weaponDB.size()) {
+        persistentOwnedWeapons.resize(weaponDB.size(), false);
+    }
+    if (shop.ownedWeapons.size() != weaponDB.size()) {
+        shop.ownedWeapons.resize(weaponDB.size(), false);
+    }
+
+    realmSignatureClaimed[worldSlot] = true;
+    persistentOwnedWeapons[weaponIndex] = true;
+    shop.ownedWeapons[weaponIndex] = true;
+    player.equippedWeaponIdx = weaponIndex;
+    persistentEquippedWeaponIdx = weaponIndex;
+
+    announcement = std::string(WorldLabel(world)) + " // " + weaponDB[weaponIndex].name + " CLAIMED";
+    announcementTimer = 2.8f;
+    AddFloatingText(player.pos, "NEW ARMAMENT", neonGold);
+    SaveProfile();
+    SaveRun();
+}
+
 bool Game::LoadProfile() {
     persistentOwnedWeapons.assign(weaponDB.size(), false);
     if (!persistentOwnedWeapons.empty()) {
         persistentOwnedWeapons[0] = true;
     }
+    realmSignatureClaimed.assign(4, false);
     persistentHpUpgradeLevel = 0;
     persistentEquippedWeaponIdx = 0;
     legacyRenown = 0;
@@ -1094,7 +1192,7 @@ bool Game::LoadProfile() {
 
         for (int i = 0; i < 3; ++i) RefreshSideQuestOffer(i);
     }
-    else if (header == "CROWNHEART_PROFILE_V2") {
+    else if (header == "CROWNHEART_PROFILE_V2" || header == "CROWNHEART_PROFILE_V3") {
         in >> legacyRenown >> persistentHpUpgradeLevel >> persistentEquippedWeaponIdx >> euro;
 
         size_t ownedCount = 0;
@@ -1143,6 +1241,18 @@ bool Game::LoadProfile() {
             in >> value;
             if (i < sideQuestReady.size()) sideQuestReady[i] = (value != 0);
         }
+
+        if (header == "CROWNHEART_PROFILE_V3") {
+            size_t signatureCount = 0;
+            in >> signatureCount;
+            for (size_t i = 0; i < signatureCount; ++i) {
+                int value = 0;
+                in >> value;
+                if (i < realmSignatureClaimed.size()) {
+                    realmSignatureClaimed[i] = (value != 0);
+                }
+            }
+        }
     }
     else {
         for (int i = 0; i < 3; ++i) RefreshSideQuestOffer(i);
@@ -1187,6 +1297,13 @@ bool Game::LoadProfile() {
         if (sideQuestAccepted[i] && sideQuestProgress[i] >= target) sideQuestReady[i] = true;
     }
 
+    for (WorldId world : { WorldId::Crownheart, WorldId::Frostveil, WorldId::Sunscar, WorldId::Mirethorn }) {
+        int signatureIndex = SignatureWeaponIndex(world);
+        if (signatureIndex >= 0 && signatureIndex < (int)persistentOwnedWeapons.size() && persistentOwnedWeapons[signatureIndex]) {
+            realmSignatureClaimed[WorldIndex(world)] = true;
+        }
+    }
+
     SaveProfile();
     return true;
 }
@@ -1197,7 +1314,7 @@ void Game::SaveProfile() const {
         return;
     }
 
-    out << "CROWNHEART_PROFILE_V2\n";
+    out << "CROWNHEART_PROFILE_V3\n";
     out << legacyRenown << ' ' << persistentHpUpgradeLevel << ' ' << persistentEquippedWeaponIdx << ' ' << euro << '\n';
 
     out << persistentOwnedWeapons.size();
@@ -1222,6 +1339,10 @@ void Game::SaveProfile() const {
 
     out << sideQuestReady.size();
     for (bool value : sideQuestReady) out << ' ' << (value ? 1 : 0);
+    out << '\n';
+
+    out << realmSignatureClaimed.size();
+    for (bool value : realmSignatureClaimed) out << ' ' << (value ? 1 : 0);
     out << '\n';
 }
 
@@ -1447,6 +1568,16 @@ void Game::ResetRun() {
     BuildDungeon();
     BuildTileMap();
 
+    if (persistentOwnedWeapons.size() < weaponDB.size()) {
+        persistentOwnedWeapons.resize(weaponDB.size(), false);
+    }
+    if (!persistentOwnedWeapons.empty()) {
+        persistentOwnedWeapons[0] = true;
+    }
+    if (realmSignatureClaimed.size() < 4) {
+        realmSignatureClaimed.assign(4, false);
+    }
+
     player = Player{};
     player.pos = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.72f };
     player.aimDir = { 0.0f, -1.0f };
@@ -1458,8 +1589,8 @@ void Game::ResetRun() {
 
     shop = ShopState{};
     shop.ownedWeapons = persistentOwnedWeapons;
-    if (shop.ownedWeapons.size() != weaponDB.size()) {
-        shop.ownedWeapons.assign(weaponDB.size(), false);
+    if (shop.ownedWeapons.size() < weaponDB.size()) {
+        shop.ownedWeapons.resize(weaponDB.size(), false);
     }
     if (!shop.ownedWeapons.empty()) {
         shop.ownedWeapons[0] = true;
@@ -2154,8 +2285,10 @@ void Game::UpdatePlaying(float dt) {
             announcement = dungeon.rooms[lockedRoomIndex].name + " // PATH SECURED";
             announcementTimer = 2.2f;
             AdvanceQuestObjective(QuestObjective::ClearCourts, 1);
+            WorldId clearedWorld = currentWorld;
             lockedRoomIndex = -1;
             hitStopTimer = std::max(hitStopTimer, 0.06f);
+            GrantRealmSignatureIfNeeded(clearedWorld);
             SaveRun();
         }
     }
@@ -2169,6 +2302,13 @@ void Game::UpdatePlaying(float dt) {
         if (IsKeyPressed(KEY_LEFT)) {
             shop.browseWeaponIdx = (shop.browseWeaponIdx - 1 + (int)weaponDB.size()) % (int)weaponDB.size();
         }
+
+        WorldId browseWorld = WeaponOriginWorld(shop.browseWeaponIdx);
+        bool browseRealmUnlocked = IsWorldUnlocked(browseWorld);
+        int browseWorldSlot = WorldIndex(browseWorld);
+        bool browseSignatureLocked = WeaponIsRealmSignature(shop.browseWeaponIdx)
+            && !shop.ownedWeapons[shop.browseWeaponIdx]
+            && !(browseWorldSlot >= 0 && browseWorldSlot < (int)realmSignatureClaimed.size() ? realmSignatureClaimed[browseWorldSlot] : false);
 
         if (IsKeyPressed(KEY_H)) {
             if (player.xp >= hpUpgradeCost) {
@@ -2199,6 +2339,16 @@ void Game::UpdatePlaying(float dt) {
                 shop.messageTimer = 1.2f;
                 SaveProfile();
                 SaveRun();
+            }
+            else if (!browseRealmUnlocked) {
+                shop.message = std::string(WorldLabel(browseWorld)) + " SEALED";
+                shop.messageColor = softRed;
+                shop.messageTimer = 1.5f;
+            }
+            else if (browseSignatureLocked) {
+                shop.message = "CLEAR A COURT IN THIS REALM";
+                shop.messageColor = neonGold;
+                shop.messageTimer = 1.7f;
             }
             else if (player.xp >= weaponDB[shop.browseWeaponIdx].cost) {
                 player.xp -= weaponDB[shop.browseWeaponIdx].cost;
@@ -2330,7 +2480,7 @@ void Game::DrawTitleScreen() const {
     DrawText("- Four connected realms with distinct road networks and hidden pockets", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
     DrawText("- Real-time combat with dash, nova burst and guardian totems", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
     DrawText("- Sealed-court battles, relic blessings, quests and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
-    DrawText("- Travel between Frostveil, Sunscar and Mirethorn as you unlock them", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
+    DrawText("- Realm-forged weapons now fill the armory, with signature gifts earned in each world", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
     DrawText("PRESS ENTER TO BEGIN A NEW QUEST", screenW / 2 - MeasureText("PRESS ENTER TO BEGIN A NEW QUEST", 28) / 2, 586, 28, pulse);
@@ -2792,9 +2942,17 @@ void Game::DrawShop() const {
     Rectangle panelRect = { screenW / 2.0f - 390.0f, screenH / 2.0f - 240.0f, 780.0f, 480.0f };
     DrawPanel(panelRect, panel2, neonGold);
 
+    int collectedWeapons = 0;
+    for (bool owned : shop.ownedWeapons) {
+        if (owned) {
+            collectedWeapons++;
+        }
+    }
+
     DrawText("KEEP ARMORY", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
-    DrawText(TextFormat("RENOWN HELD: %d", player.xp), (int)panelRect.x + 472, (int)panelRect.y + 24, 20, safeGreen);
-    DrawText(TextFormat("EURO: %d", euro), (int)panelRect.x + 600, (int)panelRect.y + 52, 18, neonGold);
+    DrawText(TextFormat("RENOWN HELD: %d", player.xp), (int)panelRect.x + 434, (int)panelRect.y + 24, 20, safeGreen);
+    DrawText(TextFormat("COLLECTED: %d / %d", collectedWeapons, (int)weaponDB.size()), (int)panelRect.x + 430, (int)panelRect.y + 52, 18, neonBlue);
+    DrawText(TextFormat("EURO: %d", euro), (int)panelRect.x + 640, (int)panelRect.y + 24, 18, neonGold);
 
     int hpUpgradeCost = 100 + player.hpUpgradeLevel * 90;
     DrawPanel({ panelRect.x + 24.0f, panelRect.y + 72.0f, 732.0f, 94.0f }, panel, safeGreen);
@@ -2803,6 +2961,15 @@ void Game::DrawShop() const {
     DrawText("PRESS H TO INVEST", (int)panelRect.x + 536, (int)panelRect.y + 122, 20, neonCyan);
 
     const Weapon& browseWeapon = weaponDB[shop.browseWeaponIdx];
+    WorldId browseWorld = WeaponOriginWorld(shop.browseWeaponIdx);
+    bool browseRealmUnlocked = IsWorldUnlocked(browseWorld);
+    bool signatureWeapon = WeaponIsRealmSignature(shop.browseWeaponIdx);
+    int signatureWorldSlot = WorldIndex(browseWorld);
+    bool signatureClaimed = signatureWorldSlot >= 0 && signatureWorldSlot < (int)realmSignatureClaimed.size()
+        ? realmSignatureClaimed[signatureWorldSlot]
+        : false;
+    bool signatureLocked = signatureWeapon && !shop.ownedWeapons[shop.browseWeaponIdx] && !signatureClaimed;
+
     DrawPanel({ panelRect.x + 24.0f, panelRect.y + 186.0f, 732.0f, 188.0f }, panel, browseWeapon.color);
     DrawText("ARMORY RACK", (int)panelRect.x + 40, (int)panelRect.y + 204, 22, browseWeapon.color);
     DrawText(browseWeapon.name.c_str(), (int)panelRect.x + 40, (int)panelRect.y + 238, 30, WHITE);
@@ -2810,23 +2977,42 @@ void Game::DrawShop() const {
     DrawText(TextFormat("DAMAGE: %d", browseWeapon.damage), (int)panelRect.x + 260, (int)panelRect.y + 278, 20, WHITE);
     DrawText(TextFormat("RANGE: %.0f", browseWeapon.range), (int)panelRect.x + 430, (int)panelRect.y + 278, 20, WHITE);
     DrawText(TextFormat("COST: %d RENOWN", browseWeapon.cost), (int)panelRect.x + 520, (int)panelRect.y + 278, 20, neonGold);
+    DrawText(TextFormat("SOURCE: %s", WeaponSourceLabel(shop.browseWeaponIdx)), (int)panelRect.x + 40, (int)panelRect.y + 306, 18, RAYWHITE);
 
-    std::string stateLabel = shop.ownedWeapons[shop.browseWeaponIdx]
-        ? (player.equippedWeaponIdx == shop.browseWeaponIdx ? "READIED" : "CLAIMED")
-        : "LOCKED";
-    Color stateColor = shop.ownedWeapons[shop.browseWeaponIdx]
-        ? (player.equippedWeaponIdx == shop.browseWeaponIdx ? neonCyan : safeGreen)
-        : softRed;
+    std::string stateLabel;
+    Color stateColor = WHITE;
+    std::string actionLabel;
 
-    DrawText(TextFormat("STATUS: %s", stateLabel.c_str()), (int)panelRect.x + 40, (int)panelRect.y + 318, 22, stateColor);
-    DrawText("LEFT / RIGHT TO BROWSE   B TO CLAIM OR READY", (int)panelRect.x + 246, (int)panelRect.y + 318, 20, RAYWHITE);
+    if (shop.ownedWeapons[shop.browseWeaponIdx]) {
+        stateLabel = (player.equippedWeaponIdx == shop.browseWeaponIdx) ? "READIED" : "CLAIMED";
+        stateColor = (player.equippedWeaponIdx == shop.browseWeaponIdx) ? neonCyan : safeGreen;
+        actionLabel = "B TO READY THIS ARMAMENT";
+    }
+    else if (!browseRealmUnlocked) {
+        stateLabel = "SEALED BY REALM";
+        stateColor = softRed;
+        actionLabel = "ADVANCE MAIN CHARTERS TO UNSEAL THIS FORGE";
+    }
+    else if (signatureLocked) {
+        stateLabel = "REALM GIFT";
+        stateColor = neonGold;
+        actionLabel = "CLEAR A SEALED COURT IN THIS REALM TO EARN IT";
+    }
+    else {
+        stateLabel = "FOR SALE";
+        stateColor = neonGold;
+        actionLabel = "B TO CLAIM THIS ARMAMENT";
+    }
+
+    DrawText(TextFormat("STATUS: %s", stateLabel.c_str()), (int)panelRect.x + 40, (int)panelRect.y + 336, 22, stateColor);
+    DrawText(actionLabel.c_str(), (int)panelRect.x + 250, (int)panelRect.y + 336, 18, RAYWHITE);
 
     DrawPanel({ panelRect.x + 24.0f, panelRect.y + 392.0f, 732.0f, 56.0f }, panel, neonBlue);
     DrawText("E LEAVE", (int)panelRect.x + 40, (int)panelRect.y + 408, 20, neonBlue);
-    DrawText("CLAIM ONCE, BEAR IT FOREVER", (int)panelRect.x + 220, (int)panelRect.y + 408, 20, RAYWHITE);
+    DrawText("LEFT / RIGHT BROWSE   CLAIM ONCE, BEAR IT FOREVER", (int)panelRect.x + 164, (int)panelRect.y + 408, 20, RAYWHITE);
 
     if (shop.messageTimer > 0.0f) {
-        DrawText(shop.message.c_str(), (int)panelRect.x + 560, (int)panelRect.y + 408, 20, shop.messageColor);
+        DrawText(shop.message.c_str(), (int)panelRect.x + 468, (int)panelRect.y + 408, 20, shop.messageColor);
     }
 }
 

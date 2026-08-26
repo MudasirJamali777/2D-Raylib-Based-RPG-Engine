@@ -87,6 +87,7 @@ private:
     std::vector<bool> sideQuestReady;
     std::vector<Star> stars;
     std::vector<bool> persistentOwnedWeapons;
+    std::vector<bool> realmSignatureClaimed;
     int persistentHpUpgradeLevel = 0;
     int persistentEquippedWeaponIdx = 0;
     int legacyRenown = 0;
@@ -137,6 +138,7 @@ private:
     void RefreshSideQuestOffer(int slot);
     bool IsWorldUnlocked(WorldId world) const;
     void TravelToWorld(WorldId world);
+    void GrantRealmSignatureIfNeeded(WorldId world);
     bool HasSaveFile() const;
     bool LoadRun();
     bool LoadProfile();
