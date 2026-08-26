@@ -493,7 +493,7 @@ def make_weapon_atlas():
 
 def make_pet_atlas():
     cell = 64
-    img = Image.new('RGBA', (cell * 4, cell), (0, 0, 0, 0))
+    img = Image.new('RGBA', (cell * 6, cell), (0, 0, 0, 0))
     d = ImageDraw.Draw(img)
 
     x = 0
@@ -519,6 +519,20 @@ def make_pet_atlas():
     d.ellipse((x + 34, 10, x + 54, 30), fill=(144, 188, 124, 255), outline=(60, 86, 52, 255), width=3)
     d.polygon([(x + 40, 30), (x + 54, 46), (x + 34, 44)], fill=(98, 132, 82, 255), outline=(60, 86, 52, 255))
     d.ellipse((x + 38, 16, x + 42, 20), fill=(255, 255, 255, 255))
+
+    x = 256
+    d.ellipse((x + 18, 18, x + 46, 36), fill=(244, 222, 138, 255), outline=(148, 124, 58, 255), width=3)
+    d.polygon([(x + 14, 28), (x + 4, 14), (x + 18, 20)], fill=(255, 240, 176, 255), outline=(148, 124, 58, 255))
+    d.polygon([(x + 50, 28), (x + 60, 14), (x + 46, 20)], fill=(255, 240, 176, 255), outline=(148, 124, 58, 255))
+    d.rectangle((x + 29, 34, x + 35, 54), fill=(196, 176, 96, 255), outline=(148, 124, 58, 255))
+    d.ellipse((x + 24, 10, x + 40, 24), fill=(255, 248, 204, 255), outline=(148, 124, 58, 255))
+
+    x = 320
+    d.ellipse((x + 14, 24, x + 48, 48), fill=(166, 158, 172, 255), outline=(92, 88, 100, 255), width=3)
+    d.ellipse((x + 36, 16, x + 56, 34), fill=(182, 176, 190, 255), outline=(92, 88, 100, 255), width=3)
+    d.rectangle((x + 16, 42, x + 24, 56), fill=(92, 88, 100, 255))
+    d.rectangle((x + 36, 42, x + 44, 56), fill=(92, 88, 100, 255))
+    d.polygon([(x + 50, 34), (x + 62, 30), (x + 52, 42)], fill=(120, 112, 126, 255), outline=(92, 88, 100, 255))
 
     img.save(ASSET_DIR / 'pets_atlas.png')
 

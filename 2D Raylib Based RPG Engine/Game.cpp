@@ -357,7 +357,9 @@ void Game::BuildDatabases() {
         {"Ember Fox", "Spits cinders that burn hunted foes.", 12, 16, 0.90f, 32.0f, { 214, 118, 62, 255 }, 0},
         {"Frost Finch", "Pecks icy shards that slow enemies.", 20, 20, 1.05f, 34.0f, { 164, 214, 255, 255 }, 1},
         {"Dune Scarab", "Launches bright darts in quick bursts.", 30, 24, 0.72f, 30.0f, { 224, 186, 76, 255 }, 2},
-        {"Mireling", "Spits venom globs that poison targets.", 42, 30, 1.12f, 36.0f, { 122, 166, 104, 255 }, 3}
+        {"Mireling", "Spits venom globs that poison targets.", 42, 30, 1.12f, 36.0f, { 122, 166, 104, 255 }, 3},
+        {"Lantern Moth", "Sends guiding light and mends you in battle.", 56, 22, 0.88f, 34.0f, { 244, 222, 138, 255 }, 4},
+        {"Stone Pup", "Charges with blunt force and staggers packs.", 72, 34, 1.18f, 38.0f, { 166, 158, 172, 255 }, 5}
     };
 
     monsterTypes = {
@@ -1172,6 +1174,43 @@ int Game::GetHealPickupValue(int baseValue) const {
     return baseValue + 4 * CountRelic(RelicType::NanoforgeHeart);
 }
 
+int Game::GetPetBondLevel(int petIndex) const {
+    if (petIndex < 0 || petIndex >= (int)persistentPetBondXp.size()) {
+        return 0;
+    }
+
+    int xp = persistentPetBondXp[petIndex];
+    if (xp >= 75) return 4;
+    if (xp >= 45) return 3;
+    if (xp >= 22) return 2;
+    if (xp >= 8) return 1;
+    return 0;
+}
+
+int Game::GetPetTrainingEuroCost() const {
+    return 18 + persistentPetTrainingLevel * 12;
+}
+
+int Game::GetPetDamage(int petIndex) const {
+    if (petIndex < 0 || petIndex >= (int)petDB.size()) {
+        return 0;
+    }
+
+    return petDB[petIndex].damage + GetPetBondLevel(petIndex) * 6 + persistentPetTrainingLevel * 4 + player.wave * 2;
+}
+
+float Game::GetPetAttackCooldown(int petIndex) const {
+    if (petIndex < 0 || petIndex >= (int)petDB.size()) {
+        return 1.0f;
+    }
+
+    float value = petDB[petIndex].attackCooldown - persistentPetTrainingLevel * 0.04f;
+    if (value < 0.42f) {
+        value = 0.42f;
+    }
+    return value;
+}
+
 void Game::BuildRewardChoices() {
     rewardChoices.clear();
 
@@ -1375,6 +1414,8 @@ bool Game::LoadProfile() {
     }
     realmSignatureClaimed.assign(4, false);
     persistentOwnedPets.assign(petDB.size(), false);
+    persistentPetBondXp.assign(petDB.size(), 0);
+    persistentPetTrainingLevel = 0;
     persistentHpUpgradeLevel = 0;
     persistentEquippedWeaponIdx = 0;
     persistentEquippedPetIdx = -1;
@@ -1411,7 +1452,7 @@ bool Game::LoadProfile() {
 
         for (int i = 0; i < 3; ++i) RefreshSideQuestOffer(i);
     }
-    else if (header == "CROWNHEART_PROFILE_V2" || header == "CROWNHEART_PROFILE_V3" || header == "CROWNHEART_PROFILE_V4") {
+    else if (header == "CROWNHEART_PROFILE_V2" || header == "CROWNHEART_PROFILE_V3" || header == "CROWNHEART_PROFILE_V4" || header == "CROWNHEART_PROFILE_V5" || header == "CROWNHEART_PROFILE_V6") {
         in >> legacyRenown >> persistentHpUpgradeLevel >> persistentEquippedWeaponIdx >> euro;
 
         size_t ownedCount = 0;
@@ -1461,7 +1502,7 @@ bool Game::LoadProfile() {
             if (i < sideQuestReady.size()) sideQuestReady[i] = (value != 0);
         }
 
-        if (header == "CROWNHEART_PROFILE_V3" || header == "CROWNHEART_PROFILE_V4") {
+        if (header == "CROWNHEART_PROFILE_V3" || header == "CROWNHEART_PROFILE_V4" || header == "CROWNHEART_PROFILE_V5" || header == "CROWNHEART_PROFILE_V6") {
             size_t signatureCount = 0;
             in >> signatureCount;
             for (size_t i = 0; i < signatureCount; ++i) {
@@ -1473,7 +1514,7 @@ bool Game::LoadProfile() {
             }
         }
 
-        if (header == "CROWNHEART_PROFILE_V4") {
+        if (header == "CROWNHEART_PROFILE_V4" || header == "CROWNHEART_PROFILE_V5" || header == "CROWNHEART_PROFILE_V6") {
             in >> persistentEquippedPetIdx;
 
             size_t petOwnedCount = 0;
@@ -1485,6 +1526,22 @@ bool Game::LoadProfile() {
                     persistentOwnedPets[i] = (value != 0);
                 }
             }
+        }
+
+        if (header == "CROWNHEART_PROFILE_V5" || header == "CROWNHEART_PROFILE_V6") {
+            size_t petBondCount = 0;
+            in >> petBondCount;
+            for (size_t i = 0; i < petBondCount; ++i) {
+                int value = 0;
+                in >> value;
+                if (i < persistentPetBondXp.size()) {
+                    persistentPetBondXp[i] = std::max(0, value);
+                }
+            }
+        }
+
+        if (header == "CROWNHEART_PROFILE_V6") {
+            in >> persistentPetTrainingLevel;
         }
     }
     else {
@@ -1543,6 +1600,17 @@ bool Game::LoadProfile() {
     if (persistentOwnedPets.size() != petDB.size()) {
         persistentOwnedPets.resize(petDB.size(), false);
     }
+    if (persistentPetBondXp.size() != petDB.size()) {
+        persistentPetBondXp.resize(petDB.size(), 0);
+    }
+    for (int& value : persistentPetBondXp) {
+        if (value < 0) {
+            value = 0;
+        }
+    }
+    if (persistentPetTrainingLevel < 0) {
+        persistentPetTrainingLevel = 0;
+    }
     if (persistentEquippedPetIdx >= 0 && !persistentOwnedPets[persistentEquippedPetIdx]) {
         persistentEquippedPetIdx = -1;
     }
@@ -1557,7 +1625,7 @@ void Game::SaveProfile() const {
         return;
     }
 
-    out << "CROWNHEART_PROFILE_V4\n";
+    out << "CROWNHEART_PROFILE_V6\n";
     out << legacyRenown << ' ' << persistentHpUpgradeLevel << ' ' << persistentEquippedWeaponIdx << ' ' << euro << '\n';
 
     out << persistentOwnedWeapons.size();
@@ -1592,6 +1660,12 @@ void Game::SaveProfile() const {
     out << persistentOwnedPets.size();
     for (bool value : persistentOwnedPets) out << ' ' << (value ? 1 : 0);
     out << '\n';
+
+    out << persistentPetBondXp.size();
+    for (int value : persistentPetBondXp) out << ' ' << value;
+    out << '\n';
+
+    out << persistentPetTrainingLevel << '\n';
 }
 
 bool Game::HasSaveFile() const {
@@ -1860,6 +1934,9 @@ void Game::ResetRun() {
     if (persistentOwnedPets.size() != petDB.size()) {
         persistentOwnedPets.resize(petDB.size(), false);
     }
+    if (persistentPetBondXp.size() != petDB.size()) {
+        persistentPetBondXp.resize(petDB.size(), 0);
+    }
     if (persistentEquippedPetIdx < -1 || persistentEquippedPetIdx >= (int)petDB.size()) {
         persistentEquippedPetIdx = -1;
     }
@@ -2039,6 +2116,9 @@ void Game::SyncPetState(bool snapToPlayer) {
     if (persistentOwnedPets.size() != petDB.size()) {
         persistentOwnedPets.resize(petDB.size(), false);
     }
+    if (persistentPetBondXp.size() != petDB.size()) {
+        persistentPetBondXp.resize(petDB.size(), 0);
+    }
 
     if (persistentEquippedPetIdx < 0 || persistentEquippedPetIdx >= (int)petDB.size()) {
         pet = ActivePet{};
@@ -2060,6 +2140,30 @@ void Game::SyncPetState(bool snapToPlayer) {
     }
     if (snapToPlayer || wasInactive) {
         pet.pos = VecAdd(player.pos, { 26.0f, -20.0f });
+    }
+}
+
+void Game::AwardPetBond(int amount) {
+    if (!pet.active || pet.petIndex < 0 || pet.petIndex >= (int)petDB.size()) {
+        return;
+    }
+
+    if (persistentPetBondXp.size() != petDB.size()) {
+        persistentPetBondXp.resize(petDB.size(), 0);
+    }
+
+    int oldLevel = GetPetBondLevel(pet.petIndex);
+    persistentPetBondXp[pet.petIndex] = std::max(0, persistentPetBondXp[pet.petIndex] + amount);
+    int newLevel = GetPetBondLevel(pet.petIndex);
+
+    if (newLevel > oldLevel) {
+        announcement = petDB[pet.petIndex].name + " // BOND RANK " + std::to_string(newLevel);
+        announcementTimer = 2.2f;
+        AddFloatingText(pet.pos, "BOND UP", petDB[pet.petIndex].color);
+        SaveProfile();
+    }
+    else if ((persistentPetBondXp[pet.petIndex] % 5) == 0) {
+        SaveProfile();
     }
 }
 
@@ -2372,7 +2476,7 @@ void Game::UpdatePlaying(float dt) {
 
             if (targetIndex >= 0) {
                 ActiveMonster& target = monsters[targetIndex];
-                int petDamage = petInfo.damage + player.wave * 2;
+                int petDamage = GetPetDamage(pet.petIndex);
                 target.hp -= petDamage;
                 target.hitFlash = 0.10f;
                 beams.push_back({ pet.pos, target.pos, petInfo.color, 2.4f, 0.10f });
@@ -2400,7 +2504,7 @@ void Game::UpdatePlaying(float dt) {
                     target.poisonTickTimer = 0.15f;
                 }
 
-                pet.fireTimer = petInfo.attackCooldown;
+                pet.fireTimer = GetPetAttackCooldown(pet.petIndex);
             }
         }
     }
@@ -2624,6 +2728,7 @@ void Game::UpdatePlaying(float dt) {
             shockwaves.push_back({ it->pos, 12.0f, it->isBoss ? 220.0f : (it->isElite ? 120.0f : 90.0f), it->isBoss ? 0.55f : 0.22f, it->isBoss ? 0.55f : 0.22f, Fade(it->color, 0.8f) });
             AddFloatingText(it->pos, it->name + " DOWN", it->isBoss ? neonGold : (it->isElite ? neonPink : WHITE));
             player.kills++;
+            AwardPetBond(it->isBoss ? 6 : (it->isElite ? 3 : 1));
             AdvanceQuestObjective(QuestObjective::SlayFoes, 1);
             if (it->isElite) {
                 AdvanceQuestObjective(QuestObjective::DefeatElites, 1);
@@ -2876,6 +2981,9 @@ void Game::UpdatePlaying(float dt) {
         persistentHpUpgradeLevel = player.hpUpgradeLevel;
         persistentEquippedWeaponIdx = player.equippedWeaponIdx;
         legacyRenown = std::max(legacyRenown, (int)std::round((float)player.xp * 0.65f));
+        if (persistentPetTrainingLevel < 0) {
+            persistentPetTrainingLevel = 0;
+        }
         SaveProfile();
         DeleteSave();
         gameState = GameState::GameOver;
@@ -3218,7 +3326,7 @@ void Game::DrawWorld() const {
 }
 
 void Game::DrawHud() const {
-    DrawPanel({ 18.0f, 18.0f, 420.0f, 172.0f }, panel, neonBlue);
+    DrawPanel({ 18.0f, 18.0f, 420.0f, 190.0f }, panel, neonBlue);
     DrawText("ADVENTURER'S KIT", 34, 28, 20, neonCyan);
     DrawText(TextFormat("WEAPON: %s", weaponDB[player.equippedWeaponIdx].name.c_str()), 34, 54, 18, WHITE);
     DrawText(TextFormat("TRAIT: %s", WeaponTraitLabel(weaponDB[player.equippedWeaponIdx].trait)), 34, 76, 16, weaponDB[player.equippedWeaponIdx].color);
@@ -3226,39 +3334,39 @@ void Game::DrawHud() const {
     DrawText(TextFormat("KILLS %d", player.kills), 300, 54, 18, RAYWHITE);
     DrawText(TextFormat("RELICS %d", player.relicsCollected), 300, 78, 18, neonPink);
 
-    DrawRectangle(34, 88, 250, 18, Fade(WHITE, 0.12f));
-    DrawRectangle(34, 88, (int)(250.0f * ((float)player.hp / (float)player.maxHp)), 18, player.hp < player.maxHp * 0.3f ? softRed : safeGreen);
-    DrawText(TextFormat("HP %d / %d", player.hp, player.maxHp), 44, 88, 16, WHITE);
+    DrawRectangle(34, 102, 250, 18, Fade(WHITE, 0.12f));
+    DrawRectangle(34, 102, (int)(250.0f * ((float)player.hp / (float)player.maxHp)), 18, player.hp < player.maxHp * 0.3f ? softRed : safeGreen);
+    DrawText(TextFormat("HP %d / %d", player.hp, player.maxHp), 44, 102, 16, WHITE);
 
-    DrawRectangle(34, 118, 250, 12, Fade(WHITE, 0.12f));
-    DrawRectangle(34, 118, (int)ClampFloat((float)player.xp / 3000.0f * 250.0f, 0.0f, 250.0f), 12, neonGold);
-    DrawText(TextFormat("RENOWN %d", player.xp), 294, 112, 16, neonGold);
-    DrawText(TextFormat("EURO %d", euro), 34, 142, 18, { 85, 140, 86, 255 });
-    DrawText(TextFormat("HEIRLOOM %d", legacyRenown), 170, 142, 18, { 130, 104, 60, 255 });
+    DrawRectangle(34, 132, 250, 12, Fade(WHITE, 0.12f));
+    DrawRectangle(34, 132, (int)ClampFloat((float)player.xp / 3000.0f * 250.0f, 0.0f, 250.0f), 12, neonGold);
+    DrawText(TextFormat("RENOWN %d", player.xp), 294, 126, 16, neonGold);
+    DrawText(TextFormat("EURO %d", euro), 34, 156, 18, { 85, 140, 86, 255 });
+    DrawText(TextFormat("HEIRLOOM %d", legacyRenown), 170, 156, 18, { 130, 104, 60, 255 });
 
-    DrawPanel({ 18.0f, 198.0f, 300.0f, 118.0f }, panel, neonPink);
-    DrawText("ABILITIES", 32, 210, 18, neonPink);
-    DrawText(TextFormat("1 DASH    %.1fs", player.dashCd), 32, 236, 18, player.dashCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("2 NOVA    %.1fs", player.empCd), 32, 260, 18, player.empCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("3 TOTEM   %.1fs", player.turretCd), 32, 284, 18, player.turretCd <= 0.0f ? neonCyan : GRAY);
+    DrawPanel({ 18.0f, 212.0f, 300.0f, 118.0f }, panel, neonPink);
+    DrawText("ABILITIES", 32, 224, 18, neonPink);
+    DrawText(TextFormat("1 DASH    %.1fs", player.dashCd), 32, 250, 18, player.dashCd <= 0.0f ? neonCyan : GRAY);
+    DrawText(TextFormat("2 NOVA    %.1fs", player.empCd), 32, 274, 18, player.empCd <= 0.0f ? neonCyan : GRAY);
+    DrawText(TextFormat("3 TOTEM   %.1fs", player.turretCd), 32, 298, 18, player.turretCd <= 0.0f ? neonCyan : GRAY);
 
-    DrawPanel({ 18.0f, 328.0f, 420.0f, 188.0f }, panel, neonGold);
-    DrawText("QUEST LEDGER", 34, 340, 20, neonGold);
+    DrawPanel({ 18.0f, 342.0f, 420.0f, 188.0f }, panel, neonGold);
+    DrawText("QUEST LEDGER", 34, 354, 20, neonGold);
     if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size()) {
         const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
-        DrawText(mainQuest.title.c_str(), 34, 366, 18, WHITE);
-        DrawText(mainQuest.description.c_str(), 34, 388, 16, RAYWHITE);
-        DrawText(TextFormat("MAIN %d / %d %s", mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), 34, 410, 16, mainQuestReady ? safeGreen : neonGold);
+        DrawText(mainQuest.title.c_str(), 34, 380, 18, WHITE);
+        DrawText(mainQuest.description.c_str(), 34, 402, 16, RAYWHITE);
+        DrawText(TextFormat("MAIN %d / %d %s", mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), 34, 424, 16, mainQuestReady ? safeGreen : neonGold);
         if (mainQuestReady) {
-            DrawText(TextFormat("READY: RETURN TO QUEST BOARD FOR %d EURO", mainQuest.euroReward), 34, 432, 16, safeGreen);
+            DrawText(TextFormat("READY: RETURN TO QUEST BOARD FOR %d EURO", mainQuest.euroReward), 34, 446, 16, safeGreen);
         }
     }
     else {
-        DrawText("The current main charter is complete.", 34, 374, 18, WHITE);
-        DrawText("More story quests will arrive with the next world batch.", 34, 404, 16, RAYWHITE);
+        DrawText("The current main charter is complete.", 34, 388, 18, WHITE);
+        DrawText("More story quests will arrive with the next world batch.", 34, 418, 16, RAYWHITE);
     }
 
-    int sideRowY = 454;
+    int sideRowY = 468;
     bool hasSideQuest = false;
     for (int i = 0; i < 3; ++i) {
         if (!sideQuestAccepted[i]) {
@@ -3270,20 +3378,21 @@ void Game::DrawHud() const {
         sideRowY += 18;
     }
     if (!hasSideQuest) {
-        DrawText("No side contracts taken. Visit the board in the keep.", 34, 454, 16, RAYWHITE);
+        DrawText("No side contracts taken. Visit the board in the keep.", 34, 468, 16, RAYWHITE);
     }
 
-    DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 172.0f }, panel, safeGreen);
+    DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 190.0f }, panel, safeGreen);
     DrawText("REGION READOUT", screenW - 334, 28, 20, safeGreen);
-    DrawText(TextFormat("REALM: %s", WorldLabel(currentWorld)), screenW - 334, 56, 18, WHITE);
-    DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 82, 18, WHITE);
-    DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 106, 18, WHITE);
-    DrawText(TextFormat("PET: %s", (pet.active && pet.petIndex >= 0 && pet.petIndex < (int)petDB.size()) ? petDB[pet.petIndex].name.c_str() : "NONE"), screenW - 334, 130, 16, pet.active ? petDB[pet.petIndex].color : RAYWHITE);
+    DrawText(TextFormat("REALM: %s", WorldLabel(currentWorld)), screenW - 334, 54, 18, WHITE);
+    DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 78, 18, WHITE);
+    DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 102, 18, WHITE);
+    DrawText(TextFormat("PET: %s", (pet.active && pet.petIndex >= 0 && pet.petIndex < (int)petDB.size()) ? petDB[pet.petIndex].name.c_str() : "NONE"), screenW - 334, 126, 16, pet.active ? petDB[pet.petIndex].color : RAYWHITE);
+    DrawText(TextFormat("BOND RANK %d", pet.active ? GetPetBondLevel(pet.petIndex) : 0), screenW - 334, 144, 16, pet.active ? petDB[pet.petIndex].color : RAYWHITE);
 
     bool inSafeZone = CheckCollisionPointRec(player.pos, safeZone);
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
-    DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 148, 18, inSafeZone ? safeGreen : softRed);
-    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 168, 16, RAYWHITE);
+    DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 160, 16, inSafeZone ? safeGreen : softRed);
+    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 178, 14, RAYWHITE);
 
     DrawMiniMap();
 
@@ -3445,7 +3554,7 @@ void Game::DrawRewardOverlay() const {
 void Game::DrawShop() const {
     DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.58f));
 
-    Rectangle panelRect = { screenW * 0.5f - 580.0f, screenH * 0.5f - 290.0f, 1160.0f, 580.0f };
+    Rectangle panelRect = { screenW * 0.5f - 580.0f, screenH * 0.5f - 320.0f, 1160.0f, 640.0f };
     DrawPanel(panelRect, panel2, neonGold);
 
     int collectedWeapons = 0;
@@ -3578,31 +3687,34 @@ void Game::DrawShop() const {
     DrawText(TextFormat("STATUS: %s", stateLabel.c_str()), (int)stateRect.x + 18, (int)stateRect.y + 12, 20, stateColor);
     DrawText(actionLabel.c_str(), (int)stateRect.x + 18, (int)stateRect.y + 38, 16, RAYWHITE);
 
-    Rectangle petRect = { panelRect.x + 734.0f, panelRect.y + 432.0f, 402.0f, 96.0f };
+    Rectangle petRect = { panelRect.x + 734.0f, panelRect.y + 432.0f, 402.0f, 138.0f };
     DrawPanel(petRect, panel, safeGreen);
     DrawText("COMPANION STABLE", (int)petRect.x + 18, (int)petRect.y + 12, 20, safeGreen);
     if (!petDB.empty()) {
         const PetDefinition& petInfo = petDB[shop.browsePetIdx];
         bool ownedPet = shop.browsePetIdx < (int)persistentOwnedPets.size() ? persistentOwnedPets[shop.browsePetIdx] : false;
         bool activePet = ownedPet && persistentEquippedPetIdx == shop.browsePetIdx;
+        int bondRank = GetPetBondLevel(shop.browsePetIdx);
         if (petAtlas.id != 0) {
             Rectangle src = PetSourceRect(petInfo.spriteIndex);
             Rectangle dst = { petRect.x + 18.0f, petRect.y + 28.0f, 54.0f, 54.0f };
             DrawTexturePro(petAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
         }
         DrawText(petInfo.name.c_str(), (int)petRect.x + 84, (int)petRect.y + 28, 20, petInfo.color);
-        DrawText(petInfo.description.c_str(), (int)petRect.x + 84, (int)petRect.y + 50, 16, RAYWHITE);
-        DrawText(TextFormat("%d EURO  %d DMG  %.2fs", petInfo.euroCost, petInfo.damage, petInfo.attackCooldown), (int)petRect.x + 84, (int)petRect.y + 70, 16, WHITE);
-        DrawText(activePet ? "READY" : (ownedPet ? "OWNED" : "FOR HIRE"), (int)petRect.x + 324, (int)petRect.y + 28, 18, activePet ? petInfo.color : (ownedPet ? safeGreen : neonGold));
-        DrawText("P CYCLE   N CLAIM / READY", (int)petRect.x + 236, (int)petRect.y + 68, 16, RAYWHITE);
+        DrawText(petInfo.description.c_str(), (int)petRect.x + 84, (int)petRect.y + 48, 16, RAYWHITE);
+        DrawText(TextFormat("%d EURO  %d DMG  %.2fs", petInfo.euroCost, GetPetDamage(shop.browsePetIdx), GetPetAttackCooldown(shop.browsePetIdx)), (int)petRect.x + 84, (int)petRect.y + 68, 16, WHITE);
+        DrawText(TextFormat("BOND %d  XP %d", bondRank, shop.browsePetIdx < (int)persistentPetBondXp.size() ? persistentPetBondXp[shop.browsePetIdx] : 0), (int)petRect.x + 84, (int)petRect.y + 88, 16, petInfo.color);
+        DrawText(activePet ? "READY" : (ownedPet ? "OWNED" : "FOR HIRE"), (int)petRect.x + 314, (int)petRect.y + 28, 18, activePet ? petInfo.color : (ownedPet ? safeGreen : neonGold));
+        DrawText("P CYCLE   N CLAIM / READY", (int)petRect.x + 192, (int)petRect.y + 86, 16, RAYWHITE);
     }
+    DrawText(TextFormat("STABLE TRAINING %d  COST %d EURO  PRESS M", persistentPetTrainingLevel, GetPetTrainingEuroCost()), (int)petRect.x + 18, (int)petRect.y + 114, 16, neonGold);
 
-    Rectangle footerRect = { panelRect.x + 24.0f, panelRect.y + 518.0f, 1112.0f, 38.0f };
+    Rectangle footerRect = { panelRect.x + 24.0f, panelRect.y + 586.0f, 1112.0f, 42.0f };
     DrawPanel(footerRect, panel, neonBlue);
-    DrawText("E LEAVE   ARROWS BROWSE WEAPONS   B BUY/READY   H VIGOR   P CYCLE PETS   N BUY/READY PET", (int)footerRect.x + 18, (int)footerRect.y + 10, 16, RAYWHITE);
+    DrawText("E LEAVE   ARROWS BROWSE WEAPONS   B BUY/READY   H VIGOR   P CYCLE PETS   N BUY/READY PET   M TRAIN STABLE", (int)footerRect.x + 18, (int)footerRect.y + 12, 16, RAYWHITE);
 
     if (shop.messageTimer > 0.0f) {
-        DrawText(shop.message.c_str(), (int)panelRect.x + 792, (int)panelRect.y + 532, 18, shop.messageColor);
+        DrawText(shop.message.c_str(), (int)panelRect.x + 734, (int)panelRect.y + 606, 18, shop.messageColor);
     }
 }
 
@@ -3702,7 +3814,7 @@ void Game::DrawGameOver() const {
     DrawText(TextFormat("TOTAL KILLS: %d", player.kills), screenW / 2 - MeasureText(TextFormat("TOTAL KILLS: %d", player.kills), 28) / 2, 320, 28, WHITE);
     DrawText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), screenW / 2 - MeasureText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), 28) / 2, 360, 28, neonGold);
     DrawText(TextFormat("EURO KEPT: %d", euro), screenW / 2 - MeasureText(TextFormat("EURO KEPT: %d", euro), 24) / 2, 396, 24, safeGreen);
-    DrawText("WEAPONS, EURO, QUESTS, PETS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS, EURO, QUESTS, PETS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 430, 22, RAYWHITE);
+    DrawText("WEAPONS, EURO, QUESTS, PET BONDS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS, EURO, QUESTS, PET BONDS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 430, 22, RAYWHITE);
     DrawText("PRESS ENTER TO RIDE OUT AGAIN", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT AGAIN", 26) / 2, 456, 26, neonCyan);
 }
 
@@ -3774,8 +3886,26 @@ void Game::DrawPlayerWeapon() const {
         aim = { 1.0f, 0.0f };
     }
 
-    float angle = std::atan2(aim.y, aim.x) * 57.2957795f + 28.0f;
-    Vector2 handPos = { player.pos.x + aim.x * 12.0f, player.pos.y - 20.0f + aim.y * 8.0f };
+    float swingDuration = GetWeaponAttackCooldown(weapon);
+    float swingPhase = 0.0f;
+    if (swingDuration > 0.001f) {
+        swingPhase = ClampFloat(player.attackCd / swingDuration, 0.0f, 1.0f);
+    }
+
+    float swingArc = 0.0f;
+    if (swingPhase > 0.0f) {
+        float strength = 1.0f;
+        if (weapon.trait == WeaponTrait::Heavy) strength = 1.35f;
+        else if (weapon.trait == WeaponTrait::Swift) strength = 0.82f;
+        else if (weapon.trait == WeaponTrait::Royal) strength = 1.15f;
+        swingArc = std::sin((1.0f - swingPhase) * 3.14159265f) * 42.0f * strength;
+    }
+
+    float angle = std::atan2(aim.y, aim.x) * 57.2957795f + 28.0f - swingArc;
+    Vector2 handPos = {
+        player.pos.x + aim.x * (12.0f + swingPhase * 6.0f),
+        player.pos.y - 20.0f + aim.y * (8.0f + swingPhase * 4.0f)
+    };
     Rectangle src = WeaponSourceRect(weapon.spriteIndex);
     Rectangle dst = { handPos.x - 14.0f, handPos.y - 10.0f, 72.0f, 72.0f };
     DrawCartoonShadow({ handPos.x + 6.0f, handPos.y + 18.0f }, 16.0f, 4.0f, 0.12f);

@@ -91,6 +91,8 @@ private:
     std::vector<bool> persistentOwnedWeapons;
     std::vector<bool> realmSignatureClaimed;
     std::vector<bool> persistentOwnedPets;
+    std::vector<int> persistentPetBondXp;
+    int persistentPetTrainingLevel = 0;
     int persistentHpUpgradeLevel = 0;
     int persistentEquippedWeaponIdx = 0;
     int persistentEquippedPetIdx = -1;
@@ -142,6 +144,10 @@ private:
     int GetTurretDamage() const;
     float GetTurretLifetime() const;
     int GetHealPickupValue(int baseValue) const;
+    int GetPetBondLevel(int petIndex) const;
+    int GetPetTrainingEuroCost() const;
+    int GetPetDamage(int petIndex) const;
+    float GetPetAttackCooldown(int petIndex) const;
     void BuildRewardChoices();
     void ApplyRelic(RelicType type);
     void AdvanceQuestObjective(QuestObjective objective, int amount = 1);
@@ -161,6 +167,7 @@ private:
     void SpawnMonsterByType(int typeIndex, Vector2 pos);
     void SpawnWave(int waveNumber);
     void SyncPetState(bool snapToPlayer);
+    void AwardPetBond(int amount);
     void ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, int damage, bool isCrit);
 
     void UpdateTitle();
