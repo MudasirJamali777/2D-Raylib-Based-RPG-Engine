@@ -162,6 +162,7 @@ private:
     void SaveRun() const;
     void SaveProfile() const;
     void DeleteSave() const;
+    void DeleteProfile() const;
 
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);
     void EmitBurst(Vector2 pos, int count, float speed, Color color, float size);

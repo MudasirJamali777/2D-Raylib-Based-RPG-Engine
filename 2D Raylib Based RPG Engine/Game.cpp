@@ -350,44 +350,44 @@ void Game::BuildColorTheme() {
 
 void Game::BuildDatabases() {
     weaponDB = {
-        {"Rusty Cudgel", 18, 66.0f, "Common", 0, LIGHTGRAY, 0, WeaponTrait::Heavy, 1.16f},
-        {"Iron Mace", 24, 72.0f, "Common", 90, GRAY, 1, WeaponTrait::Heavy, 1.14f},
-        {"Pilgrim's Hatchet", 22, 78.0f, "Common", 140, neonCyan, 2, WeaponTrait::Swift, 0.86f},
-        {"Raider Flail", 28, 88.0f, "Common", 240, ORANGE, 3, WeaponTrait::Chain, 1.00f},
-        {"Hearthblade", 32, 94.0f, "Rare", 330, SKYBLUE, 4, WeaponTrait::Guardian, 0.98f},
-        {"Knight Saber", 38, 102.0f, "Rare", 470, BLUE, 5, WeaponTrait::Balanced, 0.94f},
-        {"Sunsteel Blade", 44, 110.0f, "Rare", 620, RED, 6, WeaponTrait::Sunfire, 0.98f},
-        {"Storm Fang", 50, 118.0f, "Rare", 860, LIME, 7, WeaponTrait::Chain, 0.92f},
-        {"Raven Pike", 56, 128.0f, "Rare", 1090, neonCyan, 8, WeaponTrait::Swift, 0.88f},
-        {"Grave Reaper", 64, 136.0f, "Legendary", 1360, PURPLE, 9, WeaponTrait::Executioner, 1.04f},
-        {"Arc Halberd", 72, 144.0f, "Legendary", 1680, YELLOW, 10, WeaponTrait::Chain, 1.02f},
-        {"Starforged Brand", 78, 150.0f, "Legendary", 2120, VIOLET, 11, WeaponTrait::Royal, 1.00f},
-        {"King's Greatsword", 88, 160.0f, "Legendary", 2580, GOLD, 12, WeaponTrait::Heavy, 1.14f},
-        {"Wyrmtooth Cleaver", 96, 168.0f, "Exotic", 3060, GREEN, 13, WeaponTrait::Executioner, 1.08f},
-        {"Moonveil Edge", 102, 174.0f, "Exotic", 3560, bossPurple, 14, WeaponTrait::Frost, 0.94f},
-        {"Celestial Cleaver", 112, 182.0f, "Exotic", 4180, WHITE, 15, WeaponTrait::Guardian, 1.02f},
-        {"Crownfall", 122, 190.0f, "Exotic", 4980, neonPink, 16, WeaponTrait::Royal, 1.08f},
-        {"Crownsent Pike", 46, 124.0f, "Realmforged", 760, neonBlue, 17, WeaponTrait::Guardian, 0.94f},
-        {"Gatekeeper Hammer", 54, 132.0f, "Realmforged", 980, { 100, 110, 128, 255 }, 18, WeaponTrait::Heavy, 1.12f},
-        {"Hailhook", 62, 134.0f, "Realmforged", 1260, { 132, 182, 236, 255 }, 19, WeaponTrait::Frost, 0.96f},
-        {"Winterglass Rapier", 58, 140.0f, "Legendary", 1520, { 202, 236, 255, 255 }, 20, WeaponTrait::Swift, 0.78f},
-        {"Whiteout Halberd", 74, 152.0f, "Exotic", 1920, { 150, 208, 255, 255 }, 21, WeaponTrait::Frost, 1.00f},
-        {"Dune Carver", 68, 138.0f, "Realmforged", 1380, { 194, 143, 80, 255 }, 22, WeaponTrait::Sunfire, 0.92f},
-        {"Sirocco Saber", 74, 146.0f, "Legendary", 1760, { 226, 182, 86, 255 }, 23, WeaponTrait::Swift, 0.84f},
-        {"Pharaoh's Hookblade", 86, 158.0f, "Exotic", 2240, { 235, 188, 73, 255 }, 24, WeaponTrait::Sunfire, 1.00f},
-        {"Boghook", 66, 140.0f, "Realmforged", 1460, { 98, 122, 72, 255 }, 25, WeaponTrait::Venom, 0.98f},
-        {"Witchreed Glaive", 78, 150.0f, "Legendary", 1880, { 118, 164, 108, 255 }, 26, WeaponTrait::Guardian, 1.00f},
-        {"Hollowroot Scythe", 90, 164.0f, "Exotic", 2360, { 164, 208, 132, 255 }, 27, WeaponTrait::Venom, 1.04f},
-        {"Marsh Lantern Spear", 82, 156.0f, "Legendary", 2080, { 160, 178, 118, 255 }, 28, WeaponTrait::Guardian, 0.95f}
+        {"Rusty Cudgel", 14, 64.0f, "Common", 0, LIGHTGRAY, 0, WeaponTrait::Heavy, 1.18f},
+        {"Iron Mace", 18, 70.0f, "Common", 180, GRAY, 1, WeaponTrait::Heavy, 1.16f},
+        {"Pilgrim's Hatchet", 16, 76.0f, "Common", 260, neonCyan, 2, WeaponTrait::Swift, 0.92f},
+        {"Raider Flail", 20, 84.0f, "Common", 420, ORANGE, 3, WeaponTrait::Chain, 1.04f},
+        {"Hearthblade", 24, 90.0f, "Rare", 620, SKYBLUE, 4, WeaponTrait::Guardian, 1.00f},
+        {"Knight Saber", 28, 96.0f, "Rare", 860, BLUE, 5, WeaponTrait::Balanced, 0.98f},
+        {"Sunsteel Blade", 32, 104.0f, "Rare", 1120, RED, 6, WeaponTrait::Sunfire, 1.00f},
+        {"Storm Fang", 36, 112.0f, "Rare", 1450, LIME, 7, WeaponTrait::Chain, 0.96f},
+        {"Raven Pike", 40, 122.0f, "Rare", 1780, neonCyan, 8, WeaponTrait::Swift, 0.94f},
+        {"Grave Reaper", 46, 130.0f, "Legendary", 2150, PURPLE, 9, WeaponTrait::Executioner, 1.06f},
+        {"Arc Halberd", 52, 138.0f, "Legendary", 2580, YELLOW, 10, WeaponTrait::Chain, 1.04f},
+        {"Starforged Brand", 56, 146.0f, "Legendary", 3120, VIOLET, 11, WeaponTrait::Royal, 1.02f},
+        {"King's Greatsword", 64, 154.0f, "Legendary", 3720, GOLD, 12, WeaponTrait::Heavy, 1.18f},
+        {"Wyrmtooth Cleaver", 70, 162.0f, "Exotic", 4380, GREEN, 13, WeaponTrait::Executioner, 1.10f},
+        {"Moonveil Edge", 74, 170.0f, "Exotic", 5120, bossPurple, 14, WeaponTrait::Frost, 0.98f},
+        {"Celestial Cleaver", 82, 178.0f, "Exotic", 6080, WHITE, 15, WeaponTrait::Guardian, 1.06f},
+        {"Crownfall", 88, 186.0f, "Exotic", 7240, neonPink, 16, WeaponTrait::Royal, 1.12f},
+        {"Crownsent Pike", 34, 118.0f, "Realmforged", 980, neonBlue, 17, WeaponTrait::Guardian, 0.98f},
+        {"Gatekeeper Hammer", 38, 126.0f, "Realmforged", 1320, { 100, 110, 128, 255 }, 18, WeaponTrait::Heavy, 1.14f},
+        {"Hailhook", 44, 130.0f, "Realmforged", 1750, { 132, 182, 236, 255 }, 19, WeaponTrait::Frost, 1.00f},
+        {"Winterglass Rapier", 42, 136.0f, "Legendary", 2280, { 202, 236, 255, 255 }, 20, WeaponTrait::Swift, 0.84f},
+        {"Whiteout Halberd", 54, 148.0f, "Exotic", 2840, { 150, 208, 255, 255 }, 21, WeaponTrait::Frost, 1.02f},
+        {"Dune Carver", 48, 136.0f, "Realmforged", 1920, { 194, 143, 80, 255 }, 22, WeaponTrait::Sunfire, 0.96f},
+        {"Sirocco Saber", 52, 142.0f, "Legendary", 2460, { 226, 182, 86, 255 }, 23, WeaponTrait::Swift, 0.88f},
+        {"Pharaoh's Hookblade", 62, 154.0f, "Exotic", 3250, { 235, 188, 73, 255 }, 24, WeaponTrait::Sunfire, 1.02f},
+        {"Boghook", 46, 138.0f, "Realmforged", 2060, { 98, 122, 72, 255 }, 25, WeaponTrait::Venom, 1.00f},
+        {"Witchreed Glaive", 56, 148.0f, "Legendary", 2720, { 118, 164, 108, 255 }, 26, WeaponTrait::Guardian, 1.02f},
+        {"Hollowroot Scythe", 66, 160.0f, "Exotic", 3560, { 164, 208, 132, 255 }, 27, WeaponTrait::Venom, 1.08f},
+        {"Marsh Lantern Spear", 58, 152.0f, "Legendary", 2980, { 160, 178, 118, 255 }, 28, WeaponTrait::Guardian, 1.00f}
     };
 
     petDB = {
-        {"Ember Fox", "Spits cinders that burn hunted foes.", 16, 12, 0.96f, 32.0f, { 214, 118, 62, 255 }, 0},
-        {"Frost Finch", "Pecks icy shards that slow enemies.", 28, 15, 1.06f, 34.0f, { 164, 214, 255, 255 }, 1},
-        {"Dune Scarab", "Launches bright darts in quick bursts.", 42, 18, 0.78f, 30.0f, { 224, 186, 76, 255 }, 2},
-        {"Mireling", "Spits venom globs that poison targets.", 58, 22, 1.14f, 36.0f, { 122, 166, 104, 255 }, 3},
-        {"Lantern Moth", "Sends guiding light and mends you in battle.", 78, 16, 0.94f, 34.0f, { 244, 222, 138, 255 }, 4},
-        {"Stone Pup", "Charges with blunt force and staggers packs.", 104, 26, 1.20f, 38.0f, { 166, 158, 172, 255 }, 5}
+        {"Ember Fox", "Spits cinders that burn hunted foes.", 24, 8, 1.00f, 32.0f, { 214, 118, 62, 255 }, 0},
+        {"Frost Finch", "Pecks icy shards that slow enemies.", 40, 10, 1.10f, 34.0f, { 164, 214, 255, 255 }, 1},
+        {"Dune Scarab", "Launches bright darts in quick bursts.", 62, 12, 0.86f, 30.0f, { 224, 186, 76, 255 }, 2},
+        {"Mireling", "Spits venom globs that poison targets.", 88, 15, 1.18f, 36.0f, { 122, 166, 104, 255 }, 3},
+        {"Lantern Moth", "Sends guiding light and mends you in battle.", 122, 11, 1.00f, 34.0f, { 244, 222, 138, 255 }, 4},
+        {"Stone Pup", "Charges with blunt force and staggers packs.", 168, 18, 1.24f, 38.0f, { 166, 158, 172, 255 }, 5}
     };
 
     monsterTypes = {
@@ -1141,23 +1141,23 @@ float Game::GetMoveSpeed() const {
 }
 
 float Game::GetAttackCooldown() const {
-    float value = 0.28f - 0.025f * (float)CountRelic(RelicType::OverclockCore);
-    if (value < 0.12f) {
-        value = 0.12f;
+    float value = 0.40f - 0.02f * (float)CountRelic(RelicType::OverclockCore);
+    if (value < 0.22f) {
+        value = 0.22f;
     }
     return value;
 }
 
 float Game::GetWeaponAttackCooldown(const Weapon& weapon) const {
     float value = GetAttackCooldown() * weapon.cooldownScale;
-    if (value < 0.10f) {
-        value = 0.10f;
+    if (value < 0.18f) {
+        value = 0.18f;
     }
     return value;
 }
 
 int Game::GetHpUpgradeCost() const {
-    return 120 + player.hpUpgradeLevel * 110 + player.hpUpgradeLevel * player.hpUpgradeLevel * 20;
+    return 180 + player.hpUpgradeLevel * 180 + player.hpUpgradeLevel * player.hpUpgradeLevel * 30;
 }
 
 float Game::GetDashCooldown() const {
@@ -1169,33 +1169,33 @@ float Game::GetDashCooldown() const {
 }
 
 float Game::GetCritChance() const {
-    return 0.10f + 0.08f * (float)CountRelic(RelicType::RazorPrism);
+    return 0.06f + 0.05f * (float)CountRelic(RelicType::RazorPrism);
 }
 
 float Game::GetCritMultiplier() const {
-    return 1.65f + 0.18f * (float)CountRelic(RelicType::RazorPrism);
+    return 1.50f + 0.14f * (float)CountRelic(RelicType::RazorPrism);
 }
 
 int Game::GetFlatDamageBonus() const {
-    return 8 * CountRelic(RelicType::RazorPrism);
+    return 5 * CountRelic(RelicType::RazorPrism);
 }
 
 int Game::GetWeaponDamageAgainst(const Weapon& weapon, const ActiveMonster& monster) const {
-    int damage = weapon.damage + GetFlatDamageBonus() + (std::rand() % 6);
+    int damage = weapon.damage + GetFlatDamageBonus() + (std::rand() % 5);
 
     switch (weapon.trait) {
     case WeaponTrait::Heavy:
-        damage += 6;
+        damage += 4;
         break;
     case WeaponTrait::Guardian:
-        damage += 2;
+        damage += 1;
         break;
     case WeaponTrait::Royal:
-        damage += 6;
+        damage += 4;
         break;
     case WeaponTrait::Executioner:
-        if (monster.hp <= monster.maxHp / 2) {
-            damage = (int)std::round((float)damage * 1.22f);
+        if (monster.hp <= monster.maxHp / 3) {
+            damage = (int)std::round((float)damage * 1.18f);
         }
         break;
     default:
@@ -1242,7 +1242,7 @@ int Game::GetPetBondLevel(int petIndex) const {
 }
 
 int Game::GetPetTrainingEuroCost() const {
-    return 24 + persistentPetTrainingLevel * 16 + persistentPetTrainingLevel * persistentPetTrainingLevel * 4;
+    return 40 + persistentPetTrainingLevel * 24 + persistentPetTrainingLevel * persistentPetTrainingLevel * 8;
 }
 
 int Game::GetPetDamage(int petIndex) const {
@@ -1250,7 +1250,7 @@ int Game::GetPetDamage(int petIndex) const {
         return 0;
     }
 
-    return petDB[petIndex].damage + GetPetBondLevel(petIndex) * 4 + persistentPetTrainingLevel * 2 + player.wave;
+    return petDB[petIndex].damage + GetPetBondLevel(petIndex) * 3 + persistentPetTrainingLevel * 2 + player.wave / 2;
 }
 
 float Game::GetPetAttackCooldown(int petIndex) const {
@@ -1258,9 +1258,9 @@ float Game::GetPetAttackCooldown(int petIndex) const {
         return 1.0f;
     }
 
-    float value = petDB[petIndex].attackCooldown - persistentPetTrainingLevel * 0.03f;
-    if (value < 0.56f) {
-        value = 0.56f;
+    float value = petDB[petIndex].attackCooldown - persistentPetTrainingLevel * 0.02f;
+    if (value < 0.68f) {
+        value = 0.68f;
     }
     return value;
 }
@@ -1748,6 +1748,10 @@ void Game::DeleteSave() const {
     std::remove("savegame.txt");
 }
 
+void Game::DeleteProfile() const {
+    std::remove("profile.txt");
+}
+
 void Game::SaveRun() const {
     std::ofstream out("savegame.txt", std::ios::trunc);
     if (!out.is_open()) {
@@ -1977,10 +1981,12 @@ void Game::ResetRun() {
     player = Player{};
     player.pos = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.72f };
     player.aimDir = { 0.0f, -1.0f };
+    persistentHpUpgradeLevel = std::max(0, std::min(persistentHpUpgradeLevel, 8));
+    persistentPetTrainingLevel = std::max(0, std::min(persistentPetTrainingLevel, 6));
     player.hpUpgradeLevel = persistentHpUpgradeLevel;
-    player.maxHp = 160 + persistentHpUpgradeLevel * 30;
+    player.maxHp = 160 + persistentHpUpgradeLevel * 18;
     player.hp = player.maxHp;
-    player.xp = 240 + legacyRenown;
+    player.xp = 40 + legacyRenown / 4;
     legacyRenown = 0;
 
     shop = ShopState{};
@@ -1991,26 +1997,16 @@ void Game::ResetRun() {
     if (!shop.ownedWeapons.empty()) {
         shop.ownedWeapons[0] = true;
     }
-    if (petDB.empty()) {
-        shop.browsePetIdx = 0;
-    }
-    else if (persistentEquippedPetIdx >= 0 && persistentEquippedPetIdx < (int)petDB.size()) {
-        shop.browsePetIdx = persistentEquippedPetIdx;
-    }
-    player.equippedWeaponIdx = persistentEquippedWeaponIdx;
-    if (player.equippedWeaponIdx < 0 || player.equippedWeaponIdx >= (int)weaponDB.size() || !shop.ownedWeapons[player.equippedWeaponIdx]) {
-        player.equippedWeaponIdx = 0;
-    }
-    persistentEquippedWeaponIdx = player.equippedWeaponIdx;
+    shop.browsePetIdx = 0;
+    player.equippedWeaponIdx = 0;
+    persistentEquippedWeaponIdx = 0;
     if (persistentOwnedPets.size() != petDB.size()) {
         persistentOwnedPets.resize(petDB.size(), false);
     }
     if (persistentPetBondXp.size() != petDB.size()) {
         persistentPetBondXp.resize(petDB.size(), 0);
     }
-    if (persistentEquippedPetIdx < -1 || persistentEquippedPetIdx >= (int)petDB.size()) {
-        persistentEquippedPetIdx = -1;
-    }
+    persistentEquippedPetIdx = -1;
     SaveProfile();
 
     relics.clear();
@@ -2259,14 +2255,14 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
             if (&other == &monster || other.hp <= 0) {
                 continue;
             }
-            if (Distance(other.pos, monster.pos) <= 86.0f) {
-                int arcDamage = std::max(4, damage / 4);
+            if (Distance(other.pos, monster.pos) <= 82.0f) {
+                int arcDamage = std::max(3, damage / 5);
                 other.hp -= arcDamage;
                 other.hitFlash = 0.08f;
                 beams.push_back({ monster.pos, other.pos, weapon.color, 2.8f, 0.10f });
                 AddFloatingText(other.pos, "ARC " + std::to_string(arcDamage), weapon.color);
                 arcs++;
-                if (arcs >= 2) {
+                if (arcs >= 1) {
                     break;
                 }
             }
@@ -2298,8 +2294,8 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
             if (&other == &monster || other.hp <= 0) {
                 continue;
             }
-            if (Distance(other.pos, monster.pos) <= 72.0f) {
-                int splashDamage = std::max(6, damage / 5);
+            if (Distance(other.pos, monster.pos) <= 58.0f) {
+                int splashDamage = std::max(3, damage / 7);
                 other.hp -= splashDamage;
                 other.hitFlash = 0.08f;
             }
@@ -2315,7 +2311,15 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
 }
 
 void Game::UpdateTitle() {
-    if (IsKeyPressed(KEY_ENTER)) {
+    if (IsKeyPressed(KEY_F)) {
+        DeleteSave();
+        DeleteProfile();
+        LoadProfile();
+        ResetRun();
+        gameState = GameState::Playing;
+        SaveRun();
+    }
+    else if (IsKeyPressed(KEY_ENTER)) {
         DeleteSave();
         ResetRun();
         gameState = GameState::Playing;
@@ -2603,8 +2607,8 @@ void Game::UpdatePlaying(float dt) {
             if (dist <= swingRange) {
                 int damage = GetWeaponDamageAgainst(weapon, monster);
                 float critChance = GetCritChance();
-                if (weapon.trait == WeaponTrait::Swift) critChance += 0.03f;
-                if (weapon.trait == WeaponTrait::Royal) critChance += 0.05f;
+                if (weapon.trait == WeaponTrait::Swift) critChance += 0.02f;
+                if (weapon.trait == WeaponTrait::Royal) critChance += 0.03f;
                 if (weapon.trait == WeaponTrait::Heavy) critChance -= 0.02f;
                 if (critChance < 0.02f) critChance = 0.02f;
 
@@ -2620,8 +2624,8 @@ void Game::UpdatePlaying(float dt) {
                 ApplyWeaponHitEffect(weapon, monster, damage, isCrit);
                 hitSomething = true;
 
-                if (CountRelic(RelicType::BloodCircuit) > 0) {
-                    player.hp = std::min(player.maxHp, player.hp + CountRelic(RelicType::BloodCircuit));
+                if (CountRelic(RelicType::BloodCircuit) > 0 && hitSomething) {
+                    player.hp = std::min(player.maxHp, player.hp + 1);
                 }
 
                 if (isCrit) {
@@ -2960,11 +2964,16 @@ void Game::UpdatePlaying(float dt) {
             && !(browseWorldSlot >= 0 && browseWorldSlot < (int)realmSignatureClaimed.size() ? realmSignatureClaimed[browseWorldSlot] : false);
 
         if (IsKeyPressed(KEY_H)) {
-            if (player.xp >= hpUpgradeCost) {
+            if (player.hpUpgradeLevel >= 10) {
+                shop.message = "VIGOR MASTERED";
+                shop.messageColor = neonGold;
+                shop.messageTimer = 1.3f;
+            }
+            else if (player.xp >= hpUpgradeCost) {
                 player.xp -= hpUpgradeCost;
                 player.hpUpgradeLevel++;
-                player.maxHp += 30;
-                player.hp = std::min(player.maxHp, player.hp + 30);
+                player.maxHp += 20;
+                player.hp = std::min(player.maxHp, player.hp + 20);
                 persistentHpUpgradeLevel = player.hpUpgradeLevel;
                 shop.message = "VIGOR RAISED";
                 shop.messageColor = safeGreen;
@@ -3172,13 +3181,15 @@ void Game::DrawTitleScreen() const {
     DrawText("- Realm-forged weapons and companion pets now grow your build between worlds", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
-    DrawText("PRESS ENTER TO BEGIN A NEW QUEST", screenW / 2 - MeasureText("PRESS ENTER TO BEGIN A NEW QUEST", 28) / 2, 586, 28, pulse);
+    DrawText("PRESS ENTER TO START A NEW HUNT", screenW / 2 - MeasureText("PRESS ENTER TO START A NEW HUNT", 28) / 2, 586, 28, pulse);
+    DrawText("NEW HUNT KEEPS UNLOCKS BUT RESETS TO BASIC LOADOUT", screenW / 2 - MeasureText("NEW HUNT KEEPS UNLOCKS BUT RESETS TO BASIC LOADOUT", 18) / 2, 616, 18, { 73, 67, 54, 255 });
 
     if (HasSaveFile()) {
-        DrawText("PRESS C TO CONTINUE YOUR CHRONICLE", screenW / 2 - MeasureText("PRESS C TO CONTINUE YOUR CHRONICLE", 22) / 2, 622, 22, neonGold);
+        DrawText("PRESS C TO CONTINUE CURRENT RUN", screenW / 2 - MeasureText("PRESS C TO CONTINUE CURRENT RUN", 22) / 2, 644, 22, neonGold);
     }
 
-    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 656, 16, { 86, 82, 72, 255 });
+    DrawText("PRESS F FOR FRESH CHRONICLE", screenW / 2 - MeasureText("PRESS F FOR FRESH CHRONICLE", 20) / 2, 674, 20, softRed);
+    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 702, 16, { 86, 82, 72, 255 });
 }
 
 void Game::DrawWorld() const {
@@ -3287,7 +3298,6 @@ void Game::DrawWorld() const {
     int maxTileX = (int)((camera.target.x + screenW * 0.6f - tileMap.originX) / tileMap.tileSize) + 1;
     int minTileY = (int)((camera.target.y - screenH * 0.6f - tileMap.originY) / tileMap.tileSize) - 1;
     int maxTileY = (int)((camera.target.y + screenH * 0.6f - tileMap.originY) / tileMap.tileSize) + 1;
-
     if (minTileX < 0) minTileX = 0;
     if (minTileY < 0) minTileY = 0;
     if (maxTileX >= tileMap.width) maxTileX = tileMap.width - 1;
@@ -3663,7 +3673,7 @@ void Game::DrawShop() const {
     Rectangle blessingRect = { panelRect.x + 24.0f, panelRect.y + 78.0f, 692.0f, 70.0f };
     DrawPanel(blessingRect, panel, safeGreen);
     DrawText("HEARTH BLESSING", (int)blessingRect.x + 18, (int)blessingRect.y + 12, 20, safeGreen);
-    DrawText(TextFormat("VIGOR +30   COST %d RENOWN   RANK %d   PRESS H", hpUpgradeCost, player.hpUpgradeLevel), (int)blessingRect.x + 18, (int)blessingRect.y + 40, 18, WHITE);
+    DrawText(TextFormat("VIGOR +18   COST %d RENOWN   RANK %d / 8   PRESS H", hpUpgradeCost, player.hpUpgradeLevel), (int)blessingRect.x + 18, (int)blessingRect.y + 40, 18, WHITE);
 
     Rectangle gridRect = { panelRect.x + 24.0f, panelRect.y + 164.0f, 692.0f, 334.0f };
     DrawPanel(gridRect, panel, neonBlue);
