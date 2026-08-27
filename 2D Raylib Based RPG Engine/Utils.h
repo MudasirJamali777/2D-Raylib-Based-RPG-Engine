@@ -1,5 +1,5 @@
 #pragma once
-#include "raylib.h"
+#include <raylib.h>
 #include <cmath>
 #include <cstdlib>
 
@@ -33,6 +33,10 @@ inline float VecLength(Vector2 v) {
     return std::sqrt(v.x * v.x + v.y * v.y);
 }
 
+inline float VecLengthSqr(Vector2 v) {
+    return v.x * v.x + v.y * v.y;
+}
+
 inline Vector2 VecNormalizeSafe(Vector2 v) {
     float len = VecLength(v);
     if (len <= 0.0001f) return { 0.0f, 0.0f };
@@ -41,6 +45,14 @@ inline Vector2 VecNormalizeSafe(Vector2 v) {
 
 inline float Distance(Vector2 a, Vector2 b) {
     return VecLength(VecSub(a, b));
+}
+
+inline float DistanceSqr(Vector2 a, Vector2 b) {
+    return VecLengthSqr(VecSub(a, b));
+}
+
+inline bool WithinRange(Vector2 a, Vector2 b, float range) {
+    return DistanceSqr(a, b) <= range * range;
 }
 
 inline Vector2 SafeZoneCenter(Rectangle rec) {

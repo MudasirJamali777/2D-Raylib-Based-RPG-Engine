@@ -258,6 +258,11 @@ static const char* QuestObjectiveVerb(QuestObjective objective) {
     return "DO";
 }
 
+static constexpr const char* kProfileSaveHeaderV6 = "CROWNHEART_PROFILE_V6";
+static constexpr const char* kRunSaveHeaderV4 = "CROWNHEART_SAVE_V4";
+static constexpr const char* kLegacyRunSaveHeaderV2 = "NEON_ABYSS_SAVE_V2";
+static constexpr const char* kLegacyRunSaveHeaderV3 = "NEON_ABYSS_SAVE_V3";
+
 Game::Game() {
     std::srand((unsigned int)std::time(nullptr));
 
@@ -1696,7 +1701,7 @@ void Game::SaveProfile() const {
         return;
     }
 
-    out << "CROWNHEART_PROFILE_V6\n";
+    out << kProfileSaveHeaderV6 << '\n';
     out << legacyRenown << ' ' << persistentHpUpgradeLevel << ' ' << persistentEquippedWeaponIdx << ' ' << euro << '\n';
 
     out << persistentOwnedWeapons.size();
@@ -1758,7 +1763,7 @@ void Game::SaveRun() const {
         return;
     }
 
-    out << "NEON_ABYSS_SAVE_V3\n";
+    out << kRunSaveHeaderV4 << '\n';
     out << (int)currentWorld << '\n';
     out << player.pos.x << ' ' << player.pos.y << ' ' << player.aimDir.x << ' ' << player.aimDir.y << '\n';
     out << player.hp << ' ' << player.maxHp << ' ' << player.xp << ' ' << player.kills << ' '
@@ -1816,15 +1821,16 @@ bool Game::LoadRun() {
 
     std::string header;
     in >> header;
-    bool isV2 = (header == "NEON_ABYSS_SAVE_V2");
-    bool isV3 = (header == "NEON_ABYSS_SAVE_V3");
-    if (!isV2 && !isV3) {
+    bool isV2 = (header == kLegacyRunSaveHeaderV2);
+    bool isV3 = (header == kLegacyRunSaveHeaderV3);
+    bool isV4 = (header == kRunSaveHeaderV4);
+    if (!isV2 && !isV3 && !isV4) {
         return false;
     }
 
     ResetRun();
 
-    if (isV3) {
+    if (isV3 || isV4) {
         int worldValue = 0;
         in >> worldValue;
         if (worldValue >= 0 && worldValue <= 3) {
@@ -2255,7 +2261,7 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
             if (&other == &monster || other.hp <= 0) {
                 continue;
             }
-            if (Distance(other.pos, monster.pos) <= 82.0f) {
+            if (WithinRange(other.pos, monster.pos, 82.0f)) {
                 int arcDamage = std::max(3, damage / 5);
                 other.hp -= arcDamage;
                 other.hitFlash = 0.08f;
@@ -2294,7 +2300,7 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
             if (&other == &monster || other.hp <= 0) {
                 continue;
             }
-            if (Distance(other.pos, monster.pos) <= 58.0f) {
+            if (WithinRange(other.pos, monster.pos, 58.0f)) {
                 int splashDamage = std::max(3, damage / 7);
                 other.hp -= splashDamage;
                 other.hitFlash = 0.08f;
@@ -2549,11 +2555,11 @@ void Game::UpdatePlaying(float dt) {
 
         if (!inSafeZone && !monsters.empty() && pet.fireTimer <= 0.0f) {
             int targetIndex = -1;
-            float bestDist = 250.0f;
+            float bestDistSq = 250.0f * 250.0f;
             for (int i = 0; i < (int)monsters.size(); ++i) {
-                float dist = Distance(pet.pos, monsters[i].pos);
-                if (dist < bestDist) {
-                    bestDist = dist;
+                float distSq = DistanceSqr(pet.pos, monsters[i].pos);
+                if (distSq < bestDistSq) {
+                    bestDistSq = distSq;
                     targetIndex = i;
                 }
             }
@@ -2964,7 +2970,7 @@ void Game::UpdatePlaying(float dt) {
             && !(browseWorldSlot >= 0 && browseWorldSlot < (int)realmSignatureClaimed.size() ? realmSignatureClaimed[browseWorldSlot] : false);
 
         if (IsKeyPressed(KEY_H)) {
-            if (player.hpUpgradeLevel >= 10) {
+            if (player.hpUpgradeLevel >= 8) {
                 shop.message = "VIGOR MASTERED";
                 shop.messageColor = neonGold;
                 shop.messageTimer = 1.3f;
@@ -2972,8 +2978,8 @@ void Game::UpdatePlaying(float dt) {
             else if (player.xp >= hpUpgradeCost) {
                 player.xp -= hpUpgradeCost;
                 player.hpUpgradeLevel++;
-                player.maxHp += 20;
-                player.hp = std::min(player.maxHp, player.hp + 20);
+                player.maxHp += 18;
+                player.hp = std::min(player.maxHp, player.hp + 18);
                 persistentHpUpgradeLevel = player.hpUpgradeLevel;
                 shop.message = "VIGOR RAISED";
                 shop.messageColor = safeGreen;
@@ -3069,7 +3075,7 @@ void Game::UpdatePlaying(float dt) {
         persistentOwnedWeapons = shop.ownedWeapons;
         persistentHpUpgradeLevel = player.hpUpgradeLevel;
         persistentEquippedWeaponIdx = player.equippedWeaponIdx;
-        legacyRenown = std::max(legacyRenown, (int)std::round((float)player.xp * 0.65f));
+        legacyRenown = std::max(legacyRenown, (int)std::round((float)player.xp * 0.30f));
         if (persistentPetTrainingLevel < 0) {
             persistentPetTrainingLevel = 0;
         }
