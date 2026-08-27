@@ -134,6 +134,7 @@ private:
     float GetMoveSpeed() const;
     float GetAttackCooldown() const;
     float GetWeaponAttackCooldown(const Weapon& weapon) const;
+    int GetHpUpgradeCost() const;
     float GetDashCooldown() const;
     float GetCritChance() const;
     float GetCritMultiplier() const;
