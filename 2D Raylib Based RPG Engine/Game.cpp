@@ -230,6 +230,34 @@ static const char* WorldBlurbLine2(WorldId world) {
     return "";
 }
 
+static int MainQuestUnlockRequirement(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return 0;
+    case WorldId::Frostveil: return 3;
+    case WorldId::Sunscar: return 6;
+    case WorldId::Mirethorn: return 9;
+    }
+    return 0;
+}
+
+static WorldId MainQuestWorld(int questIndex) {
+    if (questIndex < 3) return WorldId::Crownheart;
+    if (questIndex < 6) return WorldId::Frostveil;
+    if (questIndex < 9) return WorldId::Sunscar;
+    return WorldId::Mirethorn;
+}
+
+static const char* QuestObjectiveVerb(QuestObjective objective) {
+    switch (objective) {
+    case QuestObjective::SlayFoes: return "SLAY";
+    case QuestObjective::ClearCourts: return "CLEAR";
+    case QuestObjective::ClaimBlessings: return "CLAIM";
+    case QuestObjective::DefeatElites: return "HUNT";
+    case QuestObjective::DefeatBosses: return "DEFEAT";
+    }
+    return "DO";
+}
+
 Game::Game() {
     std::srand((unsigned int)std::time(nullptr));
 
@@ -380,21 +408,43 @@ void Game::BuildDatabases() {
 
 void Game::BuildQuestData() {
     mainQuestDB = {
-        { "Path of the First Hunt", "Slay raiders and beasts beyond the keep.", QuestObjective::SlayFoes, 8, 10 },
-        { "Seal the Wild Courts", "Cleanse battle courts and make the roads safe.", QuestObjective::ClearCourts, 2, 14 },
-        { "Gather Old Blessings", "Claim relic blessings from conquered courts.", QuestObjective::ClaimBlessings, 2, 16 },
-        { "Break the Warband", "Bring down elite foes leading the assault.", QuestObjective::DefeatElites, 3, 20 },
-        { "Strike the Tyrant", "Defeat a roaming boss and return with proof.", QuestObjective::DefeatBosses, 1, 30 }
+        { "Crownheart Roadwatch", "Thin the raiders and beasts pressing the keep roads.", QuestObjective::SlayFoes, 10, 12 },
+        { "Keep Court Sweep", "Clear the first battle courts around Crownheart.", QuestObjective::ClearCourts, 2, 16 },
+        { "Redfang Hunt Order", "Bring down elite warband leaders near the keep.", QuestObjective::DefeatElites, 2, 20 },
+
+        { "Frostveil Scout March", "Secure the icy approach and reopen the pass.", QuestObjective::ClearCourts, 2, 22 },
+        { "Shrineglass Recovery", "Claim blessings from the pale shrines of Frostveil.", QuestObjective::ClaimBlessings, 2, 26 },
+        { "White Hunt Writ", "Defeat elite hunters stalking the frozen roads.", QuestObjective::DefeatElites, 3, 30 },
+
+        { "Sunscar Caravan Guard", "Cut down marauders scattered through the dunes.", QuestObjective::SlayFoes, 14, 32 },
+        { "Amber Gate Break", "Clear the burning courts around the trade lanes.", QuestObjective::ClearCourts, 3, 38 },
+        { "Ash Tyrant Bounty", "Defeat a boss that rules the Sunscar hunt.", QuestObjective::DefeatBosses, 1, 46 },
+
+        { "Fen Lantern Patrol", "Push through the mire and reclaim the swamp courts.", QuestObjective::ClearCourts, 3, 42 },
+        { "Rot Altar Recovery", "Claim blessings from drowned shrines in the fog.", QuestObjective::ClaimBlessings, 2, 48 },
+        { "Thorn Crown Warrant", "Defeat a Mirethorn boss and end the charter line.", QuestObjective::DefeatBosses, 1, 60 }
     };
 
     sideQuestDB = {
-        { "Ratcatcher's Call", "Cull wandering vermin and road trash.", QuestObjective::SlayFoes, 6, 5 },
-        { "Banner Road Patrol", "Clear courts so caravans can move again.", QuestObjective::ClearCourts, 1, 7 },
-        { "Relic Tithe", "Bring a blessing back to the keep.", QuestObjective::ClaimBlessings, 1, 6 },
-        { "Elite Hunt", "Track down hardened champions.", QuestObjective::DefeatElites, 1, 8 },
-        { "Warlord Bounty", "Claim a bounty on a great foe.", QuestObjective::DefeatBosses, 1, 14 },
-        { "Long Road Sweep", "Thin out a larger wave of hostiles.", QuestObjective::SlayFoes, 14, 9 },
-        { "Border Skirmish", "Clear repeated pressure from the roads.", QuestObjective::ClearCourts, 2, 11 }
+        { "Roadside Cull", "Slay loose raiders around Crownheart.", QuestObjective::SlayFoes, 7, 6 },
+        { "Gate Court Notice", "Clear one Crownheart court for the keep guard.", QuestObjective::ClearCourts, 1, 8 },
+        { "Banner Blessing", "Bring one blessing back to the keep chapel.", QuestObjective::ClaimBlessings, 1, 8 },
+        { "Redfang Bounty", "Hunt one elite prowling the green roads.", QuestObjective::DefeatElites, 1, 10 },
+
+        { "Snowline Sweep", "Slay a pack roaming Frostveil lanes.", QuestObjective::SlayFoes, 9, 9 },
+        { "Ice Chapel Watch", "Clear one Frostveil court for the scouts.", QuestObjective::ClearCourts, 1, 11 },
+        { "Shrineglass Tithe", "Recover one blessing from the frozen chapels.", QuestObjective::ClaimBlessings, 1, 12 },
+        { "White Hunter Mark", "Bring down one elite Frostveil hunter.", QuestObjective::DefeatElites, 1, 14 },
+
+        { "Caravan Road Sweep", "Slay dune marauders near the trade stones.", QuestObjective::SlayFoes, 11, 12 },
+        { "Brass Gate Contract", "Clear two Sunscar courts for the caravans.", QuestObjective::ClearCourts, 2, 15 },
+        { "Sun Reliquary Claim", "Take one blessing from a Sunscar reliquary.", QuestObjective::ClaimBlessings, 1, 15 },
+        { "Wyrm Watch", "Defeat one boss haunting the desert lanes.", QuestObjective::DefeatBosses, 1, 20 },
+
+        { "Fenline Purge", "Slay rotkin along the flooded paths.", QuestObjective::SlayFoes, 12, 14 },
+        { "Bog Lantern Route", "Clear two Mirethorn courts for the ferrymen.", QuestObjective::ClearCourts, 2, 18 },
+        { "Drowned Reliquary", "Recover one blessing from the black water shrines.", QuestObjective::ClaimBlessings, 1, 18 },
+        { "Thorn Trophy", "Bring down a Mirethorn boss for the keep board.", QuestObjective::DefeatBosses, 1, 24 }
     };
 
     if (sideQuestOfferIndices.size() != 3) {
@@ -1106,6 +1156,10 @@ float Game::GetWeaponAttackCooldown(const Weapon& weapon) const {
     return value;
 }
 
+int Game::GetHpUpgradeCost() const {
+    return 120 + player.hpUpgradeLevel * 110 + player.hpUpgradeLevel * player.hpUpgradeLevel * 20;
+}
+
 float Game::GetDashCooldown() const {
     float value = 3.0f - 0.12f * (float)CountRelic(RelicType::PhaseBoots);
     if (value < 1.8f) {
@@ -1295,9 +1349,23 @@ void Game::RefreshSideQuestOffer(int slot) {
         return;
     }
 
-    int candidate = std::rand() % (int)sideQuestDB.size();
+    std::vector<int> pool;
+    switch (currentWorld) {
+    case WorldId::Crownheart: pool = { 0, 1, 2, 3 }; break;
+    case WorldId::Frostveil: pool = { 4, 5, 6, 7 }; break;
+    case WorldId::Sunscar: pool = { 8, 9, 10, 11 }; break;
+    case WorldId::Mirethorn: pool = { 12, 13, 14, 15 }; break;
+    }
+
+    if (pool.empty()) {
+        for (int i = 0; i < (int)sideQuestDB.size(); ++i) {
+            pool.push_back(i);
+        }
+    }
+
+    int candidate = pool[std::rand() % (int)pool.size()];
     for (int attempt = 0; attempt < 32; ++attempt) {
-        int test = std::rand() % (int)sideQuestDB.size();
+        int test = pool[std::rand() % (int)pool.size()];
         bool alreadyUsed = false;
         for (int i = 0; i < (int)sideQuestOfferIndices.size(); ++i) {
             if (i != slot && sideQuestOfferIndices[i] == test) {
@@ -1318,13 +1386,10 @@ void Game::RefreshSideQuestOffer(int slot) {
 }
 
 bool Game::IsWorldUnlocked(WorldId world) const {
-    switch (world) {
-    case WorldId::Crownheart: return true;
-    case WorldId::Frostveil: return mainQuestIndex >= 1;
-    case WorldId::Sunscar: return mainQuestIndex >= 2;
-    case WorldId::Mirethorn: return mainQuestIndex >= 4;
+    if (world == WorldId::Crownheart) {
+        return true;
     }
-    return false;
+    return mainQuestIndex >= MainQuestUnlockRequirement(world);
 }
 
 void Game::TravelToWorld(WorldId world) {
@@ -1358,6 +1423,12 @@ void Game::TravelToWorld(WorldId world) {
     turrets.clear();
     shockwaves.clear();
     beams.clear();
+
+    for (int i = 0; i < (int)sideQuestOfferIndices.size(); ++i) {
+        if (!sideQuestAccepted[i]) {
+            RefreshSideQuestOffer(i);
+        }
+    }
 
     SyncPetState(true);
 
@@ -2094,8 +2165,9 @@ void Game::SpawnWave(int waveNumber) {
         break;
     }
 
-    int normalCount = 5 + waveNumber * 2;
-    int allowedTypes = std::min((int)worldPool.size(), 2 + waveNumber / 2);
+    int realmTier = WorldIndex(currentWorld);
+    int normalCount = 6 + waveNumber * 2 + realmTier * 2;
+    int allowedTypes = std::min((int)worldPool.size(), 2 + waveNumber / 2 + realmTier / 2);
     if (allowedTypes < 1) {
         allowedTypes = 1;
     }
@@ -2103,6 +2175,14 @@ void Game::SpawnWave(int waveNumber) {
     for (int i = 0; i < normalCount; ++i) {
         int typeIndex = worldPool[std::rand() % allowedTypes];
         SpawnMonsterByType(typeIndex, GetSpawnPointInCombatRoom());
+    }
+
+    if (waveNumber >= 3 + realmTier) {
+        int pressureAdds = 1 + realmTier;
+        for (int i = 0; i < pressureAdds; ++i) {
+            int typeIndex = worldPool[(allowedTypes - 1 + i) % allowedTypes];
+            SpawnMonsterByType(typeIndex, GetSpawnPointInCombatRoom());
+        }
     }
 
     if (waveNumber % 5 == 0) {
@@ -3354,19 +3434,21 @@ void Game::DrawHud() const {
     DrawText("QUEST LEDGER", 34, 354, 20, neonGold);
     if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size()) {
         const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
-        DrawText(mainQuest.title.c_str(), 34, 380, 18, WHITE);
-        DrawText(mainQuest.description.c_str(), 34, 402, 16, RAYWHITE);
-        DrawText(TextFormat("MAIN %d / %d %s", mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), 34, 424, 16, mainQuestReady ? safeGreen : neonGold);
-        if (mainQuestReady) {
-            DrawText(TextFormat("READY: RETURN TO QUEST BOARD FOR %d EURO", mainQuest.euroReward), 34, 446, 16, safeGreen);
-        }
+        WorldId questWorld = MainQuestWorld(mainQuestIndex);
+        DrawText(TextFormat("MAIN QUEST // %s", WorldLabel(questWorld)), 34, 378, 16, neonBlue);
+        DrawText(mainQuest.title.c_str(), 34, 398, 18, WHITE);
+        DrawText(mainQuest.description.c_str(), 34, 420, 16, RAYWHITE);
+        DrawRectangle(34, 446, 220, 10, Fade(WHITE, 0.12f));
+        DrawRectangle(34, 446, (int)(220.0f * (float)mainQuestProgress / (float)std::max(1, mainQuest.target)), 10, mainQuestReady ? safeGreen : neonGold);
+        DrawText(TextFormat("%s %d / %d %s", QuestObjectiveVerb(mainQuest.objective), mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), 34, 462, 16, mainQuestReady ? safeGreen : neonGold);
+        DrawText(mainQuestReady ? TextFormat("TURN IN FOR %d EURO", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), 34, 478, 16, mainQuestReady ? safeGreen : RAYWHITE);
     }
     else {
-        DrawText("The current main charter is complete.", 34, 388, 18, WHITE);
-        DrawText("More story quests will arrive with the next world batch.", 34, 418, 16, RAYWHITE);
+        DrawText("ALL V2 MAIN CHARTERS COMPLETE.", 34, 392, 18, WHITE);
+        DrawText("Free hunt the realms and chase better gear.", 34, 416, 16, RAYWHITE);
     }
 
-    int sideRowY = 468;
+    int sideRowY = 486;
     bool hasSideQuest = false;
     for (int i = 0; i < 3; ++i) {
         if (!sideQuestAccepted[i]) {
@@ -3374,11 +3456,11 @@ void Game::DrawHud() const {
         }
         hasSideQuest = true;
         const QuestDefinition& sideQuest = sideQuestDB[sideQuestOfferIndices[i]];
-        DrawText(TextFormat("SIDE: %s  %d/%d", sideQuest.title.c_str(), sideQuestProgress[i], sideQuest.target), 34, sideRowY, 16, sideQuestReady[i] ? safeGreen : neonCyan);
+        DrawText(TextFormat("SIDE // %s  %d/%d", sideQuest.title.c_str(), sideQuestProgress[i], sideQuest.target), 34, sideRowY, 16, sideQuestReady[i] ? safeGreen : neonCyan);
         sideRowY += 18;
     }
     if (!hasSideQuest) {
-        DrawText("No side contracts taken. Visit the board in the keep.", 34, 468, 16, RAYWHITE);
+        DrawText("No side contract active. Open the board in any safe camp.", 34, 504, 16, RAYWHITE);
     }
 
     DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 190.0f }, panel, safeGreen);
@@ -3728,17 +3810,21 @@ void Game::DrawQuestBoard() const {
 
     Rectangle mainCard = { panelRect.x + 26.0f, panelRect.y + 72.0f, panelRect.width - 52.0f, 128.0f };
     DrawPanel(mainCard, panel, neonGold);
-    DrawText("MAIN CHARTER", (int)mainCard.x + 18, (int)mainCard.y + 14, 20, neonGold);
+    DrawText("MAIN QUEST", (int)mainCard.x + 18, (int)mainCard.y + 14, 20, neonGold);
     if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size()) {
         const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
-        DrawText(mainQuest.title.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 42, 24, WHITE);
-        DrawText(mainQuest.description.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 74, 18, RAYWHITE);
-        DrawText(TextFormat("PROGRESS %d / %d %s", mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), (int)mainCard.x + 18, (int)mainCard.y + 98, 18, mainQuestReady ? safeGreen : neonBlue);
-        DrawText(mainQuestReady ? TextFormat("PRESS E TO CLAIM %d EURO", mainQuest.euroReward) : "ADVANCE THIS QUEST OUT IN THE WILDS", (int)mainCard.x + 560, (int)mainCard.y + 98, 18, mainQuestReady ? safeGreen : RAYWHITE);
+        WorldId questWorld = MainQuestWorld(mainQuestIndex);
+        DrawText(TextFormat("REALM %s", WorldLabel(questWorld)), (int)mainCard.x + 18, (int)mainCard.y + 38, 16, neonBlue);
+        DrawText(mainQuest.title.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 58, 24, WHITE);
+        DrawText(mainQuest.description.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 88, 18, RAYWHITE);
+        DrawRectangle((int)mainCard.x + 18, (int)mainCard.y + 114, 320, 10, Fade(WHITE, 0.12f));
+        DrawRectangle((int)mainCard.x + 18, (int)mainCard.y + 114, (int)(320.0f * (float)mainQuestProgress / (float)std::max(1, mainQuest.target)), 10, mainQuestReady ? safeGreen : neonGold);
+        DrawText(TextFormat("%s %d / %d %s", QuestObjectiveVerb(mainQuest.objective), mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), (int)mainCard.x + 352, (int)mainCard.y + 108, 18, mainQuestReady ? safeGreen : neonBlue);
+        DrawText(mainQuestReady ? TextFormat("PRESS E TO CLAIM %d EURO", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), (int)mainCard.x + 612, (int)mainCard.y + 108, 18, mainQuestReady ? safeGreen : RAYWHITE);
     }
     else {
-        DrawText("ALL CURRENT MAIN CHARTERS ARE COMPLETE", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, WHITE);
-        DrawText("MORE WILL ARRIVE WITH THE NEXT CONTENT BATCH.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, RAYWHITE);
+        DrawText("ALL V2 MAIN CHARTERS COMPLETE", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, WHITE);
+        DrawText("Free hunt the realms, finish side work, and forge the rest of the arsenal.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, RAYWHITE);
     }
 
     for (int i = 0; i < 3; ++i) {
@@ -3747,24 +3833,26 @@ void Game::DrawQuestBoard() const {
 
         int defIndex = sideQuestOfferIndices[i];
         if (defIndex < 0 || defIndex >= (int)sideQuestDB.size()) {
-            DrawText("EMPTY NOTICE", (int)card.x + 18, (int)card.y + 36, 22, WHITE);
+            DrawText("NO CONTRACT", (int)card.x + 18, (int)card.y + 36, 22, WHITE);
             continue;
         }
 
         const QuestDefinition& quest = sideQuestDB[defIndex];
-        DrawText(TextFormat("SIDE %d", i + 1), (int)card.x + 18, (int)card.y + 14, 18, neonBlue);
+        DrawText(TextFormat("SIDE QUEST %d", i + 1), (int)card.x + 18, (int)card.y + 14, 18, neonBlue);
         DrawText(quest.title.c_str(), (int)card.x + 18, (int)card.y + 42, 22, WHITE);
         DrawText(quest.description.c_str(), (int)card.x + 18, (int)card.y + 76, 18, RAYWHITE);
-        DrawText(TextFormat("GOAL %d / %d %s", sideQuestProgress[i], quest.target, QuestObjectiveLabel(quest.objective)), (int)card.x + 18, (int)card.y + 120, 18, sideQuestReady[i] ? safeGreen : neonGold);
-        DrawText(TextFormat("REWARD %d EURO", quest.euroReward), (int)card.x + 18, (int)card.y + 150, 18, safeGreen);
+        DrawRectangle((int)card.x + 18, (int)card.y + 116, 188, 8, Fade(WHITE, 0.12f));
+        DrawRectangle((int)card.x + 18, (int)card.y + 116, (int)(188.0f * (float)sideQuestProgress[i] / (float)std::max(1, quest.target)), 8, sideQuestReady[i] ? safeGreen : neonGold);
+        DrawText(TextFormat("%s %d / %d %s", QuestObjectiveVerb(quest.objective), sideQuestProgress[i], quest.target, QuestObjectiveLabel(quest.objective)), (int)card.x + 18, (int)card.y + 132, 18, sideQuestReady[i] ? safeGreen : neonGold);
+        DrawText(TextFormat("REWARD %d EURO", quest.euroReward), (int)card.x + 18, (int)card.y + 158, 18, safeGreen);
 
-        const char* status = sideQuestAccepted[i] ? (sideQuestReady[i] ? "PRESS TO TURN IN" : "CONTRACT ACTIVE") : "PRESS TO ACCEPT";
+        const char* status = sideQuestAccepted[i] ? (sideQuestReady[i] ? "TURN IN" : "ACTIVE") : "ACCEPT";
         Color statusColor = sideQuestAccepted[i] ? (sideQuestReady[i] ? safeGreen : neonCyan) : neonBlue;
-        DrawText(TextFormat("%d  %s", i + 1, status), (int)card.x + 18, (int)card.y + 178, 18, statusColor);
+        DrawText(TextFormat("%d  %s", i + 1, status), (int)card.x + 18, (int)card.y + 184, 18, statusColor);
     }
 
     DrawText("Q CLOSE BOARD", (int)panelRect.x + 30, (int)panelRect.y + 460, 18, neonBlue);
-    DrawText("COMPLETE CHARTERS TO EARN EURO. EURO NOW FUNDS COMPANIONS IN THE KEEP STABLE.", (int)panelRect.x + 210, (int)panelRect.y + 460, 18, RAYWHITE);
+    DrawText("Main quests unlock realms. Side quests pay Euro. Clear courts and claim blessings to keep progression moving.", (int)panelRect.x + 190, (int)panelRect.y + 460, 18, RAYWHITE);
 }
 
 void Game::DrawRealmMap() const {
@@ -3796,10 +3884,7 @@ void Game::DrawRealmMap() const {
             DrawText("PRESS NUMBER TO TRAVEL", (int)card.x + 14, (int)card.y + 240, 16, accent);
         }
         else {
-            const char* rule = (world == WorldId::Frostveil) ? "Unlock: 1 main charter"
-                : (world == WorldId::Sunscar) ? "Unlock: 2 main charters"
-                : "Unlock: 4 main charters";
-            DrawText(rule, (int)card.x + 14, (int)card.y + 240, 16, softRed);
+            DrawText(TextFormat("UNLOCK AT %d MAIN CHARTERS", MainQuestUnlockRequirement(world)), (int)card.x + 14, (int)card.y + 240, 16, softRed);
         }
     }
 
