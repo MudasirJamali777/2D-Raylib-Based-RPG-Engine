@@ -266,8 +266,17 @@ static constexpr const char* kLegacyRunSaveHeaderV3 = "NEON_ABYSS_SAVE_V3";
 Game::Game() {
     std::srand((unsigned int)std::time(nullptr));
 
-    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_FULLSCREEN_MODE);
+    SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_VSYNC_HINT | FLAG_WINDOW_RESIZABLE);
     InitWindow(screenW, screenH, "CROWNHEART // KINGDOM SIEGE");
+    SetWindowMinSize(960, 540);
+
+    int monitor = GetCurrentMonitor();
+    int monitorW = GetMonitorWidth(monitor);
+    int monitorH = GetMonitorHeight(monitor);
+    int targetW = std::max(1100, std::min(monitorW - 120, 1720));
+    int targetH = std::max(640, std::min(monitorH - 140, 980));
+    SetWindowSize(targetW, targetH);
+    SetWindowPosition(std::max(0, (monitorW - targetW) / 2), std::max(0, (monitorH - targetH) / 2));
 
     screenW = GetScreenWidth();
     screenH = GetScreenHeight();
@@ -355,35 +364,35 @@ void Game::BuildColorTheme() {
 
 void Game::BuildDatabases() {
     weaponDB = {
-        {"Rusty Cudgel", 14, 64.0f, "Common", 0, LIGHTGRAY, 0, WeaponTrait::Heavy, 1.18f},
-        {"Iron Mace", 18, 70.0f, "Common", 180, GRAY, 1, WeaponTrait::Heavy, 1.16f},
-        {"Pilgrim's Hatchet", 16, 76.0f, "Common", 260, neonCyan, 2, WeaponTrait::Swift, 0.92f},
-        {"Raider Flail", 20, 84.0f, "Common", 420, ORANGE, 3, WeaponTrait::Chain, 1.04f},
-        {"Hearthblade", 24, 90.0f, "Rare", 620, SKYBLUE, 4, WeaponTrait::Guardian, 1.00f},
-        {"Knight Saber", 28, 96.0f, "Rare", 860, BLUE, 5, WeaponTrait::Balanced, 0.98f},
-        {"Sunsteel Blade", 32, 104.0f, "Rare", 1120, RED, 6, WeaponTrait::Sunfire, 1.00f},
-        {"Storm Fang", 36, 112.0f, "Rare", 1450, LIME, 7, WeaponTrait::Chain, 0.96f},
-        {"Raven Pike", 40, 122.0f, "Rare", 1780, neonCyan, 8, WeaponTrait::Swift, 0.94f},
-        {"Grave Reaper", 46, 130.0f, "Legendary", 2150, PURPLE, 9, WeaponTrait::Executioner, 1.06f},
-        {"Arc Halberd", 52, 138.0f, "Legendary", 2580, YELLOW, 10, WeaponTrait::Chain, 1.04f},
-        {"Starforged Brand", 56, 146.0f, "Legendary", 3120, VIOLET, 11, WeaponTrait::Royal, 1.02f},
-        {"King's Greatsword", 64, 154.0f, "Legendary", 3720, GOLD, 12, WeaponTrait::Heavy, 1.18f},
-        {"Wyrmtooth Cleaver", 70, 162.0f, "Exotic", 4380, GREEN, 13, WeaponTrait::Executioner, 1.10f},
-        {"Moonveil Edge", 74, 170.0f, "Exotic", 5120, bossPurple, 14, WeaponTrait::Frost, 0.98f},
-        {"Celestial Cleaver", 82, 178.0f, "Exotic", 6080, WHITE, 15, WeaponTrait::Guardian, 1.06f},
-        {"Crownfall", 88, 186.0f, "Exotic", 7240, neonPink, 16, WeaponTrait::Royal, 1.12f},
-        {"Crownsent Pike", 34, 118.0f, "Realmforged", 980, neonBlue, 17, WeaponTrait::Guardian, 0.98f},
-        {"Gatekeeper Hammer", 38, 126.0f, "Realmforged", 1320, { 100, 110, 128, 255 }, 18, WeaponTrait::Heavy, 1.14f},
-        {"Hailhook", 44, 130.0f, "Realmforged", 1750, { 132, 182, 236, 255 }, 19, WeaponTrait::Frost, 1.00f},
-        {"Winterglass Rapier", 42, 136.0f, "Legendary", 2280, { 202, 236, 255, 255 }, 20, WeaponTrait::Swift, 0.84f},
-        {"Whiteout Halberd", 54, 148.0f, "Exotic", 2840, { 150, 208, 255, 255 }, 21, WeaponTrait::Frost, 1.02f},
-        {"Dune Carver", 48, 136.0f, "Realmforged", 1920, { 194, 143, 80, 255 }, 22, WeaponTrait::Sunfire, 0.96f},
-        {"Sirocco Saber", 52, 142.0f, "Legendary", 2460, { 226, 182, 86, 255 }, 23, WeaponTrait::Swift, 0.88f},
-        {"Pharaoh's Hookblade", 62, 154.0f, "Exotic", 3250, { 235, 188, 73, 255 }, 24, WeaponTrait::Sunfire, 1.02f},
-        {"Boghook", 46, 138.0f, "Realmforged", 2060, { 98, 122, 72, 255 }, 25, WeaponTrait::Venom, 1.00f},
-        {"Witchreed Glaive", 56, 148.0f, "Legendary", 2720, { 118, 164, 108, 255 }, 26, WeaponTrait::Guardian, 1.02f},
-        {"Hollowroot Scythe", 66, 160.0f, "Exotic", 3560, { 164, 208, 132, 255 }, 27, WeaponTrait::Venom, 1.08f},
-        {"Marsh Lantern Spear", 58, 152.0f, "Legendary", 2980, { 160, 178, 118, 255 }, 28, WeaponTrait::Guardian, 1.00f}
+        {"Rusty Cudgel", 16, 64.0f, "Common", 0, LIGHTGRAY, 0, WeaponTrait::Heavy, 1.14f},
+        {"Iron Mace", 21, 72.0f, "Common", 180, GRAY, 1, WeaponTrait::Heavy, 1.13f},
+        {"Pilgrim's Hatchet", 19, 78.0f, "Common", 260, neonCyan, 2, WeaponTrait::Swift, 0.88f},
+        {"Raider Flail", 24, 86.0f, "Common", 420, ORANGE, 3, WeaponTrait::Chain, 0.98f},
+        {"Hearthblade", 29, 92.0f, "Rare", 620, SKYBLUE, 4, WeaponTrait::Guardian, 0.96f},
+        {"Knight Saber", 34, 100.0f, "Rare", 860, BLUE, 5, WeaponTrait::Balanced, 0.94f},
+        {"Sunsteel Blade", 40, 108.0f, "Rare", 1120, RED, 6, WeaponTrait::Sunfire, 0.96f},
+        {"Storm Fang", 46, 116.0f, "Rare", 1450, LIME, 7, WeaponTrait::Chain, 0.92f},
+        {"Raven Pike", 52, 126.0f, "Rare", 1780, neonCyan, 8, WeaponTrait::Swift, 0.90f},
+        {"Grave Reaper", 60, 134.0f, "Legendary", 2150, PURPLE, 9, WeaponTrait::Executioner, 1.02f},
+        {"Arc Halberd", 68, 142.0f, "Legendary", 2580, YELLOW, 10, WeaponTrait::Chain, 1.00f},
+        {"Starforged Brand", 74, 150.0f, "Legendary", 3120, VIOLET, 11, WeaponTrait::Royal, 0.98f},
+        {"King's Greatsword", 84, 158.0f, "Legendary", 3720, GOLD, 12, WeaponTrait::Heavy, 1.12f},
+        {"Wyrmtooth Cleaver", 92, 166.0f, "Exotic", 4380, GREEN, 13, WeaponTrait::Executioner, 1.06f},
+        {"Moonveil Edge", 98, 174.0f, "Exotic", 5120, bossPurple, 14, WeaponTrait::Frost, 0.94f},
+        {"Celestial Cleaver", 108, 182.0f, "Exotic", 6080, WHITE, 15, WeaponTrait::Guardian, 1.00f},
+        {"Crownfall", 118, 190.0f, "Exotic", 7240, neonPink, 16, WeaponTrait::Royal, 1.04f},
+        {"Crownsent Pike", 42, 122.0f, "Realmforged", 980, neonBlue, 17, WeaponTrait::Guardian, 0.94f},
+        {"Gatekeeper Hammer", 48, 130.0f, "Realmforged", 1320, { 100, 110, 128, 255 }, 18, WeaponTrait::Heavy, 1.10f},
+        {"Hailhook", 56, 132.0f, "Realmforged", 1750, { 132, 182, 236, 255 }, 19, WeaponTrait::Frost, 0.94f},
+        {"Winterglass Rapier", 54, 140.0f, "Legendary", 2280, { 202, 236, 255, 255 }, 20, WeaponTrait::Swift, 0.80f},
+        {"Whiteout Halberd", 70, 152.0f, "Exotic", 2840, { 150, 208, 255, 255 }, 21, WeaponTrait::Frost, 0.98f},
+        {"Dune Carver", 60, 138.0f, "Realmforged", 1920, { 194, 143, 80, 255 }, 22, WeaponTrait::Sunfire, 0.92f},
+        {"Sirocco Saber", 68, 146.0f, "Legendary", 2460, { 226, 182, 86, 255 }, 23, WeaponTrait::Swift, 0.86f},
+        {"Pharaoh's Hookblade", 80, 156.0f, "Exotic", 3250, { 235, 188, 73, 255 }, 24, WeaponTrait::Sunfire, 0.98f},
+        {"Boghook", 58, 140.0f, "Realmforged", 2060, { 98, 122, 72, 255 }, 25, WeaponTrait::Venom, 0.96f},
+        {"Witchreed Glaive", 72, 150.0f, "Legendary", 2720, { 118, 164, 108, 255 }, 26, WeaponTrait::Guardian, 0.98f},
+        {"Hollowroot Scythe", 86, 164.0f, "Exotic", 3560, { 164, 208, 132, 255 }, 27, WeaponTrait::Venom, 1.02f},
+        {"Marsh Lantern Spear", 76, 156.0f, "Legendary", 2980, { 160, 178, 118, 255 }, 28, WeaponTrait::Guardian, 0.94f}
     };
 
     petDB = {
@@ -2261,8 +2270,8 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
             if (&other == &monster || other.hp <= 0) {
                 continue;
             }
-            if (WithinRange(other.pos, monster.pos, 82.0f)) {
-                int arcDamage = std::max(3, damage / 5);
+            if (WithinRange(other.pos, monster.pos, 84.0f)) {
+                int arcDamage = std::max(4, damage / 4);
                 other.hp -= arcDamage;
                 other.hitFlash = 0.08f;
                 beams.push_back({ monster.pos, other.pos, weapon.color, 2.8f, 0.10f });
