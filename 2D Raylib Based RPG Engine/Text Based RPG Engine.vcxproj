@@ -41,6 +41,23 @@
     <None Include="build_sound_assets.py" />
   </ItemGroup>
   <ItemGroup>
+    <Media Include="assets\sfx\banner.wav" />
+    <Media Include="assets\sfx\boss_intro.wav" />
+    <Media Include="assets\sfx\burst.wav" />
+    <Media Include="assets\sfx\crit.wav" />
+    <Media Include="assets\sfx\dash.wav" />
+    <Media Include="assets\sfx\game_over.wav" />
+    <Media Include="assets\sfx\heal.wav" />
+    <Media Include="assets\sfx\hit.wav" />
+    <Media Include="assets\sfx\pet.wav" />
+    <Media Include="assets\sfx\quest.wav" />
+    <Media Include="assets\sfx\reward.wav" />
+    <Media Include="assets\sfx\sword_heavy.wav" />
+    <Media Include="assets\sfx\sword_light.wav" />
+    <Media Include="assets\sfx\travel.wav" />
+    <Media Include="assets\sfx\ui_accept.wav" />
+    <Media Include="assets\sfx\ui_deny.wav" />
+    <Media Include="assets\sfx\ui_move.wav" />
     <Media Include="x64\Release\assets\sfx\banner.wav" />
     <Media Include="x64\Release\assets\sfx\boss_intro.wav" />
     <Media Include="x64\Release\assets\sfx\burst.wav" />

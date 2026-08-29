@@ -15,17 +15,14 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Game.cpp">
+    <ClCompile Include="Main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Main.cpp">
+    <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -57,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Dungeon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -114,6 +114,57 @@
       <Filter>Resource Files</Filter>
     </Media>
     <Media Include="x64\Release\assets\sfx\ui_move.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\banner.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\boss_intro.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\burst.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\crit.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\dash.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\game_over.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\heal.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\hit.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\pet.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\quest.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\reward.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\sword_heavy.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\sword_light.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\travel.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\ui_accept.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\ui_deny.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="assets\sfx\ui_move.wav">
       <Filter>Resource Files</Filter>
     </Media>
   </ItemGroup>

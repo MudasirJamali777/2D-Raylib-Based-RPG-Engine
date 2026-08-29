@@ -7,7 +7,15 @@
 #include <fstream>
 #include <cstdio>
 #include <random>
-#include <filesystem>
+
+#ifdef _WIN32
+extern "C" __declspec(dllimport) int __stdcall PlaySoundA(const char* pszSound, void* hmod, unsigned int fdwSound);
+#pragma comment(lib, "winmm.lib")
+
+static constexpr unsigned int SND_ASYNC_FALLBACK = 0x0001u;
+static constexpr unsigned int SND_NODEFAULT_FALLBACK = 0x0002u;
+static constexpr unsigned int SND_FILENAME_FALLBACK = 0x00020000u;
+#endif
 
 static bool FileExistsPortable(const std::string& path) {
     std::FILE* file = nullptr;
@@ -32,7 +40,13 @@ static std::string FindAssetPath(const std::string& relativePath) {
     const char* candidates[] = {
         "",
         "./",
+        "Release/",
+        "Debug/",
+        "./Release/",
+        "./Debug/",
         "../",
+        "../Release/",
+        "../Debug/",
         "../../",
         "../../../",
         "x64/Release/",
@@ -40,7 +54,9 @@ static std::string FindAssetPath(const std::string& relativePath) {
         "./x64/Release/",
         "./x64/Debug/",
         "../x64/Release/",
-        "../x64/Debug/"
+        "../x64/Debug/",
+        "Release/assets/../",
+        "Debug/assets/../"
     };
 
     for (const char* prefix : candidates) {
@@ -50,58 +66,76 @@ static std::string FindAssetPath(const std::string& relativePath) {
         }
     }
 
-    namespace fs = std::filesystem;
-    std::error_code ec;
-    fs::path rel(relativePath);
-    fs::path cursor = fs::current_path(ec);
-
-    if (!ec) {
-        for (int depth = 0; depth < 6; ++depth) {
-            fs::path direct = cursor / rel;
-            if (fs::exists(direct, ec)) {
-                return direct.string();
-            }
-
-            for (const auto& entry : fs::directory_iterator(cursor, fs::directory_options::skip_permission_denied, ec)) {
-                if (ec) {
-                    ec.clear();
-                    break;
-                }
-                fs::path nested = entry.path() / rel;
-                if (fs::exists(nested, ec)) {
-                    return nested.string();
-                }
-            }
-
-            if (!cursor.has_parent_path()) {
-                break;
-            }
-            fs::path parent = cursor.parent_path();
-            if (parent == cursor) {
-                break;
-            }
-            cursor = parent;
-        }
-    }
-
     return relativePath;
 }
 
+enum SfxId : unsigned int {
+    SFX_NONE = 0,
+    SFX_UI_MOVE,
+    SFX_UI_ACCEPT,
+    SFX_UI_DENY,
+    SFX_SWORD_LIGHT,
+    SFX_SWORD_HEAVY,
+    SFX_HIT,
+    SFX_CRIT,
+    SFX_DASH,
+    SFX_BURST,
+    SFX_BANNER,
+    SFX_QUEST,
+    SFX_PET,
+    SFX_HEAL,
+    SFX_BOSS_INTRO,
+    SFX_TRAVEL,
+    SFX_REWARD,
+    SFX_GAME_OVER
+};
+
+static const char* GetSfxPath(unsigned int id) {
+    switch (id) {
+    case SFX_UI_MOVE: return "assets/sfx/ui_move.wav";
+    case SFX_UI_ACCEPT: return "assets/sfx/ui_accept.wav";
+    case SFX_UI_DENY: return "assets/sfx/ui_deny.wav";
+    case SFX_SWORD_LIGHT: return "assets/sfx/sword_light.wav";
+    case SFX_SWORD_HEAVY: return "assets/sfx/sword_heavy.wav";
+    case SFX_HIT: return "assets/sfx/hit.wav";
+    case SFX_CRIT: return "assets/sfx/crit.wav";
+    case SFX_DASH: return "assets/sfx/dash.wav";
+    case SFX_BURST: return "assets/sfx/burst.wav";
+    case SFX_BANNER: return "assets/sfx/banner.wav";
+    case SFX_QUEST: return "assets/sfx/quest.wav";
+    case SFX_PET: return "assets/sfx/pet.wav";
+    case SFX_HEAL: return "assets/sfx/heal.wav";
+    case SFX_BOSS_INTRO: return "assets/sfx/boss_intro.wav";
+    case SFX_TRAVEL: return "assets/sfx/travel.wav";
+    case SFX_REWARD: return "assets/sfx/reward.wav";
+    case SFX_GAME_OVER: return "assets/sfx/game_over.wav";
+    default: return nullptr;
+    }
+}
+
 static bool SoundLoaded(const Sound& sound) {
-    return sound.frameCount > 0;
+    return sound.frameCount != 0;
 }
 
 static void PlaySoundSafe(const Sound& sound) {
-    if (SoundLoaded(sound)) {
-        PlaySound(sound);
+#ifdef _WIN32
+    const char* rel = GetSfxPath(sound.frameCount);
+    if (!rel) {
+        return;
     }
+
+    std::string path = FindAssetPath(rel);
+    if (FileExistsPortable(path)) {
+        PlaySoundA(path.c_str(), nullptr,
+            SND_FILENAME_FALLBACK | SND_ASYNC_FALLBACK | SND_NODEFAULT_FALLBACK);
+    }
+#else
+    (void)sound;
+#endif
 }
 
 static void UnloadSoundSafe(Sound& sound) {
-    if (SoundLoaded(sound)) {
-        UnloadSound(sound);
-        sound = {};
-    }
+    sound = {};
 }
 
 static const char* WorldLabel(WorldId world) {
@@ -342,6 +376,7 @@ Game::Game() {
     BuildDungeon();
     BuildTileMap();
     LoadAssets();
+    LoadAudio();
 
     camera = { 0 };
     camera.offset = { screenW * 0.5f, screenH * 0.5f };
@@ -354,6 +389,7 @@ Game::Game() {
 }
 
 Game::~Game() {
+    UnloadAudio();
     UnloadAssets();
 
     if (IsWindowReady()) {
@@ -958,57 +994,45 @@ void Game::LoadAudio() {
     }
 
     loadedSoundCount = 0;
-    audioDebugStatus = "AUDIO INIT";
-
-    InitAudioDevice();
-    if (!IsAudioDeviceReady()) {
-        audioDebugStatus = "AUDIO DEVICE FAILED";
-        return;
-    }
-
+    audioDebugStatus = "WINMM INIT";
     audioReady = true;
 
-    auto loadSoundAsset = [&](Sound& sound, const char* relativePath, float volume) {
+    auto registerSfx = [&](Sound& sound, unsigned int id, const char* relativePath) {
         std::string path = FindAssetPath(relativePath);
         if (!FileExistsPortable(path)) {
+            sound = {};
             return;
         }
 
-        sound = LoadSound(path.c_str());
-        if (SoundLoaded(sound)) {
-            SetSoundVolume(sound, volume);
-            loadedSoundCount++;
-        }
+        sound = {};
+        sound.frameCount = id;
+        loadedSoundCount++;
         };
 
-    loadSoundAsset(sfxUiMove, "assets/sfx/ui_move.wav", 0.60f);
-    loadSoundAsset(sfxUiAccept, "assets/sfx/ui_accept.wav", 0.78f);
-    loadSoundAsset(sfxUiDeny, "assets/sfx/ui_deny.wav", 0.72f);
-    loadSoundAsset(sfxSwordLight, "assets/sfx/sword_light.wav", 0.86f);
-    loadSoundAsset(sfxSwordHeavy, "assets/sfx/sword_heavy.wav", 0.94f);
-    loadSoundAsset(sfxHit, "assets/sfx/hit.wav", 0.88f);
-    loadSoundAsset(sfxCrit, "assets/sfx/crit.wav", 0.96f);
-    loadSoundAsset(sfxDash, "assets/sfx/dash.wav", 0.90f);
-    loadSoundAsset(sfxBurst, "assets/sfx/burst.wav", 0.88f);
-    loadSoundAsset(sfxBanner, "assets/sfx/banner.wav", 0.70f);
-    loadSoundAsset(sfxQuest, "assets/sfx/quest.wav", 0.82f);
-    loadSoundAsset(sfxPet, "assets/sfx/pet.wav", 0.76f);
-    loadSoundAsset(sfxHeal, "assets/sfx/heal.wav", 0.82f);
-    loadSoundAsset(sfxBossIntro, "assets/sfx/boss_intro.wav", 0.96f);
-    loadSoundAsset(sfxTravel, "assets/sfx/travel.wav", 0.82f);
-    loadSoundAsset(sfxReward, "assets/sfx/reward.wav", 0.90f);
-    loadSoundAsset(sfxGameOver, "assets/sfx/game_over.wav", 0.96f);
+    registerSfx(sfxUiMove, SFX_UI_MOVE, "assets/sfx/ui_move.wav");
+    registerSfx(sfxUiAccept, SFX_UI_ACCEPT, "assets/sfx/ui_accept.wav");
+    registerSfx(sfxUiDeny, SFX_UI_DENY, "assets/sfx/ui_deny.wav");
+    registerSfx(sfxSwordLight, SFX_SWORD_LIGHT, "assets/sfx/sword_light.wav");
+    registerSfx(sfxSwordHeavy, SFX_SWORD_HEAVY, "assets/sfx/sword_heavy.wav");
+    registerSfx(sfxHit, SFX_HIT, "assets/sfx/hit.wav");
+    registerSfx(sfxCrit, SFX_CRIT, "assets/sfx/crit.wav");
+    registerSfx(sfxDash, SFX_DASH, "assets/sfx/dash.wav");
+    registerSfx(sfxBurst, SFX_BURST, "assets/sfx/burst.wav");
+    registerSfx(sfxBanner, SFX_BANNER, "assets/sfx/banner.wav");
+    registerSfx(sfxQuest, SFX_QUEST, "assets/sfx/quest.wav");
+    registerSfx(sfxPet, SFX_PET, "assets/sfx/pet.wav");
+    registerSfx(sfxHeal, SFX_HEAL, "assets/sfx/heal.wav");
+    registerSfx(sfxBossIntro, SFX_BOSS_INTRO, "assets/sfx/boss_intro.wav");
+    registerSfx(sfxTravel, SFX_TRAVEL, "assets/sfx/travel.wav");
+    registerSfx(sfxReward, SFX_REWARD, "assets/sfx/reward.wav");
+    registerSfx(sfxGameOver, SFX_GAME_OVER, "assets/sfx/game_over.wav");
 
     audioDebugStatus = loadedSoundCount > 0
-        ? ("AUDIO READY " + std::to_string(loadedSoundCount) + "/17")
+        ? ("WINMM READY " + std::to_string(loadedSoundCount) + "/17")
         : "NO SFX LOADED";
 }
 
 void Game::UnloadAudio() {
-    if (!audioReady) {
-        return;
-    }
-
     UnloadSoundSafe(sfxUiMove);
     UnloadSoundSafe(sfxUiAccept);
     UnloadSoundSafe(sfxUiDeny);
@@ -1027,7 +1051,10 @@ void Game::UnloadAudio() {
     UnloadSoundSafe(sfxReward);
     UnloadSoundSafe(sfxGameOver);
 
-    CloseAudioDevice();
+#ifdef _WIN32
+    PlaySoundA(nullptr, nullptr, 0);
+#endif
+
     audioReady = false;
     loadedSoundCount = 0;
     audioDebugStatus = "AUDIO OFF";
@@ -2463,11 +2490,7 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
 
 void Game::UpdateTitle() {
     if (IsKeyPressed(KEY_M)) {
-        if (!audioReady) {
-            announcement = "AUDIO DEVICE FAILED";
-            announcementTimer = 2.0f;
-        }
-        else if (!SoundLoaded(sfxUiAccept)) {
+        if (!SoundLoaded(sfxUiAccept)) {
             announcement = "SFX NOT LOADED";
             announcementTimer = 2.0f;
         }
@@ -3379,10 +3402,7 @@ void Game::DrawTitleScreen() const {
     DrawText("PRESS F FOR FRESH CHRONICLE", screenW / 2 - MeasureText("PRESS F FOR FRESH CHRONICLE", 20) / 2, 674, 20, softRed);
     DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 702, 16, { 86, 82, 72, 255 });
 
-    if (!audioReady) {
-        DrawText("AUDIO DEVICE NOT READY", screenW / 2 - MeasureText("AUDIO DEVICE NOT READY", 18) / 2, 730, 18, softRed);
-    }
-    else if (!SoundLoaded(sfxUiMove)) {
+    if (!SoundLoaded(sfxUiMove)) {
         DrawText("SFX FILES NOT FOUND // RUN build_sound_assets.py", screenW / 2 - MeasureText("SFX FILES NOT FOUND // RUN build_sound_assets.py", 18) / 2, 730, 18, softRed);
     }
 }
