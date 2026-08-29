@@ -62,5 +62,59 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="build_fantasy_assets.py" />
+    <None Include="build_sound_assets.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="x64\Release\assets\sfx\banner.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\boss_intro.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\burst.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\crit.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\dash.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\game_over.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\heal.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\hit.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\pet.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\quest.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\reward.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\sword_heavy.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\sword_light.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\travel.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\ui_accept.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\ui_deny.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
+    <Media Include="x64\Release\assets\sfx\ui_move.wav">
+      <Filter>Resource Files</Filter>
+    </Media>
   </ItemGroup>
 </Project>

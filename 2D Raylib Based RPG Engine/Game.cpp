@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstdio>
 #include <random>
+#include <filesystem>
 
 static bool FileExistsPortable(const std::string& path) {
     std::FILE* file = nullptr;
@@ -49,7 +50,58 @@ static std::string FindAssetPath(const std::string& relativePath) {
         }
     }
 
+    namespace fs = std::filesystem;
+    std::error_code ec;
+    fs::path rel(relativePath);
+    fs::path cursor = fs::current_path(ec);
+
+    if (!ec) {
+        for (int depth = 0; depth < 6; ++depth) {
+            fs::path direct = cursor / rel;
+            if (fs::exists(direct, ec)) {
+                return direct.string();
+            }
+
+            for (const auto& entry : fs::directory_iterator(cursor, fs::directory_options::skip_permission_denied, ec)) {
+                if (ec) {
+                    ec.clear();
+                    break;
+                }
+                fs::path nested = entry.path() / rel;
+                if (fs::exists(nested, ec)) {
+                    return nested.string();
+                }
+            }
+
+            if (!cursor.has_parent_path()) {
+                break;
+            }
+            fs::path parent = cursor.parent_path();
+            if (parent == cursor) {
+                break;
+            }
+            cursor = parent;
+        }
+    }
+
     return relativePath;
+}
+
+static bool SoundLoaded(const Sound& sound) {
+    return sound.frameCount > 0;
+}
+
+static void PlaySoundSafe(const Sound& sound) {
+    if (SoundLoaded(sound)) {
+        PlaySound(sound);
+    }
+}
+
+static void UnloadSoundSafe(Sound& sound) {
+    if (SoundLoaded(sound)) {
+        UnloadSound(sound);
+        sound = {};
+    }
 }
 
 static const char* WorldLabel(WorldId world) {
@@ -633,11 +685,11 @@ void Game::BuildDungeon() {
             { { -520.0f, -800.0f, 280.0f, 220.0f }, "BROKEN CISTERN", false, false }
         };
         dungeon.corridors = {
-            { 400.0f, -100.0f, 420.0f, 200.0f },
-            { -860.0f, -100.0f, 420.0f, 200.0f },
+            { 400.0f, -100.0f, 400.0f, 200.0f },
+            { -860.0f, -100.0f, 400.0f, 200.0f },
             { -100.0f, -840.0f, 200.0f, 500.0f },
             { -100.0f, 300.0f, 200.0f, 520.0f },
-            { 1040.0f, 240.0f, 180.0f, 540.0f },
+            { 1020.0f, 240.0f, 180.0f, 520.0f },
             { -1240.0f, -780.0f, 180.0f, 520.0f },
             { 160.0f, 500.0f, 80.0f, 120.0f },
             { -300.0f, -720.0f, 80.0f, 120.0f }
@@ -898,6 +950,87 @@ void Game::LoadAssets() {
     if (petAtlas.id == 0) {
         petAtlas = LoadTexture(FindAssetPath("assets/pets_atlas.png").c_str());
     }
+}
+
+void Game::LoadAudio() {
+    if (audioReady) {
+        return;
+    }
+
+    loadedSoundCount = 0;
+    audioDebugStatus = "AUDIO INIT";
+
+    InitAudioDevice();
+    if (!IsAudioDeviceReady()) {
+        audioDebugStatus = "AUDIO DEVICE FAILED";
+        return;
+    }
+
+    audioReady = true;
+
+    auto loadSoundAsset = [&](Sound& sound, const char* relativePath, float volume) {
+        std::string path = FindAssetPath(relativePath);
+        if (!FileExistsPortable(path)) {
+            return;
+        }
+
+        sound = LoadSound(path.c_str());
+        if (SoundLoaded(sound)) {
+            SetSoundVolume(sound, volume);
+            loadedSoundCount++;
+        }
+        };
+
+    loadSoundAsset(sfxUiMove, "assets/sfx/ui_move.wav", 0.60f);
+    loadSoundAsset(sfxUiAccept, "assets/sfx/ui_accept.wav", 0.78f);
+    loadSoundAsset(sfxUiDeny, "assets/sfx/ui_deny.wav", 0.72f);
+    loadSoundAsset(sfxSwordLight, "assets/sfx/sword_light.wav", 0.86f);
+    loadSoundAsset(sfxSwordHeavy, "assets/sfx/sword_heavy.wav", 0.94f);
+    loadSoundAsset(sfxHit, "assets/sfx/hit.wav", 0.88f);
+    loadSoundAsset(sfxCrit, "assets/sfx/crit.wav", 0.96f);
+    loadSoundAsset(sfxDash, "assets/sfx/dash.wav", 0.90f);
+    loadSoundAsset(sfxBurst, "assets/sfx/burst.wav", 0.88f);
+    loadSoundAsset(sfxBanner, "assets/sfx/banner.wav", 0.70f);
+    loadSoundAsset(sfxQuest, "assets/sfx/quest.wav", 0.82f);
+    loadSoundAsset(sfxPet, "assets/sfx/pet.wav", 0.76f);
+    loadSoundAsset(sfxHeal, "assets/sfx/heal.wav", 0.82f);
+    loadSoundAsset(sfxBossIntro, "assets/sfx/boss_intro.wav", 0.96f);
+    loadSoundAsset(sfxTravel, "assets/sfx/travel.wav", 0.82f);
+    loadSoundAsset(sfxReward, "assets/sfx/reward.wav", 0.90f);
+    loadSoundAsset(sfxGameOver, "assets/sfx/game_over.wav", 0.96f);
+
+    audioDebugStatus = loadedSoundCount > 0
+        ? ("AUDIO READY " + std::to_string(loadedSoundCount) + "/17")
+        : "NO SFX LOADED";
+}
+
+void Game::UnloadAudio() {
+    if (!audioReady) {
+        return;
+    }
+
+    UnloadSoundSafe(sfxUiMove);
+    UnloadSoundSafe(sfxUiAccept);
+    UnloadSoundSafe(sfxUiDeny);
+    UnloadSoundSafe(sfxSwordLight);
+    UnloadSoundSafe(sfxSwordHeavy);
+    UnloadSoundSafe(sfxHit);
+    UnloadSoundSafe(sfxCrit);
+    UnloadSoundSafe(sfxDash);
+    UnloadSoundSafe(sfxBurst);
+    UnloadSoundSafe(sfxBanner);
+    UnloadSoundSafe(sfxQuest);
+    UnloadSoundSafe(sfxPet);
+    UnloadSoundSafe(sfxHeal);
+    UnloadSoundSafe(sfxBossIntro);
+    UnloadSoundSafe(sfxTravel);
+    UnloadSoundSafe(sfxReward);
+    UnloadSoundSafe(sfxGameOver);
+
+    CloseAudioDevice();
+    audioReady = false;
+    loadedSoundCount = 0;
+    audioDebugStatus = "AUDIO OFF";
 }
 
 void Game::UnloadAssets() {
@@ -1448,6 +1581,7 @@ void Game::TravelToWorld(WorldId world) {
 
     announcement = std::string(WorldLabel(world)) + " // ROADS OPEN";
     announcementTimer = 2.4f;
+    PlaySoundSafe(sfxTravel);
     SpawnWave(player.wave);
     SaveRun();
     SaveProfile();
@@ -2136,6 +2270,7 @@ void Game::SpawnMonsterByType(int typeIndex, Vector2 pos) {
 void Game::SpawnWave(int waveNumber) {
     announcement = std::string(TextFormat("WAVE %d // HUNT BEGINS", waveNumber));
     announcementTimer = 2.8f;
+    PlaySoundSafe(sfxBanner);
     rewardChestActive = false;
     rewardSelectionOpen = false;
     rewardChoices.clear();
@@ -2200,6 +2335,7 @@ void Game::SpawnWave(int waveNumber) {
         SpawnMonsterByType(bossType, GetSpawnPointInCombatRoom());
         announcement = std::string(WorldLabel(currentWorld)) + " // " + monsterTypes[bossType].name + " STIRS";
         announcementTimer = 3.8f;
+        PlaySoundSafe(sfxBossIntro);
     }
 }
 
@@ -2326,6 +2462,22 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
 }
 
 void Game::UpdateTitle() {
+    if (IsKeyPressed(KEY_M)) {
+        if (!audioReady) {
+            announcement = "AUDIO DEVICE FAILED";
+            announcementTimer = 2.0f;
+        }
+        else if (!SoundLoaded(sfxUiAccept)) {
+            announcement = "SFX NOT LOADED";
+            announcementTimer = 2.0f;
+        }
+        else {
+            PlaySoundSafe(sfxUiAccept);
+            announcement = "AUDIO TEST // CHIME";
+            announcementTimer = 2.0f;
+        }
+    }
+
     if (IsKeyPressed(KEY_F)) {
         DeleteSave();
         DeleteProfile();
@@ -2333,16 +2485,19 @@ void Game::UpdateTitle() {
         ResetRun();
         gameState = GameState::Playing;
         SaveRun();
+        PlaySoundSafe(sfxUiAccept);
     }
     else if (IsKeyPressed(KEY_ENTER)) {
         DeleteSave();
         ResetRun();
         gameState = GameState::Playing;
         SaveRun();
+        PlaySoundSafe(sfxUiAccept);
     }
 
     if (HasSaveFile() && IsKeyPressed(KEY_C)) {
         LoadRun();
+        PlaySoundSafe(sfxUiAccept);
     }
 }
 
@@ -2383,6 +2538,7 @@ void Game::UpdatePlaying(float dt) {
         }
         else if (IsKeyPressed(KEY_TWO) && rewardChoices.size() > 1) {
             ApplyRelic(rewardChoices[1].type);
+            PlaySoundSafe(sfxUiAccept);
             rewardSelectionOpen = false;
             rewardChestActive = false;
             rewardChoices.clear();
@@ -2407,6 +2563,7 @@ void Game::UpdatePlaying(float dt) {
         questBoardOpen = false;
         realmMapOpen = false;
         shop.isOpen = false;
+        PlaySoundSafe(sfxReward);
     }
 
     if (inSafeZone && !rewardSelectionOpen && !realmMapOpen && IsKeyPressed(KEY_Q)) {
@@ -2414,6 +2571,7 @@ void Game::UpdatePlaying(float dt) {
         if (questBoardOpen) {
             shop.isOpen = false;
         }
+        PlaySoundSafe(sfxUiMove);
     }
 
     if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && IsKeyPressed(KEY_R)) {
@@ -2453,6 +2611,7 @@ void Game::UpdatePlaying(float dt) {
             }
             announcementTimer = 2.2f;
             SaveProfile();
+            PlaySoundSafe(sfxQuest);
         }
 
         const int sideKeys[3] = { KEY_ONE, KEY_TWO, KEY_THREE };
@@ -2474,6 +2633,7 @@ void Game::UpdatePlaying(float dt) {
                 announcement = quest.title + " // CONTRACT TAKEN";
                 announcementTimer = 2.0f;
                 SaveProfile();
+                PlaySoundSafe(sfxUiAccept);
             }
             else if (sideQuestReady[i]) {
                 euro += quest.euroReward;
@@ -2481,6 +2641,7 @@ void Game::UpdatePlaying(float dt) {
                 announcementTimer = 2.0f;
                 RefreshSideQuestOffer(i);
                 SaveProfile();
+                PlaySoundSafe(sfxReward);
             }
         }
     }
@@ -2491,6 +2652,7 @@ void Game::UpdatePlaying(float dt) {
         if (!petDB.empty()) {
             shop.browsePetIdx = persistentEquippedPetIdx >= 0 ? persistentEquippedPetIdx : shop.browsePetIdx % (int)petDB.size();
         }
+        PlaySoundSafe(sfxUiMove);
     }
     if (!inSafeZone) {
         shop.isOpen = false;
@@ -2576,6 +2738,7 @@ void Game::UpdatePlaying(float dt) {
             if (targetIndex >= 0) {
                 ActiveMonster& target = monsters[targetIndex];
                 int petDamage = GetPetDamage(pet.petIndex);
+                PlaySoundSafe(sfxPet);
                 target.hp -= petDamage;
                 target.hitFlash = 0.10f;
                 beams.push_back({ pet.pos, target.pos, petInfo.color, 2.4f, 0.10f });
@@ -2612,8 +2775,10 @@ void Game::UpdatePlaying(float dt) {
         const Weapon& weapon = weaponDB[player.equippedWeaponIdx];
         player.attackCd = GetWeaponAttackCooldown(weapon);
         bool hitSomething = false;
+        bool landedCrit = false;
         float swingRange = weapon.range + 4.0f * CountRelic(RelicType::RazorPrism);
 
+        PlaySoundSafe((weapon.trait == WeaponTrait::Heavy || weapon.trait == WeaponTrait::Royal) ? sfxSwordHeavy : sfxSwordLight);
         shockwaves.push_back({ player.pos, 12.0f, swingRange, 0.22f, 0.22f, Fade(weapon.color, 0.7f) });
         EmitBurst(player.pos, 16, 4.6f, weapon.color, 4.0f);
 
@@ -2630,6 +2795,7 @@ void Game::UpdatePlaying(float dt) {
                 bool isCrit = RandomRange(0.0f, 1.0f) < critChance;
                 if (isCrit) {
                     damage = (int)(damage * GetCritMultiplier());
+                    landedCrit = true;
                 }
 
                 monster.hp -= damage;
@@ -2651,6 +2817,7 @@ void Game::UpdatePlaying(float dt) {
 
         if (hitSomething) {
             screenShake = std::max(screenShake, 8.0f);
+            PlaySoundSafe(landedCrit ? sfxCrit : sfxHit);
         }
     }
 
@@ -2669,6 +2836,7 @@ void Game::UpdatePlaying(float dt) {
         player.pos = MoveWithCollision(player.pos, VecScale(dashDir, 210.0f), 18.0f, 12);
         shockwaves.push_back({ player.pos, 8.0f, 95.0f, 0.18f, 0.18f, Fade(neonCyan, 0.8f) });
         screenShake = std::max(screenShake, 6.0f);
+        PlaySoundSafe(sfxDash);
     }
 
     if (!shop.isOpen && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_TWO) && player.empCd <= 0.0f) {
@@ -2680,6 +2848,7 @@ void Game::UpdatePlaying(float dt) {
         EmitBurst(player.pos, 36, 7.5f, neonCyan, 5.5f);
         screenShake = std::max(screenShake, 10.0f);
         hitStopTimer = std::max(hitStopTimer, 0.03f);
+        PlaySoundSafe(sfxBurst);
 
         for (auto& monster : monsters) {
             float dist = Distance(player.pos, monster.pos);
@@ -2697,6 +2866,7 @@ void Game::UpdatePlaying(float dt) {
         turrets.push_back({ player.pos, GetTurretLifetime(), 0.25f });
         EmitBurst(player.pos, 18, 3.0f, neonBlue, 3.8f);
         AddFloatingText(player.pos, "TOTEM RAISED", neonBlue);
+        PlaySoundSafe(sfxBanner);
     }
 
     for (auto& turret : turrets) {
@@ -3093,6 +3263,7 @@ void Game::UpdatePlaying(float dt) {
         gameState = GameState::GameOver;
         announcement = "FALLEN IN BATTLE";
         announcementTimer = 3.0f;
+        PlaySoundSafe(sfxGameOver);
     }
 }
 
@@ -3194,6 +3365,8 @@ void Game::DrawTitleScreen() const {
     DrawText("- Real-time combat with dash, nova burst and guardian totems", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
     DrawText("- Sealed-court battles, relic blessings, quests and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
     DrawText("- Realm-forged weapons and companion pets now grow your build between worlds", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
+    DrawText(audioDebugStatus.c_str(), screenW / 2 - MeasureText(audioDebugStatus.c_str(), 20) / 2, 537, 20, (audioReady && loadedSoundCount > 0) ? safeGreen : softRed);
+    DrawText("PRESS M TO TEST SOUND", screenW / 2 - MeasureText("PRESS M TO TEST SOUND", 18) / 2, 560, 18, neonGold);
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
     DrawText("PRESS ENTER TO START A NEW HUNT", screenW / 2 - MeasureText("PRESS ENTER TO START A NEW HUNT", 28) / 2, 586, 28, pulse);
@@ -3205,6 +3378,13 @@ void Game::DrawTitleScreen() const {
 
     DrawText("PRESS F FOR FRESH CHRONICLE", screenW / 2 - MeasureText("PRESS F FOR FRESH CHRONICLE", 20) / 2, 674, 20, softRed);
     DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 702, 16, { 86, 82, 72, 255 });
+
+    if (!audioReady) {
+        DrawText("AUDIO DEVICE NOT READY", screenW / 2 - MeasureText("AUDIO DEVICE NOT READY", 18) / 2, 730, 18, softRed);
+    }
+    else if (!SoundLoaded(sfxUiMove)) {
+        DrawText("SFX FILES NOT FOUND // RUN build_sound_assets.py", screenW / 2 - MeasureText("SFX FILES NOT FOUND // RUN build_sound_assets.py", 18) / 2, 730, 18, softRed);
+    }
 }
 
 void Game::DrawWorld() const {

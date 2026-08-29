@@ -104,6 +104,26 @@ private:
     Texture2D enemyAtlas{};
     Texture2D weaponAtlas{};
     Texture2D petAtlas{};
+    bool audioReady = false;
+    int loadedSoundCount = 0;
+    std::string audioDebugStatus = "AUDIO OFF";
+    Sound sfxUiMove{};
+    Sound sfxUiAccept{};
+    Sound sfxUiDeny{};
+    Sound sfxSwordLight{};
+    Sound sfxSwordHeavy{};
+    Sound sfxHit{};
+    Sound sfxCrit{};
+    Sound sfxDash{};
+    Sound sfxBurst{};
+    Sound sfxBanner{};
+    Sound sfxQuest{};
+    Sound sfxPet{};
+    Sound sfxHeal{};
+    Sound sfxBossIntro{};
+    Sound sfxTravel{};
+    Sound sfxReward{};
+    Sound sfxGameOver{};
     std::vector<PropInstance> worldProps;
     std::vector<PropInstance> decorProps;
     std::vector<ActiveMonster> monsters;
@@ -124,6 +144,8 @@ private:
     void BuildTileMap();
     void LoadAssets();
     void UnloadAssets();
+    void LoadAudio();
+    void UnloadAudio();
     void ResetRun();
 
     Vector2 MoveWithCollision(Vector2 start, Vector2 delta, float radius, int steps = 1) const;

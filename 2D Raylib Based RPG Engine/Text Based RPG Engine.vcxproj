@@ -38,6 +38,26 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="build_fantasy_assets.py" />
+    <None Include="build_sound_assets.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="x64\Release\assets\sfx\banner.wav" />
+    <Media Include="x64\Release\assets\sfx\boss_intro.wav" />
+    <Media Include="x64\Release\assets\sfx\burst.wav" />
+    <Media Include="x64\Release\assets\sfx\crit.wav" />
+    <Media Include="x64\Release\assets\sfx\dash.wav" />
+    <Media Include="x64\Release\assets\sfx\game_over.wav" />
+    <Media Include="x64\Release\assets\sfx\heal.wav" />
+    <Media Include="x64\Release\assets\sfx\hit.wav" />
+    <Media Include="x64\Release\assets\sfx\pet.wav" />
+    <Media Include="x64\Release\assets\sfx\quest.wav" />
+    <Media Include="x64\Release\assets\sfx\reward.wav" />
+    <Media Include="x64\Release\assets\sfx\sword_heavy.wav" />
+    <Media Include="x64\Release\assets\sfx\sword_light.wav" />
+    <Media Include="x64\Release\assets\sfx\travel.wav" />
+    <Media Include="x64\Release\assets\sfx\ui_accept.wav" />
+    <Media Include="x64\Release\assets\sfx\ui_deny.wav" />
+    <Media Include="x64\Release\assets\sfx\ui_move.wav" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
@@ -138,6 +158,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
