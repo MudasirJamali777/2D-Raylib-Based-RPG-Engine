@@ -2604,7 +2604,7 @@ void Game::StartIntroCutscene() {
     steps.push_back({ CutsceneStepType::PanCamera, 1.15f, gateLook, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, gateLook, "THE CHRONICLE", "On the night the bells died, Crownheart burned by oath, by fire, and by betrayal.", neonGold, true, true });
     steps.push_back({ CutsceneStepType::PanCamera, 1.00f, courtCenter, "", "", WHITE, false, false });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, courtCenter, "THE CHRONICLE", "The princess vanished. A rival banner rose. The keep learned grief before dawn.", softRed, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, courtCenter, "THE CHRONICLE", "Princess Seralyne vanished. Prince Vaelor raised a rival banner. The keep learned grief before dawn.", softRed, true, true });
     steps.push_back({ CutsceneStepType::PanCamera, 1.05f, knightMark, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, knightMark, "THE KNIGHT", "If she yet lives, I will find her. If the crown is ash, I will carry its sorrow through every realm.", neonCyan, false, true });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, knightMark, "THE LAST BELL", "Ride now. Cleanse the sealed courts. Let the broken throne remember your name.", neonGold, true, true });
@@ -2661,20 +2661,20 @@ void Game::StartChapterUnlockCutscene(WorldId world) {
     switch (world) {
     case WorldId::Frostveil:
         sceneName = "CHAPTER // FROSTVEIL UNSEALED";
-        line1 = "Maerwyn lays a torn ribbon on the oathboard. The princess wore chapel-blue on the night she vanished.";
+        line1 = "Maerwyn lays a torn ribbon on the oathboard. Princess Seralyne wore chapel-blue on the night she vanished.";
         line2 = "Scouts found the cloth half-buried in Frostveil snow. If hope still breathes, it breathes there.";
         line3 = "Then I ride north before the cold buries her trail.";
         break;
     case WorldId::Sunscar:
         sceneName = "CHAPTER // SUNSCAR UNSEALED";
-        line1 = "A red seal is hammered into the board. The rival prince marches beneath ash banners through Sunscar.";
+        line1 = "A red seal is hammered into the board. Prince Vaelor marches beneath ash banners through Sunscar.";
         line2 = "He buys loyalty with hunger, gold, and the promise that Crownheart is already dead.";
         line3 = "Then I will answer him in the language of steel.";
         break;
     case WorldId::Mirethorn:
         sceneName = "CHAPTER // MIRETHORN UNSEALED";
         line1 = "The ferrymen speak at last. A royal prayer-song was heard drifting through Mirethorn fog.";
-        line2 = "If the princess was taken alive, the black water may be the last place her memory still walks.";
+        line2 = "If Seralyne was taken alive, the black water may be the last place her memory still walks.";
         line3 = "Then I follow the song into the mire, even if it leads me to a grave.";
         break;
     default:
@@ -2696,8 +2696,9 @@ void Game::StartFinalCharterCutscene() {
     steps.push_back({ CutsceneStepType::Fade, 0.34f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::PanCamera, 0.72f, boardLook, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "MAERWYN", "The charter line is ended. No more boards, no more petitions. Only the truth that waits beyond the broken throne.", safeGreen, true, true });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "HER MEMORY", "When crowns begin to rot, seek not the loudest banner, but the wound hidden beneath it.", softRed, true, true });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "THE KNIGHT", "Then I ride for the wound itself.", neonCyan, false, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "PRINCESS SERALYNE", "When crowns begin to rot, seek not the loudest banner, but the wound hidden beneath it.", softRed, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "MAERWYN", "Vaelor will guard the throne room with every lie he owns. Go anyway. Seralyne would have.", neonGold, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "THE KNIGHT", "Then I ride for the wound itself, and for the princess he failed to break.", neonCyan, false, true });
     StartCutscene("FINAL VOW // THE BROKEN THRONE", steps);
 }
 
@@ -2715,18 +2716,23 @@ void Game::StartShopkeeperCutscene(int stage) {
     }
     else if (stage == 1) {
         line1 = "Frostveil does not forgive. The snow keeps prints, prayers, and the shape of those who fled too late.";
-        line2 = "If the princess left a trail, the cold may have preserved what fire could not.";
+        line2 = "If Princess Seralyne left a trail, the cold may have preserved what fire could not.";
         line3 = "Then I will search the frozen chapels until the silence answers me.";
     }
     else if (stage == 2) {
-        line1 = "Sunscar is the rival prince's country now. His red banners drink coin from caravans and hope from men.";
+        line1 = "Sunscar is Prince Vaelor's country now. His red banners drink coin from caravans and hope from men.";
         line2 = "He wants the realm to believe Crownheart is already a memory. Cut that lie out of the dunes.";
         line3 = "Let him wait beneath his banners. I am coming.";
     }
-    else {
+    else if (stage == 3) {
         line1 = "Mirethorn keeps what other realms lose: crowns, corpses, confessions. Nothing sinks there without a witness.";
         line2 = "If the kingdom still hides its deepest wound, you will find it where the fog refuses to speak plainly.";
         line3 = "Then let the mire hear me clearly.";
+    }
+    else {
+        line1 = "Seralyne never feared the truth of steel. Vaelor did. That is why one vanished and the other hid behind banners.";
+        line2 = "If you reach the broken throne, choose the living heart of the kingdom over the easier legend. Bring her home if home still exists.";
+        line3 = "I will. And if Vaelor stands in that last hall, he answers for every bell that died.";
     }
 
     std::vector<CutsceneStep> steps;
@@ -2746,15 +2752,15 @@ void Game::StartBlessingMemoryCutscene(WorldId world) {
 
     switch (world) {
     case WorldId::Crownheart:
-        line1 = "Before the bells died, she lit the chapel lamps herself and said the keep should always look warm from the road.";
+        line1 = "Before the bells died, Princess Seralyne lit the chapel lamps herself and said the keep should always look warm from the road.";
         line2 = "Take what grace remains. A kingdom is not saved by steel alone.";
         break;
     case WorldId::Frostveil:
-        line1 = "She laughed once in Frostveil snowfall, palms open, as if winter were gentler than courtly vows.";
+        line1 = "Seralyne laughed once in Frostveil snowfall, palms open, as if winter were gentler than courtly vows.";
         line2 = "If you find only silence here, listen harder. Love leaves marks even in the cold.";
         break;
     case WorldId::Sunscar:
-        line1 = "Sunscar remembers the day the rival prince bowed with a smile and promised peace he never meant to keep.";
+        line1 = "Sunscar remembers the day Prince Vaelor bowed with a smile and promised peace he never meant to keep.";
         line2 = "Do not mistake charm for mercy. Some betrayals arrive perfumed and crowned.";
         break;
     case WorldId::Mirethorn:
@@ -2767,7 +2773,7 @@ void Game::StartBlessingMemoryCutscene(WorldId world) {
     steps.push_back({ CutsceneStepType::Fade, 0.40f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::PanCamera, 0.60f, reliquaryLook, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, reliquaryLook, "THE RELIQUARY", line1, neonGold, true, true });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, reliquaryLook, "HER MEMORY", line2, softRed, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, reliquaryLook, "PRINCESS SERALYNE", line2, softRed, true, true });
     StartCutscene(title, steps);
 }
 
@@ -2808,18 +2814,18 @@ void Game::StartBossAftermathCutscene(WorldId world, const std::string& bossName
         line3 = "Then I press on. A living crown is not saved by stopping at the first victory.";
         break;
     case WorldId::Frostveil:
-        line1 = "Frozen beneath the bloodied chapel glass lies a ribbon marked with the princess's seal.";
+        line1 = "Frozen beneath the bloodied chapel glass lies a ribbon marked with Princess Seralyne's seal.";
         line2 = "She passed through Frostveil alive. The cold kept what the fire tried to erase.";
         line3 = "Then her trail still lives. I ride after it before the snow swallows the last sign.";
         break;
     case WorldId::Sunscar:
-        line1 = "The desert carrion scatters. Word will reach the rival prince that Crownheart still answers in steel.";
-        line2 = "Let his red banners tremble. False kings rule loudly because they fear the return of the rightful dead.";
+        line1 = "The desert carrion scatters. Word will reach Prince Vaelor that Crownheart still answers in steel.";
+        line2 = "Let Vaelor's red banners tremble. False kings rule loudly because they fear the return of the rightful dead.";
         line3 = "Then I will make him hear my coming across every mile of ash road.";
         break;
     case WorldId::Mirethorn:
         line1 = "The black water gives back a prayer-song, and somewhere beneath the briars the broken throne begins to stir.";
-        line2 = "The deepest wound is close now. The kingdom is no longer hiding its grief from you.";
+        line2 = "The deepest wound is close now. If Seralyne yet breathes, the kingdom is no longer hiding her grief from you.";
         line3 = "Then let the last road open. I will meet the truth where the crown was buried.";
         break;
     }
@@ -3576,7 +3582,8 @@ void Game::UpdatePlaying(float dt) {
 
     if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_E)) {
         int desiredShopkeeperStage = 0;
-        if (mainQuestIndex >= 9) desiredShopkeeperStage = 3;
+        if (mainQuestIndex >= (int)mainQuestDB.size()) desiredShopkeeperStage = 4;
+        else if (mainQuestIndex >= 9) desiredShopkeeperStage = 3;
         else if (mainQuestIndex >= 6) desiredShopkeeperStage = 2;
         else if (mainQuestIndex >= 3) desiredShopkeeperStage = 1;
 
@@ -4898,7 +4905,8 @@ void Game::DrawHud() const {
     }
     else if (inSafeZone) {
         int desiredShopkeeperStage = 0;
-        if (mainQuestIndex >= 9) desiredShopkeeperStage = 3;
+        if (mainQuestIndex >= (int)mainQuestDB.size()) desiredShopkeeperStage = 4;
+        else if (mainQuestIndex >= 9) desiredShopkeeperStage = 3;
         else if (mainQuestIndex >= 6) desiredShopkeeperStage = 2;
         else if (mainQuestIndex >= 3) desiredShopkeeperStage = 1;
         bool talkReady = !shopkeeperCutsceneSeen || shopkeeperStoryStage < desiredShopkeeperStage;
