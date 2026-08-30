@@ -1888,6 +1888,11 @@ void Game::TravelToWorld(WorldId world) {
     announcementTimer = 2.4f;
     PlaySoundSafe(sfxTravel);
     SpawnWave(player.wave);
+    int worldSlot = WorldIndex(world);
+    if (worldSlot >= 0 && worldSlot < 4 && !realmIntroSeen[worldSlot]) {
+        realmIntroSeen[worldSlot] = true;
+        StartRealmIntroCutscene(world);
+    }
     SaveRun();
     SaveProfile();
 }
@@ -2473,6 +2478,10 @@ void Game::ResetRun() {
     waveTargetRoomIndex = -1;
     lockedRoomIndex = -1;
     cutscene = {};
+    for (int i = 0; i < 4; ++i) { realmIntroSeen[i] = false; bossIntroSeen[i] = false; }
+    realmIntroSeen[0] = true;
+    shopkeeperCutsceneSeen = false;
+    blessingMemorySeen = false;
     hitStopTimer = 0.0f;
     screenShake = 0.0f;
     nextWaveTimer = 0.0f;
@@ -2532,6 +2541,92 @@ void Game::StartIntroCutscene() {
     StartCutscene("PROLOGUE // THE LAST VOW", steps);
 }
 
+void Game::StartRealmIntroCutscene(WorldId world) {
+    std::string line1;
+    std::string line2;
+    std::string speaker = "THE CHRONICLE";
+    Color color = neonGold;
+
+    switch (world) {
+    case WorldId::Crownheart:
+        line1 = "Crownheart still stands, but every stone carries the weight of a dying oath.";
+        line2 = "The keep is sanctuary only for those willing to ride back into the dark.";
+        color = neonGold;
+        break;
+    case WorldId::Frostveil:
+        line1 = "Frostveil Pass sleeps beneath silver snow, chapel glass, and vows that never thawed.";
+        line2 = "Step softly. Even the cold here remembers who failed the crown.";
+        color = WorldAccentTint(world);
+        break;
+    case WorldId::Sunscar:
+        line1 = "Sunscar burns with caravan ash, split stone, and the heat of broken banners.";
+        line2 = "What was once a king's road is now a furnace for the living and the condemned.";
+        color = WorldAccentTint(world);
+        break;
+    case WorldId::Mirethorn:
+        line1 = "Mirethorn drowns its courts in thorn, rot, and black water older than mercy.";
+        line2 = "Do not trust the fog. It keeps the names of the dead and lends them voices.";
+        color = WorldAccentTint(world);
+        break;
+    }
+
+    Vector2 gateLook = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.28f };
+    Vector2 knightMark = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.68f };
+    std::vector<CutsceneStep> steps;
+    steps.push_back({ CutsceneStepType::Fade, 0.45f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.80f, gateLook, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, gateLook, speaker, line1, color, true, true });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.85f, knightMark, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, knightMark, "THE KNIGHT", line2, neonCyan, false, true });
+    StartCutscene(std::string("REALM ENTRY // ") + WorldLabel(world), steps);
+}
+
+void Game::StartShopkeeperCutscene() {
+    Vector2 hallLook = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.52f };
+    std::vector<CutsceneStep> steps;
+    steps.push_back({ CutsceneStepType::Fade, 0.35f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.55f, hallLook, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, hallLook, "THE ARMORER", "Steel, relics, mounts, mercies. Bring me renown, and I will send you back sharper than grief.", safeGreen, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, hallLook, "THE ARMORER", "Do not chase every bright blade. Choose a weapon with a soul you can carry into ruin.", neonGold, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, hallLook, "THE KNIGHT", "Keep the forge lit. I will need it before this kingdom is done with me.", neonCyan, false, true });
+    StartCutscene("BLACK HALL // THE ARMORER", steps);
+}
+
+void Game::StartBlessingMemoryCutscene() {
+    Vector2 reliquaryLook = rewardChestPos;
+    std::vector<CutsceneStep> steps;
+    steps.push_back({ CutsceneStepType::Fade, 0.40f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.60f, reliquaryLook, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, reliquaryLook, "THE RELIQUARY", "These altars do not yield only power. They remember what the kingdom loved before it learned to mourn.", neonGold, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, reliquaryLook, "HER MEMORY", "Take what grace remains. You cannot save a dying realm with steel alone.", softRed, true, true });
+    StartCutscene("RELIQUARY MEMORY", steps);
+}
+
+void Game::StartBossIntroCutscene(const ActiveMonster& monster) {
+    std::string line1;
+    std::string line2;
+    if (monster.name == "THE ASHEN WYRM") {
+        line1 = "The Ashen Wyrm wakes beneath scorched stone, carrying oath-fire in its lungs.";
+        line2 = "Then let it choke on steel before it reaches the keep.";
+    }
+    else if (monster.name == "THE THORN KING") {
+        line1 = "The Thorn King rises from black water and briar like a crown the dead refused to bury.";
+        line2 = "Then I will cut that crown apart.";
+    }
+    else {
+        line1 = monster.name + " stands within the sealed court and dares the kingdom to kneel.";
+        line2 = "I did not come to kneel.";
+    }
+
+    std::vector<CutsceneStep> steps;
+    steps.push_back({ CutsceneStepType::Fade, 0.28f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.75f, monster.pos, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, monster.pos, monster.name, line1, monster.color, true, true });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.55f, player.pos, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, player.pos, "THE KNIGHT", line2, neonCyan, false, true });
+    StartCutscene(std::string("BOSS // ") + monster.name, steps);
+}
+
 void Game::AdvanceCutsceneStep() {
     if (!cutscene.active) {
         return;
@@ -2548,13 +2643,37 @@ void Game::AdvanceCutsceneStep() {
     cutscene.text.clear();
 
     if (cutscene.currentStep < 0 || cutscene.currentStep >= (int)cutscene.steps.size()) {
+        std::string endAnnouncement;
+        float endAnnouncementTimer = 2.2f;
+        if (cutscene.sceneName.find("PROLOGUE") != std::string::npos) {
+            endAnnouncement = "PROLOGUE ENDED // THE HUNT BEGINS";
+            endAnnouncementTimer = 2.6f;
+            PlaySoundSafe(sfxBanner);
+        }
+        else if (cutscene.sceneName.find("BLACK HALL") != std::string::npos) {
+            endAnnouncement = "THE ARMORER WAITS // PRESS E TO ENTER THE ARMORY";
+            PlaySoundSafe(sfxUiAccept);
+        }
+        else if (cutscene.sceneName.find("RELIQUARY MEMORY") != std::string::npos) {
+            endAnnouncement = "RELIQUARY AWAKENED // PRESS E TO CLAIM A BLESSING";
+            PlaySoundSafe(sfxReward);
+        }
+        else if (cutscene.sceneName.find("REALM ENTRY") != std::string::npos) {
+            endAnnouncement = std::string(WorldLabel(currentWorld)) + " // ENTER THE HUNT";
+            PlaySoundSafe(sfxTravel);
+        }
+        else if (cutscene.sceneName.find("BOSS //") != std::string::npos) {
+            endAnnouncement = "THE COURT SHUDDERS // STAND FAST";
+            PlaySoundSafe(sfxBossIntro);
+        }
         cutscene.active = false;
         cutscene.lockCamera = false;
         cutscene.fadeAlpha = 0.0f;
         cutscene.letterbox = 0.0f;
-        announcement = "PROLOGUE ENDED // THE HUNT BEGINS";
-        announcementTimer = 2.6f;
-        PlaySoundSafe(sfxBanner);
+        if (!endAnnouncement.empty()) {
+            announcement = endAnnouncement;
+            announcementTimer = endAnnouncementTimer;
+        }
         SaveRun();
         return;
     }
@@ -3114,6 +3233,11 @@ void Game::UpdatePlaying(float dt) {
     }
 
     if (rewardChestActive && !rewardSelectionOpen && Distance(player.pos, rewardChestPos) < 72.0f && IsKeyPressed(KEY_E)) {
+        if (!blessingMemorySeen) {
+            blessingMemorySeen = true;
+            StartBlessingMemoryCutscene();
+            return;
+        }
         BuildRewardChoices();
         rewardSelectionOpen = true;
         questBoardOpen = false;
@@ -3203,6 +3327,11 @@ void Game::UpdatePlaying(float dt) {
     }
 
     if (inSafeZone && !rewardSelectionOpen && !questBoardOpen && !realmMapOpen && IsKeyPressed(KEY_E)) {
+        if (!shopkeeperCutsceneSeen) {
+            shopkeeperCutsceneSeen = true;
+            StartShopkeeperCutscene();
+            return;
+        }
         shop.isOpen = !shop.isOpen;
         shop.browseWeaponIdx = player.equippedWeaponIdx;
         if (!petDB.empty()) {
@@ -3240,6 +3369,19 @@ void Game::UpdatePlaying(float dt) {
                     announcementTimer = 2.0f;
                 }
                 break;
+            }
+        }
+    }
+
+    if (!inSafeZone && lockedRoomIndex >= 0) {
+        int worldSlot = WorldIndex(currentWorld);
+        if (worldSlot >= 0 && worldSlot < 4 && !bossIntroSeen[worldSlot]) {
+            for (const auto& monster : monsters) {
+                if (monster.isBoss) {
+                    bossIntroSeen[worldSlot] = true;
+                    StartBossIntroCutscene(monster);
+                    return;
+                }
             }
         }
     }
@@ -4461,7 +4603,7 @@ void Game::DrawHud() const {
         footerBorder = neonGold;
     }
     else if (inSafeZone) {
-        footerText = "SAFE COURT // E ARMORY & STABLE // Q OATHBOARD // R GATE OF REALMS";
+        footerText = shopkeeperCutsceneSeen ? "SAFE COURT // E BLACK HALL ARMORY // Q OATHBOARD // R GATE OF REALMS" : "SAFE COURT // E SPEAK WITH THE ARMORER // Q OATHBOARD // R GATE OF REALMS";
         footerBorder = safeGreen;
     }
     else {

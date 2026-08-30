@@ -175,6 +175,10 @@ private:
     std::vector<Beam> beams;
     ActivePet pet;
     CutsceneState cutscene;
+    bool realmIntroSeen[4] = { true, false, false, false };
+    bool bossIntroSeen[4] = { false, false, false, false };
+    bool shopkeeperCutsceneSeen = false;
+    bool blessingMemorySeen = false;
 
     void BuildColorTheme();
     void BuildDatabases();
@@ -228,6 +232,10 @@ private:
 
     void StartCutscene(const std::string& sceneName, const std::vector<CutsceneStep>& steps);
     void StartIntroCutscene();
+    void StartRealmIntroCutscene(WorldId world);
+    void StartShopkeeperCutscene();
+    void StartBlessingMemoryCutscene();
+    void StartBossIntroCutscene(const ActiveMonster& monster);
     void AdvanceCutsceneStep();
     void UpdateCutscene(float dt);
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);
