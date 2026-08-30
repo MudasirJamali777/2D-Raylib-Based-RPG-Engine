@@ -55,6 +55,8 @@ struct CutsceneState {
     float fadeAlpha = 0.0f;
     float fadeStart = 0.0f;
     float letterbox = 0.0f;
+    float sceneTitleTimer = 0.0f;
+    float sceneTitleMax = 0.0f;
     Vector2 cameraTarget = { 0.0f, 0.0f };
     Vector2 cameraStart = { 0.0f, 0.0f };
     Vector2 stepOrigin = { 0.0f, 0.0f };
@@ -177,8 +179,11 @@ private:
     CutsceneState cutscene;
     bool realmIntroSeen[4] = { true, false, false, false };
     bool bossIntroSeen[4] = { false, false, false, false };
+    bool bossAftermathSeen[4] = { false, false, false, false };
     bool shopkeeperCutsceneSeen = false;
+    int shopkeeperStoryStage = -1;
     bool blessingMemorySeen = false;
+    bool blessingMemorySeenByWorld[4] = { false, false, false, false };
 
     void BuildColorTheme();
     void BuildDatabases();
@@ -233,9 +238,12 @@ private:
     void StartCutscene(const std::string& sceneName, const std::vector<CutsceneStep>& steps);
     void StartIntroCutscene();
     void StartRealmIntroCutscene(WorldId world);
-    void StartShopkeeperCutscene();
-    void StartBlessingMemoryCutscene();
+    void StartChapterUnlockCutscene(WorldId world);
+    void StartFinalCharterCutscene();
+    void StartShopkeeperCutscene(int stage);
+    void StartBlessingMemoryCutscene(WorldId world);
     void StartBossIntroCutscene(const ActiveMonster& monster);
+    void StartBossAftermathCutscene(WorldId world, const std::string& bossName, Vector2 bossPos);
     void AdvanceCutsceneStep();
     void UpdateCutscene(float dt);
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);
