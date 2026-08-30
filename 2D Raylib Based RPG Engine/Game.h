@@ -180,6 +180,9 @@ private:
     bool realmIntroSeen[4] = { true, false, false, false };
     bool bossIntroSeen[4] = { false, false, false, false };
     bool bossAftermathSeen[4] = { false, false, false, false };
+    bool finalBossIntroSeen = false;
+    bool finalBossDefeated = false;
+    bool endingCutsceneSeen = false;
     bool shopkeeperCutsceneSeen = false;
     int shopkeeperStoryStage = -1;
     bool blessingMemorySeen = false;
@@ -243,7 +246,9 @@ private:
     void StartShopkeeperCutscene(int stage);
     void StartBlessingMemoryCutscene(WorldId world);
     void StartBossIntroCutscene(const ActiveMonster& monster);
+    void StartFinalBossIntroCutscene(const ActiveMonster& monster);
     void StartBossAftermathCutscene(WorldId world, const std::string& bossName, Vector2 bossPos);
+    void StartEndingCutscene();
     void AdvanceCutsceneStep();
     void UpdateCutscene(float dt);
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);

@@ -536,6 +536,7 @@ static const char* QuestObjectiveVerb(QuestObjective objective) {
 
 static constexpr const char* kProfileSaveHeaderV6 = "CROWNHEART_PROFILE_V6";
 static constexpr const char* kRunSaveHeaderV4 = "CROWNHEART_SAVE_V4";
+static constexpr const char* kRunSaveHeaderV5 = "CROWNHEART_SAVE_V5";
 static constexpr const char* kLegacyRunSaveHeaderV2 = "NEON_ABYSS_SAVE_V2";
 static constexpr const char* kLegacyRunSaveHeaderV3 = "NEON_ABYSS_SAVE_V3";
 
@@ -704,7 +705,8 @@ void Game::BuildDatabases() {
         {"Mire Wisp", 145, 20, 2.8f, 17.0f, SKYBLUE, false, 60},
         {"Burrow Skitter", 95, 16, 2.9f, 13.0f, BROWN, false, 40},
         {"THE ASHEN WYRM", 1100, 36, 1.3f, 42.0f, MAROON, true, 550},
-        {"THE THORN KING", 1800, 48, 1.05f, 48.0f, bossPurple, true, 900}
+        {"THE THORN KING", 1800, 48, 1.05f, 48.0f, bossPurple, true, 900},
+        {"PRINCE VAELOR // THE FALSE CROWN", 2450, 54, 1.22f, 46.0f, { 164, 78, 82, 255 }, true, 1300}
     };
 }
 
@@ -2216,7 +2218,7 @@ void Game::SaveRun() const {
         return;
     }
 
-    out << kRunSaveHeaderV4 << '\n';
+    out << kRunSaveHeaderV5 << '\n';
     out << (int)currentWorld << '\n';
     out << player.pos.x << ' ' << player.pos.y << ' ' << player.aimDir.x << ' ' << player.aimDir.y << '\n';
     out << player.hp << ' ' << player.maxHp << ' ' << player.xp << ' ' << player.kills << ' '
@@ -2286,6 +2288,7 @@ void Game::SaveRun() const {
         out << (bossAftermathSeen[i] ? 1 : 0);
     }
     out << '\n';
+    out << (finalBossIntroSeen ? 1 : 0) << ' ' << (finalBossDefeated ? 1 : 0) << ' ' << (endingCutsceneSeen ? 1 : 0) << '\n';
 }
 
 bool Game::LoadRun() {
@@ -2299,13 +2302,14 @@ bool Game::LoadRun() {
     bool isV2 = (header == kLegacyRunSaveHeaderV2);
     bool isV3 = (header == kLegacyRunSaveHeaderV3);
     bool isV4 = (header == kRunSaveHeaderV4);
-    if (!isV2 && !isV3 && !isV4) {
+    bool isV5 = (header == kRunSaveHeaderV5);
+    if (!isV2 && !isV3 && !isV4 && !isV5) {
         return false;
     }
 
     ResetRun();
 
-    if (isV3 || isV4) {
+    if (isV3 || isV4 || isV5) {
         int worldValue = 0;
         in >> worldValue;
         if (worldValue >= 0 && worldValue <= 3) {
@@ -2451,6 +2455,16 @@ bool Game::LoadRun() {
                 bossAftermathSeen[i] = (value != 0);
             }
         }
+        in >> std::ws;
+        if (in.peek() != EOF) {
+            int finalIntro = 0;
+            int finalDown = 0;
+            int endingSeen = 0;
+            in >> finalIntro >> finalDown >> endingSeen;
+            finalBossIntroSeen = (finalIntro != 0);
+            finalBossDefeated = (finalDown != 0);
+            endingCutsceneSeen = (endingSeen != 0);
+        }
     }
     if (in.fail() && !in.eof()) {
         return false;
@@ -2536,6 +2550,9 @@ void Game::ResetRun() {
     cutscene = {};
     for (int i = 0; i < 4; ++i) { realmIntroSeen[i] = false; bossIntroSeen[i] = false; bossAftermathSeen[i] = false; blessingMemorySeenByWorld[i] = false; }
     realmIntroSeen[0] = true;
+    finalBossIntroSeen = false;
+    finalBossDefeated = false;
+    endingCutsceneSeen = false;
     shopkeeperCutsceneSeen = false;
     shopkeeperStoryStage = -1;
     blessingMemorySeen = false;
@@ -2625,17 +2642,17 @@ void Game::StartRealmIntroCutscene(WorldId world) {
         break;
     case WorldId::Frostveil:
         line1 = "Frostveil Pass sleeps beneath silver snow, chapel glass, and vows that never thawed.";
-        line2 = "Step softly. Even the cold here remembers who failed the crown.";
+        line2 = "Then I will disturb every frozen chapel until Seralyne's silence gives way.";
         color = WorldAccentTint(world);
         break;
     case WorldId::Sunscar:
         line1 = "Sunscar burns with caravan ash, split stone, and the heat of broken banners.";
-        line2 = "What was once a king's road is now a furnace for the living and the condemned.";
+        line2 = "Then I cross Vaelor's furnace-road and break the lie that wears a crown.";
         color = WorldAccentTint(world);
         break;
     case WorldId::Mirethorn:
         line1 = "Mirethorn drowns its courts in thorn, rot, and black water older than mercy.";
-        line2 = "Do not trust the fog. It keeps the names of the dead and lends them voices.";
+        line2 = "If her prayer still moves beneath this fog, I will follow it to the broken throne.";
         color = WorldAccentTint(world);
         break;
     }
@@ -2668,13 +2685,13 @@ void Game::StartChapterUnlockCutscene(WorldId world) {
     case WorldId::Sunscar:
         sceneName = "CHAPTER // SUNSCAR UNSEALED";
         line1 = "A red seal is hammered into the board. Prince Vaelor marches beneath ash banners through Sunscar.";
-        line2 = "He buys loyalty with hunger, gold, and the promise that Crownheart is already dead.";
+        line2 = "He buys loyalty with hunger, gold, and the promise that Seralyne is already dead.";
         line3 = "Then I will answer him in the language of steel.";
         break;
     case WorldId::Mirethorn:
         sceneName = "CHAPTER // MIRETHORN UNSEALED";
         line1 = "The ferrymen speak at last. A royal prayer-song was heard drifting through Mirethorn fog.";
-        line2 = "If Seralyne was taken alive, the black water may be the last place her memory still walks.";
+        line2 = "If Seralyne was taken alive, the black water may guard the road to the broken throne itself.";
         line3 = "Then I follow the song into the mire, even if it leads me to a grave.";
         break;
     default:
@@ -2695,6 +2712,7 @@ void Game::StartFinalCharterCutscene() {
     std::vector<CutsceneStep> steps;
     steps.push_back({ CutsceneStepType::Fade, 0.34f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::PanCamera, 0.72f, boardLook, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "THE CHRONICLE", "Every charter is answered. Only the hidden throne remains beyond the mire.", neonGold, true, true });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "MAERWYN", "The charter line is ended. No more boards, no more petitions. Only the truth that waits beyond the broken throne.", safeGreen, true, true });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "PRINCESS SERALYNE", "When crowns begin to rot, seek not the loudest banner, but the wound hidden beneath it.", softRed, true, true });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, boardLook, "MAERWYN", "Vaelor will guard the throne room with every lie he owns. Go anyway. Seralyne would have.", neonGold, true, true });
@@ -2731,8 +2749,8 @@ void Game::StartShopkeeperCutscene(int stage) {
     }
     else {
         line1 = "Seralyne never feared the truth of steel. Vaelor did. That is why one vanished and the other hid behind banners.";
-        line2 = "If you reach the broken throne, choose the living heart of the kingdom over the easier legend. Bring her home if home still exists.";
-        line3 = "I will. And if Vaelor stands in that last hall, he answers for every bell that died.";
+        line2 = "If you reach the broken throne, do not let Vaelor turn Seralyne into a legend and call that mercy. Bring her home if home still exists.";
+        line3 = "I will. And if Vaelor stands in that last hall, he answers to me before dawn leaves it.";
     }
 
     std::vector<CutsceneStep> steps;
@@ -2765,7 +2783,7 @@ void Game::StartBlessingMemoryCutscene(WorldId world) {
         break;
     case WorldId::Mirethorn:
         line1 = "Black water carries a prayer she once sang in secret. The melody broke, but it did not drown.";
-        line2 = "If you still seek me, follow what the dead were too frightened to bury.";
+        line2 = "If you still seek me, follow the prayer beneath the briars. It remembers the road to the throne.";
         break;
     }
 
@@ -2781,16 +2799,30 @@ void Game::StartBossIntroCutscene(const ActiveMonster& monster) {
     std::string line1;
     std::string line2;
     if (monster.name == "THE ASHEN WYRM") {
-        line1 = "The Ashen Wyrm wakes beneath scorched stone, carrying oath-fire in its lungs.";
-        line2 = "Then let it choke on steel before it reaches the keep.";
+        if (currentWorld == WorldId::Sunscar) {
+            line1 = "The Ashen Wyrm coils through Vaelor's furnace roads, a war-beast fed on tribute and fire.";
+            line2 = "Then Vaelor loses one more terror tonight.";
+        }
+        else {
+            line1 = "The Ashen Wyrm wakes beneath scorched stone, carrying oath-fire in its lungs.";
+            line2 = "Then let it choke on steel before it reaches the keep.";
+        }
     }
     else if (monster.name == "THE THORN KING") {
-        line1 = "The Thorn King rises from black water and briar like a crown the dead refused to bury.";
-        line2 = "Then I will cut that crown apart.";
+        if (currentWorld == WorldId::Mirethorn) {
+            line1 = "The Thorn King rises before the buried throne, wearing the mire like a grave-born mantle.";
+            line2 = "Then I cut through him and take the last road to Seralyne.";
+        }
+        else {
+            line1 = "The Thorn King rises from black water and briar like a crown the dead refused to bury.";
+            line2 = "Then I will cut that crown apart.";
+        }
     }
     else {
         line1 = monster.name + " stands within the sealed court and dares the kingdom to kneel.";
-        line2 = "I did not come to kneel.";
+        if (currentWorld == WorldId::Sunscar) line2 = "Then let Vaelor learn what still kneels to no false crown.";
+        else if (currentWorld == WorldId::Mirethorn) line2 = "Stand aside, or be buried with the throne you guard.";
+        else line2 = "I did not come to kneel.";
     }
 
     std::vector<CutsceneStep> steps;
@@ -2802,6 +2834,17 @@ void Game::StartBossIntroCutscene(const ActiveMonster& monster) {
     StartCutscene(std::string("BOSS // ") + monster.name, steps);
 }
 
+void Game::StartFinalBossIntroCutscene(const ActiveMonster& monster) {
+    std::vector<CutsceneStep> steps;
+    steps.push_back({ CutsceneStepType::Fade, 0.30f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.82f, monster.pos, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, monster.pos, "PRINCE VAELOR", "So the last hound of Crownheart has crossed the mire. You are late. The throne learned to obey me while you chased ghosts.", softRed, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, monster.pos, "PRINCE VAELOR", "Seralyne is no kingdom now. She is a wound, and I decide who may look upon it.", bossPurple, true, true });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.56f, player.pos, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, player.pos, "THE KNIGHT", "Then I will cut your lie from the throne, Vaelor, and carry Seralyne out of the ruin you made.", neonCyan, false, true });
+    StartCutscene(std::string("FINAL BOSS // ") + monster.name, steps);
+}
+
 void Game::StartBossAftermathCutscene(WorldId world, const std::string& bossName, Vector2 bossPos) {
     std::string line1;
     std::string line2;
@@ -2810,23 +2853,23 @@ void Game::StartBossAftermathCutscene(WorldId world, const std::string& bossName
     switch (world) {
     case WorldId::Crownheart:
         line1 = "The first great beast falls, and the keep roads breathe again beneath the night.";
-        line2 = "One wound closes, yet the kingdom's deeper sorrow still rides beyond these walls.";
+        line2 = "One wound closes, yet Seralyne's absence still rides beyond these walls like an open wound.";
         line3 = "Then I press on. A living crown is not saved by stopping at the first victory.";
         break;
     case WorldId::Frostveil:
         line1 = "Frozen beneath the bloodied chapel glass lies a ribbon marked with Princess Seralyne's seal.";
-        line2 = "She passed through Frostveil alive. The cold kept what the fire tried to erase.";
+        line2 = "She passed through Frostveil alive. The cold kept what Vaelor's fire tried to erase.";
         line3 = "Then her trail still lives. I ride after it before the snow swallows the last sign.";
         break;
     case WorldId::Sunscar:
         line1 = "The desert carrion scatters. Word will reach Prince Vaelor that Crownheart still answers in steel.";
         line2 = "Let Vaelor's red banners tremble. False kings rule loudly because they fear the return of the rightful dead.";
-        line3 = "Then I will make him hear my coming across every mile of ash road.";
+        line3 = "Then let Vaelor hear my coming across every mile of ash road. I am done hunting shadows.";
         break;
     case WorldId::Mirethorn:
         line1 = "The black water gives back a prayer-song, and somewhere beneath the briars the broken throne begins to stir.";
-        line2 = "The deepest wound is close now. If Seralyne yet breathes, the kingdom is no longer hiding her grief from you.";
-        line3 = "Then let the last road open. I will meet the truth where the crown was buried.";
+        line2 = "The deepest wound is close now. If Seralyne yet breathes, Vaelor buried her truth near the throne and called it peace.";
+        line3 = "Then let the last road open. Seralyne, hold fast. Vaelor, wait for me.";
         break;
     }
 
@@ -2838,6 +2881,19 @@ void Game::StartBossAftermathCutscene(WorldId world, const std::string& bossName
     steps.push_back({ CutsceneStepType::PanCamera, 0.48f, player.pos, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::Dialogue, 0.0f, player.pos, "THE KNIGHT", line3, neonCyan, false, true });
     StartCutscene(std::string("AFTERMATH // ") + bossName, steps);
+}
+
+void Game::StartEndingCutscene() {
+    Vector2 throneLook = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.20f };
+    std::vector<CutsceneStep> steps;
+    steps.push_back({ CutsceneStepType::Fade, 0.36f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.88f, throneLook, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "THE CHRONICLE", "Vaelor falls, and the false crown breaks against the stones of the drowned hall.", neonGold, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "PRINCESS SERALYNE", "You came when every bell was ash. Then let the kingdom remember not only grief, but who remained faithful to it.", softRed, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "MAERWYN", "Bring her home, knight. Crownheart has buried enough of its own heart for one age.", safeGreen, true, true });
+    steps.push_back({ CutsceneStepType::PanCamera, 0.52f, player.pos, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, player.pos, "THE KNIGHT", "Then the road turns home. Let the gates open. Let the last bell speak again.", neonCyan, false, true });
+    StartCutscene("EPILOGUE // THE FALSE CROWN FALLS", steps);
 }
 
 void Game::AdvanceCutsceneStep() {
@@ -2874,6 +2930,11 @@ void Game::AdvanceCutsceneStep() {
         else if (cutscene.sceneName.find("REALM ENTRY") != std::string::npos) {
             endAnnouncement = std::string(WorldLabel(currentWorld)) + " // ENTER THE HUNT";
             PlaySoundSafe(sfxTravel);
+        }
+        else if (cutscene.sceneName.find("EPILOGUE //") != std::string::npos) {
+            endAnnouncement = "FALSE CROWN BROKEN // CHRONICLE COMPLETE";
+            endAnnouncementTimer = 3.0f;
+            PlaySoundSafe(sfxQuest);
         }
         else if (cutscene.sceneName.find("FINAL VOW") != std::string::npos) {
             endAnnouncement = "FINAL VOW AWAKENED // THE KINGDOM REMEMBERS";
@@ -3125,6 +3186,7 @@ void Game::SpawnWave(int waveNumber) {
 
     std::vector<int> worldPool;
     int bossType = 10;
+    bool endgameClimaxReady = (mainQuestIndex >= (int)mainQuestDB.size() && currentWorld == WorldId::Mirethorn && !finalBossDefeated);
     switch (currentWorld) {
     case WorldId::Crownheart:
         worldPool = { 0, 2, 3, 4, 7, 9 };
@@ -3140,7 +3202,7 @@ void Game::SpawnWave(int waveNumber) {
         break;
     case WorldId::Mirethorn:
         worldPool = { 0, 1, 4, 5, 8, 9 };
-        bossType = 11;
+        bossType = endgameClimaxReady ? 12 : 11;
         break;
     }
 
@@ -3166,8 +3228,14 @@ void Game::SpawnWave(int waveNumber) {
 
     if (waveNumber % 5 == 0) {
         SpawnMonsterByType(bossType, GetSpawnPointInCombatRoom());
-        announcement = std::string(WorldLabel(currentWorld)) + " // " + monsterTypes[bossType].name + " STIRS";
-        announcementTimer = 3.8f;
+        if (bossType == 12) {
+            announcement = "MIRETHORN HOLLOW // PRINCE VAELOR WAITS";
+            announcementTimer = 4.2f;
+        }
+        else {
+            announcement = std::string(WorldLabel(currentWorld)) + " // " + monsterTypes[bossType].name + " STIRS";
+            announcementTimer = 3.8f;
+        }
         PlaySoundSafe(sfxBossIntro);
     }
 }
@@ -3635,6 +3703,14 @@ void Game::UpdatePlaying(float dt) {
     }
 
     if (!inSafeZone && lockedRoomIndex >= 0) {
+        for (const auto& monster : monsters) {
+            if (monster.isBoss && monster.typeIndex == 12 && !finalBossIntroSeen) {
+                finalBossIntroSeen = true;
+                StartFinalBossIntroCutscene(monster);
+                return;
+            }
+        }
+
         int worldSlot = WorldIndex(currentWorld);
         if (worldSlot >= 0 && worldSlot < 4 && !bossIntroSeen[worldSlot]) {
             for (const auto& monster : monsters) {
@@ -3944,6 +4020,7 @@ void Game::UpdatePlaying(float dt) {
     }
 
     bool triggerBossAftermath = false;
+    bool triggerEndingCutscene = false;
     std::string bossAftermathName;
     Vector2 bossAftermathPos = { 0.0f, 0.0f };
     WorldId bossAftermathWorld = currentWorld;
@@ -3988,13 +4065,20 @@ void Game::UpdatePlaying(float dt) {
             }
             if (it->isBoss) {
                 AdvanceQuestObjective(QuestObjective::DefeatBosses, 1);
-                int worldSlot = WorldIndex(currentWorld);
-                if (worldSlot >= 0 && worldSlot < 4 && !bossAftermathSeen[worldSlot]) {
-                    bossAftermathSeen[worldSlot] = true;
-                    triggerBossAftermath = true;
-                    bossAftermathName = it->name;
-                    bossAftermathPos = it->pos;
-                    bossAftermathWorld = currentWorld;
+                if (it->typeIndex == 12) {
+                    finalBossDefeated = true;
+                    triggerEndingCutscene = !endingCutsceneSeen;
+                    endingCutsceneSeen = true;
+                }
+                else {
+                    int worldSlot = WorldIndex(currentWorld);
+                    if (worldSlot >= 0 && worldSlot < 4 && !bossAftermathSeen[worldSlot]) {
+                        bossAftermathSeen[worldSlot] = true;
+                        triggerBossAftermath = true;
+                        bossAftermathName = it->name;
+                        bossAftermathPos = it->pos;
+                        bossAftermathWorld = currentWorld;
+                    }
                 }
             }
             hitStopTimer = std::max(hitStopTimer, it->isBoss ? 0.08f : (it->isElite ? 0.05f : 0.0f));
@@ -4004,6 +4088,13 @@ void Game::UpdatePlaying(float dt) {
         else {
             ++it;
         }
+    }
+
+    if (triggerEndingCutscene) {
+        SaveProfile();
+        SaveRun();
+        StartEndingCutscene();
+        return;
     }
 
     if (triggerBossAftermath) {
@@ -4854,8 +4945,14 @@ void Game::DrawHud() const {
         DrawText(mainQuestReady ? TextFormat("CLAIM %d EURO AT THE BOARD", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), 34, 478, 16, mainQuestReady ? safeGreen : parchment);
     }
     else {
-        DrawText("ALL V2 CHAPTERS STAND COMPLETED.", 34, 392, 18, parchment);
-        DrawText("Roam the broken realms and forge the rest of the legend.", 34, 416, 16, ashText);
+        if (!finalBossDefeated) {
+            DrawText("THE FALSE CROWN WAITS IN MIRETHORN.", 34, 392, 18, parchment);
+            DrawText("Ride the fifth-wave boss hunt in Mirethorn to draw Prince Vaelor into the final hall.", 34, 416, 16, ashText);
+        }
+        else {
+            DrawText("THE FALSE CROWN HAS FALLEN.", 34, 392, 18, parchment);
+            DrawText("Roam the broken realms, finish side vows, and carry the kingdom beyond its grief.", 34, 416, 16, ashText);
+        }
     }
 
     int sideRowY = 486;
@@ -5265,8 +5362,14 @@ void Game::DrawQuestBoard() const {
         DrawText(mainQuestReady ? TextFormat("PRESS E TO CLAIM %d EURO", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), (int)mainCard.x + 612, (int)mainCard.y + 108, 18, mainQuestReady ? safeGreen : parchment);
     }
     else {
-        DrawText("ALL V2 MAIN VOWS STAND COMPLETED", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, parchment);
-        DrawText("Free hunt the realms, finish side vows, and forge the rest of the arsenal.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, ashText);
+        if (!finalBossDefeated) {
+            DrawText("THE FALSE CROWN STILL WAITS", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, parchment);
+            DrawText("Ride to Mirethorn and survive the next boss wave to confront Prince Vaelor in the drowned hall.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, ashText);
+        }
+        else {
+            DrawText("THE FALSE CROWN HAS FALLEN", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, parchment);
+            DrawText("Free hunt the realms, finish side vows, and forge the rest of the arsenal.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, ashText);
+        }
     }
 
     for (int i = 0; i < 3; ++i) {
@@ -5363,7 +5466,7 @@ void Game::DrawEnemySprite(const ActiveMonster& monster) const {
     float size = 72.0f;
     if (monster.isBoss) {
         spriteIndex = (monster.typeIndex == 11) ? 5 : 4;
-        size = 98.0f;
+        size = (monster.typeIndex == 12) ? 106.0f : 98.0f;
     }
     else if (monster.typeIndex == 0 || monster.typeIndex == 9) {
         spriteIndex = 0;
@@ -5407,8 +5510,12 @@ void Game::DrawEnemySprite(const ActiveMonster& monster) const {
     }
 
     if (monster.isBoss) {
-        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 12.0f + std::sin(t * 3.0f) * 2.0f, Fade(neonGold, 0.34f));
-        DrawText(monster.name.c_str(), (int)monster.pos.x - MeasureText(monster.name.c_str(), 16) / 2, (int)(monster.pos.y - monster.radius - 42.0f), 16, neonGold);
+        Color bossRing = (monster.typeIndex == 12) ? softRed : neonGold;
+        DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 12.0f + std::sin(t * 3.0f) * 2.0f, Fade(bossRing, 0.34f));
+        if (monster.typeIndex == 12) {
+            DrawCircleLines((int)monster.pos.x, (int)monster.pos.y, monster.radius + 20.0f + std::sin(t * 2.4f) * 2.5f, Fade(bossPurple, 0.28f));
+        }
+        DrawText(monster.name.c_str(), (int)monster.pos.x - MeasureText(monster.name.c_str(), 16) / 2, (int)(monster.pos.y - monster.radius - 42.0f), 16, bossRing);
     }
 }
 
