@@ -67,9 +67,12 @@ inline void DrawGlowCircle(Vector2 pos, float radius, Color color) {
 }
 
 inline void DrawPanel(Rectangle rect, Color fill, Color border) {
-    DrawRectangleRounded({ rect.x + 4.0f, rect.y + 6.0f, rect.width, rect.height }, 0.08f, 8, Fade(BLACK, 0.18f));
-    DrawRectangleRounded(rect, 0.08f, 8, fill);
-    DrawRectangleRounded({ rect.x + 4.0f, rect.y + 4.0f, rect.width - 8.0f, rect.height * 0.28f }, 0.08f, 8, Fade(WHITE, 0.05f));
+    DrawRectangleRounded({ rect.x + 8.0f, rect.y + 10.0f, rect.width, rect.height }, 0.06f, 8, Fade(BLACK, 0.34f));
+    DrawRectangleRounded(rect, 0.06f, 8, fill);
+    DrawRectangleRounded({ rect.x + 3.0f, rect.y + 3.0f, rect.width - 6.0f, rect.height - 6.0f }, 0.06f, 8, Fade(WHITE, 0.015f));
+    DrawRectangleRounded({ rect.x + 5.0f, rect.y + 5.0f, rect.width - 10.0f, rect.height * 0.22f }, 0.06f, 8, Fade(WHITE, 0.035f));
+    DrawRectangle((int)rect.x + 10, (int)rect.y + 34, (int)rect.width - 20, 1, Fade(border, 0.28f));
+    DrawRectangleLinesEx({ rect.x + 3.0f, rect.y + 3.0f, rect.width - 6.0f, rect.height - 6.0f }, 1.0f, Fade(BLACK, 0.32f));
     DrawRectangleLinesEx(rect, 2.0f, border);
 }
 

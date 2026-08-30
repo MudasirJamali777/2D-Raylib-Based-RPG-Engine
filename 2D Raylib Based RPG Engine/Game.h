@@ -26,6 +26,45 @@ enum class GameState {
     GameOver
 };
 
+enum class CutsceneStepType {
+    Wait,
+    Fade,
+    PanCamera,
+    MovePlayer,
+    Dialogue
+};
+
+struct CutsceneStep {
+    CutsceneStepType type = CutsceneStepType::Wait;
+    float duration = 0.0f;
+    Vector2 target = { 0.0f, 0.0f };
+    std::string speaker;
+    std::string text;
+    Color color = WHITE;
+    bool portraitMode = false;
+    bool requireAdvance = false;
+};
+
+struct CutsceneState {
+    bool active = false;
+    bool showPortrait = false;
+    bool lockCamera = false;
+    bool awaitingAdvance = false;
+    int currentStep = -1;
+    float stepTimer = 0.0f;
+    float fadeAlpha = 0.0f;
+    float fadeStart = 0.0f;
+    float letterbox = 0.0f;
+    Vector2 cameraTarget = { 0.0f, 0.0f };
+    Vector2 cameraStart = { 0.0f, 0.0f };
+    Vector2 stepOrigin = { 0.0f, 0.0f };
+    std::string sceneName;
+    std::string speaker;
+    std::string text;
+    Color speakerColor = WHITE;
+    std::vector<CutsceneStep> steps;
+};
+
 class Game {
 public:
     Game();
@@ -135,6 +174,7 @@ private:
     std::vector<Shockwave> shockwaves;
     std::vector<Beam> beams;
     ActivePet pet;
+    CutsceneState cutscene;
 
     void BuildColorTheme();
     void BuildDatabases();
@@ -186,6 +226,10 @@ private:
     void DeleteSave() const;
     void DeleteProfile() const;
 
+    void StartCutscene(const std::string& sceneName, const std::vector<CutsceneStep>& steps);
+    void StartIntroCutscene();
+    void AdvanceCutsceneStep();
+    void UpdateCutscene(float dt);
     void AddFloatingText(Vector2 pos, const std::string& text, Color color);
     void EmitBurst(Vector2 pos, int count, float speed, Color color, float size);
     void SpawnMonsterByType(int typeIndex, Vector2 pos);
@@ -210,6 +254,7 @@ private:
     void Draw() const;
     void DrawTitleScreen() const;
     void DrawWorld() const;
+    void DrawCutsceneOverlay() const;
     void DrawHud() const;
     void DrawMiniMap() const;
     void DrawRewardOverlay() const;

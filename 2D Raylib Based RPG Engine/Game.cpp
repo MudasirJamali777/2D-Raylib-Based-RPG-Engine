@@ -488,20 +488,20 @@ static const char* WeaponTraitDesc(WeaponTrait trait) {
 
 static const char* WorldBlurbLine1(WorldId world) {
     switch (world) {
-    case WorldId::Crownheart: return "Green courts and safe roads.";
-    case WorldId::Frostveil: return "Frozen trails and pale shrines.";
-    case WorldId::Sunscar: return "Wide dunes and caravan ruins.";
-    case WorldId::Mirethorn: return "Bog paths and rotten bridges.";
+    case WorldId::Crownheart: return "Ruined courts and chapel roads.";
+    case WorldId::Frostveil: return "Frozen shrines and silver passes.";
+    case WorldId::Sunscar: return "Ash roads and broken caravan stone.";
+    case WorldId::Mirethorn: return "Bog causeways and thorn-choked bridges.";
     }
     return "";
 }
 
 static const char* WorldBlurbLine2(WorldId world) {
     switch (world) {
-    case WorldId::Crownheart: return "The keep still anchors the realm.";
-    case WorldId::Frostveil: return "Cold halls close around each hunt.";
-    case WorldId::Sunscar: return "Bright stone roads cut the sands.";
-    case WorldId::Mirethorn: return "Fog and roots twist every lane.";
+    case WorldId::Crownheart: return "The keep endures through grief.";
+    case WorldId::Frostveil: return "Old vows still haunt the cold.";
+    case WorldId::Sunscar: return "Burned oaths linger in the dust.";
+    case WorldId::Mirethorn: return "Fog and roots swallow every lane.";
     }
     return "";
 }
@@ -626,18 +626,18 @@ void Game::Run() {
 }
 
 void Game::BuildColorTheme() {
-    bg = { 193, 221, 113, 255 };
-    bg2 = { 160, 199, 84, 255 };
-    grid = { 146, 184, 82, 255 };
-    panel = { 244, 232, 196, 240 };
-    panel2 = { 232, 217, 178, 245 };
-    neonCyan = { 59, 146, 209, 255 };
-    neonBlue = { 88, 128, 204, 255 };
-    neonPink = { 191, 86, 101, 255 };
-    neonGold = { 214, 173, 76, 255 };
-    softRed = { 182, 72, 62, 255 };
-    safeGreen = { 74, 146, 70, 255 };
-    bossPurple = { 121, 94, 161, 255 };
+    bg = { 14, 16, 22, 255 };
+    bg2 = { 42, 32, 38, 255 };
+    grid = { 70, 62, 56, 255 };
+    panel = { 18, 20, 28, 236 };
+    panel2 = { 26, 24, 34, 244 };
+    neonCyan = { 138, 168, 196, 255 };
+    neonBlue = { 110, 126, 172, 255 };
+    neonPink = { 152, 76, 86, 255 };
+    neonGold = { 188, 156, 96, 255 };
+    softRed = { 176, 82, 74, 255 };
+    safeGreen = { 108, 148, 112, 255 };
+    bossPurple = { 120, 98, 150, 255 };
 }
 
 void Game::BuildDatabases() {
@@ -2472,6 +2472,7 @@ void Game::ResetRun() {
     rewardChestPos = { 0.0f, 0.0f };
     waveTargetRoomIndex = -1;
     lockedRoomIndex = -1;
+    cutscene = {};
     hitStopTimer = 0.0f;
     screenShake = 0.0f;
     nextWaveTimer = 0.0f;
@@ -2490,6 +2491,182 @@ void Game::ResetRun() {
     SyncPetState(true);
 
     SpawnWave(player.wave);
+}
+
+void Game::StartCutscene(const std::string& sceneName, const std::vector<CutsceneStep>& steps) {
+    cutscene = {};
+    cutscene.active = true;
+    cutscene.sceneName = sceneName;
+    cutscene.steps = steps;
+    cutscene.cameraTarget = player.pos;
+    cutscene.cameraStart = player.pos;
+    cutscene.stepOrigin = player.pos;
+    cutscene.fadeAlpha = 1.0f;
+    cutscene.lockCamera = true;
+    announcementTimer = 0.0f;
+    shop.isOpen = false;
+    rewardSelectionOpen = false;
+    questBoardOpen = false;
+    realmMapOpen = false;
+    AdvanceCutsceneStep();
+}
+
+void Game::StartIntroCutscene() {
+    Vector2 gateLook = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.18f };
+    Vector2 courtCenter = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.38f };
+    Vector2 knightMark = { safeZone.x + safeZone.width * 0.5f, safeZone.y + safeZone.height * 0.68f };
+
+    player.pos = knightMark;
+    player.aimDir = { 0.0f, -1.0f };
+
+    std::vector<CutsceneStep> steps;
+    steps.push_back({ CutsceneStepType::Fade, 1.10f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Wait, 0.18f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::PanCamera, 1.15f, gateLook, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, gateLook, "THE CHRONICLE", "On the night the bells died, Crownheart burned by oath, by fire, and by betrayal.", neonGold, true, true });
+    steps.push_back({ CutsceneStepType::PanCamera, 1.00f, courtCenter, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, courtCenter, "THE CHRONICLE", "The princess vanished. A rival banner rose. The keep learned grief before dawn.", softRed, true, true });
+    steps.push_back({ CutsceneStepType::PanCamera, 1.05f, knightMark, "", "", WHITE, false, false });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, knightMark, "THE KNIGHT", "If she yet lives, I will find her. If the crown is ash, I will carry its sorrow through every realm.", neonCyan, false, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, knightMark, "THE LAST BELL", "Ride now. Cleanse the sealed courts. Let the broken throne remember your name.", neonGold, true, true });
+    StartCutscene("PROLOGUE // THE LAST VOW", steps);
+}
+
+void Game::AdvanceCutsceneStep() {
+    if (!cutscene.active) {
+        return;
+    }
+
+    cutscene.currentStep++;
+    cutscene.stepTimer = 0.0f;
+    cutscene.stepOrigin = player.pos;
+    cutscene.cameraStart = cutscene.cameraTarget;
+    cutscene.fadeStart = cutscene.fadeAlpha;
+    cutscene.awaitingAdvance = false;
+    cutscene.showPortrait = false;
+    cutscene.speaker.clear();
+    cutscene.text.clear();
+
+    if (cutscene.currentStep < 0 || cutscene.currentStep >= (int)cutscene.steps.size()) {
+        cutscene.active = false;
+        cutscene.lockCamera = false;
+        cutscene.fadeAlpha = 0.0f;
+        cutscene.letterbox = 0.0f;
+        announcement = "PROLOGUE ENDED // THE HUNT BEGINS";
+        announcementTimer = 2.6f;
+        PlaySoundSafe(sfxBanner);
+        SaveRun();
+        return;
+    }
+
+    const CutsceneStep& step = cutscene.steps[cutscene.currentStep];
+    if (step.type == CutsceneStepType::Dialogue) {
+        cutscene.lockCamera = true;
+        if (step.target.x != 0.0f || step.target.y != 0.0f) {
+            cutscene.cameraTarget = step.target;
+        }
+        cutscene.speaker = step.speaker;
+        cutscene.text = step.text;
+        cutscene.speakerColor = step.color;
+        cutscene.showPortrait = step.portraitMode;
+        cutscene.awaitingAdvance = step.requireAdvance;
+        PlaySoundSafe(sfxUiMove);
+    }
+    else if (step.type == CutsceneStepType::PanCamera) {
+        cutscene.lockCamera = true;
+    }
+    else if (step.type == CutsceneStepType::MovePlayer) {
+        cutscene.lockCamera = true;
+        PlaySoundSafe(sfxTravel);
+    }
+}
+
+void Game::UpdateCutscene(float dt) {
+    if (!cutscene.active || cutscene.currentStep < 0 || cutscene.currentStep >= (int)cutscene.steps.size()) {
+        return;
+    }
+
+    if (IsKeyPressed(KEY_F)) {
+        cutscene.active = false;
+        cutscene.lockCamera = false;
+        cutscene.fadeAlpha = 0.0f;
+        cutscene.letterbox = 0.0f;
+        cutscene.text.clear();
+        cutscene.speaker.clear();
+        announcement = "CUTSCENE SKIPPED // THE HUNT BEGINS";
+        announcementTimer = 2.0f;
+        SaveRun();
+        return;
+    }
+
+    cutscene.stepTimer += dt;
+    const CutsceneStep& step = cutscene.steps[cutscene.currentStep];
+
+    switch (step.type) {
+    case CutsceneStepType::Wait:
+        if (cutscene.stepTimer >= step.duration) {
+            AdvanceCutsceneStep();
+        }
+        break;
+    case CutsceneStepType::Fade: {
+        float t = (step.duration > 0.0f) ? ClampFloat(cutscene.stepTimer / step.duration, 0.0f, 1.0f) : 1.0f;
+        float targetAlpha = ClampFloat(step.target.x, 0.0f, 1.0f);
+        cutscene.fadeAlpha = LerpFloat(cutscene.fadeStart, targetAlpha, t);
+        if (cutscene.stepTimer >= step.duration) {
+            cutscene.fadeAlpha = targetAlpha;
+            AdvanceCutsceneStep();
+        }
+        break;
+    }
+    case CutsceneStepType::PanCamera: {
+        float t = (step.duration > 0.0f) ? ClampFloat(cutscene.stepTimer / step.duration, 0.0f, 1.0f) : 1.0f;
+        cutscene.cameraTarget = {
+            LerpFloat(cutscene.cameraStart.x, step.target.x, t),
+            LerpFloat(cutscene.cameraStart.y, step.target.y, t)
+        };
+        if (cutscene.stepTimer >= step.duration) {
+            cutscene.cameraTarget = step.target;
+            AdvanceCutsceneStep();
+        }
+        break;
+    }
+    case CutsceneStepType::MovePlayer: {
+        float t = (step.duration > 0.0f) ? ClampFloat(cutscene.stepTimer / step.duration, 0.0f, 1.0f) : 1.0f;
+        Vector2 nextPos = {
+            LerpFloat(cutscene.stepOrigin.x, step.target.x, t),
+            LerpFloat(cutscene.stepOrigin.y, step.target.y, t)
+        };
+        Vector2 face = VecNormalizeSafe(VecSub(step.target, player.pos));
+        if (face.x != 0.0f || face.y != 0.0f) {
+            player.aimDir = face;
+        }
+        player.pos = nextPos;
+        cutscene.cameraTarget = VecAdd(player.pos, VecScale(player.aimDir, 18.0f));
+        if (cutscene.stepTimer >= step.duration) {
+            player.pos = step.target;
+            AdvanceCutsceneStep();
+        }
+        break;
+    }
+    case CutsceneStepType::Dialogue:
+        cutscene.lockCamera = true;
+        if (step.target.x != 0.0f || step.target.y != 0.0f) {
+            cutscene.cameraTarget = step.target;
+        }
+        if (step.requireAdvance) {
+            if (IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_E)) {
+                PlaySoundSafe(sfxUiAccept);
+                AdvanceCutsceneStep();
+            }
+        }
+        else if (step.duration > 0.0f && cutscene.stepTimer >= step.duration) {
+            AdvanceCutsceneStep();
+        }
+        break;
+    }
+
+    float desiredLetterbox = (!cutscene.speaker.empty() || cutscene.showPortrait) ? 58.0f : 34.0f;
+    cutscene.letterbox = LerpFloat(cutscene.letterbox, desiredLetterbox, ClampFloat(dt * 6.0f, 0.0f, 1.0f));
 }
 
 void Game::AddFloatingText(Vector2 pos, const std::string& text, Color color) {
@@ -2856,6 +3033,7 @@ void Game::UpdateTitle() {
         LoadProfile();
         ResetRun();
         gameState = GameState::Playing;
+        StartIntroCutscene();
         SaveRun();
         PlaySoundSafe(sfxUiAccept);
     }
@@ -2863,6 +3041,7 @@ void Game::UpdateTitle() {
         DeleteSave();
         ResetRun();
         gameState = GameState::Playing;
+        StartIntroCutscene();
         SaveRun();
         PlaySoundSafe(sfxUiAccept);
     }
@@ -2882,6 +3061,11 @@ void Game::UpdatePlaying(float dt) {
     screenShake = std::max(0.0f, screenShake - dt * 22.0f);
     announcementTimer = std::max(0.0f, announcementTimer - dt);
     shop.messageTimer = std::max(0.0f, shop.messageTimer - dt);
+
+    if (cutscene.active) {
+        UpdateCutscene(dt);
+        return;
+    }
 
     bool inSafeZone = CheckCollisionPointRec(player.pos, safeZone);
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
@@ -3686,7 +3870,12 @@ void Game::UpdateCamera() {
         RandomRange(-screenShake, screenShake)
     };
 
-    camera.target = VecAdd(player.pos, VecScale(player.aimDir, 36.0f));
+    if (cutscene.active && cutscene.lockCamera) {
+        camera.target = cutscene.cameraTarget;
+    }
+    else {
+        camera.target = VecAdd(player.pos, VecScale(player.aimDir, 36.0f));
+    }
     camera.offset = { screenW * 0.5f + shakeOffset.x, screenH * 0.5f + shakeOffset.y };
 }
 
@@ -3704,22 +3893,28 @@ void Game::Draw() const {
     }
     else {
         DrawWorld();
-        DrawHud();
 
-        if (rewardSelectionOpen) {
-            DrawRewardOverlay();
+        if (cutscene.active) {
+            DrawCutsceneOverlay();
         }
+        else {
+            DrawHud();
 
-        if (shop.isOpen) {
-            DrawShop();
-        }
+            if (rewardSelectionOpen) {
+                DrawRewardOverlay();
+            }
 
-        if (questBoardOpen) {
-            DrawQuestBoard();
-        }
+            if (shop.isOpen) {
+                DrawShop();
+            }
 
-        if (realmMapOpen) {
-            DrawRealmMap();
+            if (questBoardOpen) {
+                DrawQuestBoard();
+            }
+
+            if (realmMapOpen) {
+                DrawRealmMap();
+            }
         }
 
         if (gameState == GameState::GameOver) {
@@ -4120,47 +4315,104 @@ void Game::DrawWorld() const {
     DrawRectangleGradientV(0, 0, screenW, screenH / 5, Fade(BLACK, 0.16f), Fade(BLACK, 0.0f));
 }
 
+void Game::DrawCutsceneOverlay() const {
+    float barHeight = std::max(42.0f, cutscene.letterbox);
+    Color parchment = { 224, 216, 202, 255 };
+    Color ashText = { 182, 176, 166, 255 };
+
+    DrawRectangle(0, 0, screenW, (int)barHeight, Fade(BLACK, 0.94f));
+    DrawRectangle(0, screenH - (int)barHeight, screenW, (int)barHeight, Fade(BLACK, 0.94f));
+    DrawRectangle(0, (int)barHeight, screenW, 2, Fade(neonGold, 0.18f));
+    DrawRectangle(0, screenH - (int)barHeight - 2, screenW, 2, Fade(neonGold, 0.18f));
+
+    if (!cutscene.sceneName.empty()) {
+        int titleW = MeasureText(cutscene.sceneName.c_str(), 20);
+        Rectangle titleRect = { screenW * 0.5f - titleW * 0.5f - 18.0f, 10.0f, (float)titleW + 36.0f, 30.0f };
+        DrawPanel(titleRect, panel2, neonGold);
+        DrawText(cutscene.sceneName.c_str(), (int)titleRect.x + 18, (int)titleRect.y + 7, 20, neonGold);
+    }
+
+    DrawText("F SKIP", screenW - 92, 16, 18, ashText);
+
+    if (!cutscene.text.empty()) {
+        Rectangle dialogueRect = { screenW * 0.5f - 470.0f, screenH - 190.0f, 940.0f, 132.0f };
+        DrawPanel(dialogueRect, panel2, cutscene.speakerColor);
+        DrawText(cutscene.speaker.c_str(), (int)dialogueRect.x + 22, (int)dialogueRect.y + 14, 22, cutscene.speakerColor);
+        DrawRectangle((int)dialogueRect.x + 20, (int)dialogueRect.y + 42, (int)dialogueRect.width - 40, 1, Fade(cutscene.speakerColor, 0.28f));
+        DrawText(cutscene.text.c_str(), (int)dialogueRect.x + 22, (int)dialogueRect.y + 54, 21, parchment);
+
+        if (cutscene.awaitingAdvance) {
+            Color pulse = ((int)(GetTime() * 2.4f) % 2 == 0) ? neonGold : ashText;
+            DrawText("SPACE / ENTER", (int)dialogueRect.x + (int)dialogueRect.width - 176, (int)dialogueRect.y + 96, 18, pulse);
+        }
+
+        if (cutscene.showPortrait) {
+            Rectangle portraitRect = { dialogueRect.x + dialogueRect.width - 168.0f, dialogueRect.y - 128.0f, 146.0f, 112.0f };
+            DrawPanel(portraitRect, panel, cutscene.speakerColor);
+            DrawSoftGlow({ portraitRect.x + portraitRect.width * 0.5f, portraitRect.y + 52.0f }, 18.0f, cutscene.speakerColor, 0.18f);
+            DrawCircleV({ portraitRect.x + portraitRect.width * 0.5f, portraitRect.y + 52.0f }, 18.0f, cutscene.speakerColor);
+            DrawCircleLines((int)(portraitRect.x + portraitRect.width * 0.5f), (int)(portraitRect.y + 52.0f), 30.0f, Fade(parchment, 0.35f));
+            std::string sigil = cutscene.speaker.empty() ? "?" : std::string(1, cutscene.speaker[0]);
+            DrawText(sigil.c_str(), (int)(portraitRect.x + portraitRect.width * 0.5f) - MeasureText(sigil.c_str(), 28) / 2, (int)portraitRect.y + 38, 28, BLACK);
+            DrawText("MEMORY", (int)portraitRect.x + 34, (int)portraitRect.y + 82, 16, parchment);
+        }
+    }
+
+    if (cutscene.fadeAlpha > 0.001f) {
+        DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, cutscene.fadeAlpha));
+    }
+}
+
 void Game::DrawHud() const {
-    DrawPanel({ 18.0f, 18.0f, 420.0f, 190.0f }, panel, neonBlue);
-    DrawText("ADVENTURER'S KIT", 34, 28, 20, neonCyan);
-    DrawText(TextFormat("WEAPON: %s", weaponDB[player.equippedWeaponIdx].name.c_str()), 34, 54, 18, WHITE);
-    DrawText(TextFormat("TRAIT: %s", WeaponTraitLabel(weaponDB[player.equippedWeaponIdx].trait)), 34, 76, 16, weaponDB[player.equippedWeaponIdx].color);
+    Color parchment = { 216, 208, 194, 255 };
+    Color ashText = { 166, 160, 150, 255 };
+    Color dimText = { 126, 122, 118, 255 };
+    Color wardColor = { 118, 158, 122, 255 };
+    Color lowHealthColor = { 174, 82, 78, 255 };
+
+    Rectangle vigilRect = { 18.0f, 18.0f, 420.0f, 190.0f };
+    DrawPanel(vigilRect, panel, neonBlue);
+    DrawText("KNIGHT'S VIGIL", 34, 28, 20, neonGold);
+    DrawText(TextFormat("ARMAMENT  %s", weaponDB[player.equippedWeaponIdx].name.c_str()), 34, 56, 18, parchment);
+    DrawText(TextFormat("DISCIPLINE  %s", WeaponTraitLabel(weaponDB[player.equippedWeaponIdx].trait)), 34, 78, 16, weaponDB[player.equippedWeaponIdx].color);
     DrawText(TextFormat("WAVE %d", player.wave), 300, 28, 20, neonGold);
-    DrawText(TextFormat("KILLS %d", player.kills), 300, 54, 18, RAYWHITE);
+    DrawText(TextFormat("SLAIN %d", player.kills), 300, 54, 18, parchment);
     DrawText(TextFormat("RELICS %d", player.relicsCollected), 300, 78, 18, neonPink);
 
-    DrawRectangle(34, 102, 250, 18, Fade(WHITE, 0.12f));
-    DrawRectangle(34, 102, (int)(250.0f * ((float)player.hp / (float)player.maxHp)), 18, player.hp < player.maxHp * 0.3f ? softRed : safeGreen);
-    DrawText(TextFormat("HP %d / %d", player.hp, player.maxHp), 44, 102, 16, WHITE);
+    DrawRectangleRounded({ 34.0f, 104.0f, 250.0f, 18.0f }, 0.22f, 6, Fade(BLACK, 0.36f));
+    DrawRectangleRounded({ 34.0f, 104.0f, 250.0f * ((float)player.hp / (float)player.maxHp), 18.0f }, 0.22f, 6, player.hp < player.maxHp * 0.3f ? lowHealthColor : wardColor);
+    DrawText(TextFormat("VIGOR %d / %d", player.hp, player.maxHp), 44, 105, 16, parchment);
 
-    DrawRectangle(34, 132, 250, 12, Fade(WHITE, 0.12f));
-    DrawRectangle(34, 132, (int)ClampFloat((float)player.xp / 3000.0f * 250.0f, 0.0f, 250.0f), 12, neonGold);
-    DrawText(TextFormat("RENOWN %d", player.xp), 294, 126, 16, neonGold);
-    DrawText(TextFormat("EURO %d", euro), 34, 156, 18, { 85, 140, 86, 255 });
-    DrawText(TextFormat("HEIRLOOM %d", legacyRenown), 170, 156, 18, { 130, 104, 60, 255 });
+    DrawRectangleRounded({ 34.0f, 134.0f, 250.0f, 12.0f }, 0.24f, 6, Fade(BLACK, 0.32f));
+    DrawRectangleRounded({ 34.0f, 134.0f, ClampFloat((float)player.xp / 3000.0f * 250.0f, 0.0f, 250.0f), 12.0f }, 0.24f, 6, neonGold);
+    DrawText(TextFormat("RENOWN %d", player.xp), 294, 128, 16, neonGold);
+    DrawText(TextFormat("EURO %d", euro), 34, 158, 18, wardColor);
+    DrawText(TextFormat("HEIRLOOM %d", legacyRenown), 172, 158, 18, { 142, 118, 82, 255 });
 
-    DrawPanel({ 18.0f, 212.0f, 300.0f, 118.0f }, panel, neonPink);
-    DrawText("ABILITIES", 32, 224, 18, neonPink);
-    DrawText(TextFormat("1 DASH    %.1fs", player.dashCd), 32, 250, 18, player.dashCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("2 NOVA    %.1fs", player.empCd), 32, 274, 18, player.empCd <= 0.0f ? neonCyan : GRAY);
-    DrawText(TextFormat("3 TOTEM   %.1fs", player.turretCd), 32, 298, 18, player.turretCd <= 0.0f ? neonCyan : GRAY);
+    Rectangle artsRect = { 18.0f, 212.0f, 300.0f, 118.0f };
+    DrawPanel(artsRect, panel, neonPink);
+    DrawText("BATTLE ARTS", 32, 224, 18, neonPink);
+    DrawText(TextFormat("1 DASH    %.1fs", player.dashCd), 32, 250, 18, player.dashCd <= 0.0f ? neonCyan : dimText);
+    DrawText(TextFormat("2 NOVA    %.1fs", player.empCd), 32, 274, 18, player.empCd <= 0.0f ? neonCyan : dimText);
+    DrawText(TextFormat("3 TOTEM   %.1fs", player.turretCd), 32, 298, 18, player.turretCd <= 0.0f ? neonCyan : dimText);
 
-    DrawPanel({ 18.0f, 342.0f, 420.0f, 188.0f }, panel, neonGold);
-    DrawText("QUEST LEDGER", 34, 354, 20, neonGold);
+    Rectangle ledgerRect = { 18.0f, 342.0f, 420.0f, 188.0f };
+    DrawPanel(ledgerRect, panel, neonGold);
+    DrawText("WAR LEDGER", 34, 354, 20, neonGold);
     if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size()) {
         const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
         WorldId questWorld = MainQuestWorld(mainQuestIndex);
-        DrawText(TextFormat("MAIN QUEST // %s", WorldLabel(questWorld)), 34, 378, 16, neonBlue);
-        DrawText(mainQuest.title.c_str(), 34, 398, 18, WHITE);
-        DrawText(mainQuest.description.c_str(), 34, 420, 16, RAYWHITE);
-        DrawRectangle(34, 446, 220, 10, Fade(WHITE, 0.12f));
-        DrawRectangle(34, 446, (int)(220.0f * (float)mainQuestProgress / (float)std::max(1, mainQuest.target)), 10, mainQuestReady ? safeGreen : neonGold);
+        DrawText(TextFormat("MAIN VOW // %s", WorldLabel(questWorld)), 34, 378, 16, neonBlue);
+        DrawText(mainQuest.title.c_str(), 34, 398, 18, parchment);
+        DrawText(mainQuest.description.c_str(), 34, 420, 16, ashText);
+        DrawRectangleRounded({ 34.0f, 446.0f, 220.0f, 10.0f }, 0.25f, 6, Fade(BLACK, 0.32f));
+        DrawRectangleRounded({ 34.0f, 446.0f, 220.0f * (float)mainQuestProgress / (float)std::max(1, mainQuest.target), 10.0f }, 0.25f, 6, mainQuestReady ? safeGreen : neonGold);
         DrawText(TextFormat("%s %d / %d %s", QuestObjectiveVerb(mainQuest.objective), mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), 34, 462, 16, mainQuestReady ? safeGreen : neonGold);
-        DrawText(mainQuestReady ? TextFormat("TURN IN FOR %d EURO", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), 34, 478, 16, mainQuestReady ? safeGreen : RAYWHITE);
+        DrawText(mainQuestReady ? TextFormat("CLAIM %d EURO AT THE BOARD", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), 34, 478, 16, mainQuestReady ? safeGreen : parchment);
     }
     else {
-        DrawText("ALL V2 MAIN CHARTERS COMPLETE.", 34, 392, 18, WHITE);
-        DrawText("Free hunt the realms and chase better gear.", 34, 416, 16, RAYWHITE);
+        DrawText("ALL V2 CHAPTERS STAND COMPLETED.", 34, 392, 18, parchment);
+        DrawText("Roam the broken realms and forge the rest of the legend.", 34, 416, 16, ashText);
     }
 
     int sideRowY = 486;
@@ -4171,60 +4423,76 @@ void Game::DrawHud() const {
         }
         hasSideQuest = true;
         const QuestDefinition& sideQuest = sideQuestDB[sideQuestOfferIndices[i]];
-        DrawText(TextFormat("SIDE // %s  %d/%d", sideQuest.title.c_str(), sideQuestProgress[i], sideQuest.target), 34, sideRowY, 16, sideQuestReady[i] ? safeGreen : neonCyan);
+        DrawText(TextFormat("SIDE VOW // %s  %d/%d", sideQuest.title.c_str(), sideQuestProgress[i], sideQuest.target), 34, sideRowY, 16, sideQuestReady[i] ? safeGreen : neonCyan);
         sideRowY += 18;
     }
     if (!hasSideQuest) {
-        DrawText("No side contract active. Open the board in any safe camp.", 34, 504, 16, RAYWHITE);
+        DrawText("No side vow is sworn. Visit the board in a safe court.", 34, 504, 16, ashText);
     }
 
-    DrawPanel({ screenW - 352.0f, 18.0f, 334.0f, 190.0f }, panel, safeGreen);
-    DrawText("REGION READOUT", screenW - 334, 28, 20, safeGreen);
-    DrawText(TextFormat("REALM: %s", WorldLabel(currentWorld)), screenW - 334, 54, 18, WHITE);
-    DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 78, 18, WHITE);
-    DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 102, 18, WHITE);
-    DrawText(TextFormat("PET: %s", (pet.active && pet.petIndex >= 0 && pet.petIndex < (int)petDB.size()) ? petDB[pet.petIndex].name.c_str() : "NONE"), screenW - 334, 126, 16, pet.active ? petDB[pet.petIndex].color : RAYWHITE);
-    DrawText(TextFormat("BOND RANK %d", pet.active ? GetPetBondLevel(pet.petIndex) : 0), screenW - 334, 144, 16, pet.active ? petDB[pet.petIndex].color : RAYWHITE);
+    Rectangle reportRect = { screenW - 352.0f, 18.0f, 334.0f, 190.0f };
+    DrawPanel(reportRect, panel, safeGreen);
+    DrawText("FIELD REPORT", screenW - 334, 28, 20, safeGreen);
+    DrawText(TextFormat("REALM  %s", WorldLabel(currentWorld)), screenW - 334, 54, 18, parchment);
+    DrawText(TextFormat("FOES %d", (int)monsters.size()), screenW - 334, 78, 18, parchment);
+    DrawText(TextFormat("TOTEMS %d", (int)turrets.size()), screenW - 334, 102, 18, parchment);
+    DrawText(TextFormat("COMPANION  %s", (pet.active && pet.petIndex >= 0 && pet.petIndex < (int)petDB.size()) ? petDB[pet.petIndex].name.c_str() : "NONE"), screenW - 334, 126, 16, pet.active ? petDB[pet.petIndex].color : ashText);
+    DrawText(TextFormat("BOND RANK %d", pet.active ? GetPetBondLevel(pet.petIndex) : 0), screenW - 334, 144, 16, pet.active ? petDB[pet.petIndex].color : ashText);
 
     bool inSafeZone = CheckCollisionPointRec(player.pos, safeZone);
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
-    DrawText(inSafeZone ? "ZONE: SAFE" : "ZONE: HOT", screenW - 334, 160, 16, inSafeZone ? safeGreen : softRed);
-    DrawText(TextFormat("AREA: %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 178, 14, RAYWHITE);
+    DrawText(inSafeZone ? "COURT STATUS  SANCTUARY" : "COURT STATUS  BESIEGED", screenW - 334, 160, 16, inSafeZone ? safeGreen : softRed);
+    DrawText(TextFormat("GROUND  %s", currentArea ? currentArea->name.c_str() : "STONE ROAD"), screenW - 334, 178, 14, ashText);
 
     DrawMiniMap();
 
+    std::string footerText;
+    Color footerBorder = neonBlue;
     if (rewardChestActive && !rewardSelectionOpen && Distance(player.pos, rewardChestPos) < 72.0f) {
-        DrawText("RELIC CHEST READY // PRESS E TO CLAIM A BLESSING", 22, screenH - 34, 18, neonGold);
+        footerText = "RELIQUARY UNSEALED // PRESS E TO CLAIM A BLESSING";
+        footerBorder = neonGold;
     }
     else if (realmMapOpen) {
-        DrawText("REALM MAP OPEN // 1 CROWNHEART // 2 FROSTVEIL // 3 SUNSCAR // 4 MIRETHORN // R CLOSE", 22, screenH - 34, 18, neonBlue);
+        footerText = "GATE MAP OPEN // 1 CROWNHEART // 2 FROSTVEIL // 3 SUNSCAR // 4 MIRETHORN // R CLOSE";
+        footerBorder = neonBlue;
     }
     else if (questBoardOpen) {
-        DrawText("QUEST BOARD OPEN // E CLAIM MAIN QUEST // 1-3 ACCEPT OR TURN IN SIDE CONTRACTS // Q CLOSE", 22, screenH - 34, 18, neonGold);
+        footerText = "OATHBOARD OPEN // E CLAIM MAIN VOW // 1-3 ACCEPT OR TURN IN SIDE VOWS // Q CLOSE";
+        footerBorder = neonGold;
     }
     else if (inSafeZone) {
-        DrawText("SAFE COURTYARD // E ARMORY & STABLE // Q QUEST BOARD // R REALM GATE MAP", 22, screenH - 34, 18, safeGreen);
+        footerText = "SAFE COURT // E ARMORY & STABLE // Q OATHBOARD // R GATE OF REALMS";
+        footerBorder = safeGreen;
     }
     else {
-        DrawText("WASD MOVE   SPACE SWING   1 DASH   2 NOVA   3 TOTEM   HOLD THE ROADS, CLEAR THE COURTS", 22, screenH - 34, 18, RAYWHITE);
+        footerText = "WASD MOVE   SPACE SWING   1 DASH   2 NOVA   3 TOTEM   HOLD THE ROADS AND CLEANSE THE COURTS";
+        footerBorder = neonBlue;
     }
+
+    Rectangle footerRect = { 18.0f, screenH - 50.0f, screenW - 36.0f, 34.0f };
+    DrawPanel(footerRect, panel, footerBorder);
+    DrawText(footerText.c_str(), (int)footerRect.x + 14, (int)footerRect.y + 9, 17, parchment);
 
     if (announcementTimer > 0.0f) {
         int fontSize = 28;
         int width = MeasureText(announcement.c_str(), fontSize);
+        Rectangle announceRect = { screenW * 0.5f - width * 0.5f - 22.0f, 16.0f, (float)width + 44.0f, 42.0f };
+        DrawPanel(announceRect, panel2, neonGold);
         DrawText(announcement.c_str(), screenW / 2 - width / 2, 24, fontSize, neonGold);
     }
 }
 
 void Game::DrawMiniMap() const {
     Color accentTint = WorldAccentTint(currentWorld);
+    Color shadowTint = WorldShadowTint(currentWorld);
     Rectangle panelRect = { screenW - 292.0f, 198.0f, 274.0f, 274.0f };
     DrawPanel(panelRect, panel, accentTint);
-    DrawText("KINGDOM MAP", (int)panelRect.x + 20, (int)panelRect.y + 16, 18, accentTint);
+    DrawText("WAR MAP", (int)panelRect.x + 20, (int)panelRect.y + 16, 18, accentTint);
+    DrawText(WorldLabel(currentWorld), (int)panelRect.x + 108, (int)panelRect.y + 16, 14, { 182, 176, 166, 255 });
 
     Rectangle mapRect = { panelRect.x + 16.0f, panelRect.y + 42.0f, panelRect.width - 32.0f, panelRect.height - 60.0f };
-    DrawRectangleRec(mapRect, Fade(BLACK, 0.28f));
-    DrawRectangleLinesEx(mapRect, 1.0f, Fade(WHITE, 0.16f));
+    DrawRectangleRec(mapRect, Fade(shadowTint, 0.72f));
+    DrawRectangleLinesEx(mapRect, 1.0f, Fade(accentTint, 0.32f));
 
     float minX = dungeon.rooms.front().rect.x;
     float minY = dungeon.rooms.front().rect.y;
@@ -4256,7 +4524,7 @@ void Game::DrawMiniMap() const {
             corridor.width * scale,
             corridor.height * scale
         };
-        DrawRectangleRec(mini, Fade(accentTint, 0.16f));
+        DrawRectangleRec(mini, Fade(accentTint, 0.12f));
     }
 
     const DungeonArea* currentArea = GetCurrentArea(player.pos);
@@ -4268,15 +4536,15 @@ void Game::DrawMiniMap() const {
             room.rect.width * scale,
             room.rect.height * scale
         };
-        Color fill = room.isSafeZone ? Fade(safeGreen, 0.26f) : Fade(accentTint, 0.12f);
-        Color border = room.isSafeZone ? safeGreen : Fade(WHITE, 0.28f);
+        Color fill = room.isSafeZone ? Fade(safeGreen, 0.22f) : Fade(accentTint, 0.10f);
+        Color border = room.isSafeZone ? safeGreen : Fade({ 196, 192, 186, 255 }, 0.30f);
         if (i == waveTargetRoomIndex && !rewardChestActive) {
             border = neonGold;
-            fill = Fade(neonGold, 0.10f);
+            fill = Fade(neonGold, 0.08f);
         }
         if (&room == currentArea) {
             border = neonCyan;
-            fill = Fade(neonCyan, 0.18f);
+            fill = Fade(neonCyan, 0.14f);
         }
         DrawRectangleRec(mini, fill);
         DrawRectangleLinesEx(mini, 1.0f, border);
@@ -4290,7 +4558,7 @@ void Game::DrawMiniMap() const {
                 obstacle.rect.width * scale,
                 obstacle.rect.height * scale
             };
-            DrawRectangleRec(mini, Fade(obstacle.color, 0.18f));
+            DrawRectangleRec(mini, Fade(obstacle.color, 0.14f));
         }
         else {
             for (const auto& collider : obstacle.colliders) {
@@ -4300,7 +4568,7 @@ void Game::DrawMiniMap() const {
                     collider.width * scale,
                     collider.height * scale
                 };
-                DrawRectangleRec(mini, Fade(obstacle.color, 0.18f));
+                DrawRectangleRec(mini, Fade(obstacle.color, 0.14f));
             }
         }
     }
@@ -4318,39 +4586,42 @@ void Game::DrawMiniMap() const {
     if (rewardChestActive) {
         Vector2 chestMini = WorldToMap(rewardChestPos);
         DrawCircleV(chestMini, 4.2f, neonGold);
-        DrawCircleLines((int)chestMini.x, (int)chestMini.y, 7.0f, WHITE);
+        DrawCircleLines((int)chestMini.x, (int)chestMini.y, 7.0f, { 228, 220, 206, 255 });
     }
 
     Vector2 playerMini = WorldToMap(player.pos);
-    DrawCircleV(playerMini, 4.6f, WHITE);
-    DrawCircleV(playerMini, 3.2f, neonCyan);
+    DrawCircleV(playerMini, 4.8f, { 228, 220, 206, 255 });
+    DrawCircleV(playerMini, 3.1f, neonCyan);
 }
 
 void Game::DrawRewardOverlay() const {
-    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.62f));
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.74f));
 
     Rectangle panelRect = { screenW * 0.5f - 470.0f, screenH * 0.5f - 210.0f, 940.0f, 420.0f };
     DrawPanel(panelRect, panel2, neonGold);
-    DrawText("RELIC CHEST OPENED", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonGold);
-    DrawText("CHOOSE ONE BLESSING", (int)panelRect.x + 30, (int)panelRect.y + 58, 18, RAYWHITE);
+    DrawText("RELIQUARY UNSEALED", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonGold);
+    DrawText("Choose one blessing to bear deeper into the siege.", (int)panelRect.x + 30, (int)panelRect.y + 58, 18, { 202, 196, 186, 255 });
 
     for (int i = 0; i < (int)rewardChoices.size(); ++i) {
         Rectangle card = { panelRect.x + 28.0f + i * 295.0f, panelRect.y + 108.0f, 265.0f, 250.0f };
         const RelicChoice& relic = rewardChoices[i];
 
-        DrawRectangleGradientV((int)card.x, (int)card.y, (int)card.width, (int)card.height, Fade(relic.color, 0.18f), Fade(BLACK, 0.08f));
-        DrawRectangleLinesEx(card, 3.0f, relic.color);
-        DrawCircleV({ card.x + card.width * 0.5f, card.y + 62.0f }, 26.0f, relic.color);
-        DrawCircleV({ card.x + card.width * 0.5f, card.y + 62.0f }, 12.0f, WHITE);
-        DrawText(relic.name.c_str(), (int)card.x + 18, (int)card.y + 108, 24, relic.color);
-        DrawText(relic.description.c_str(), (int)card.x + 18, (int)card.y + 150, 20, RAYWHITE);
-        DrawText(TextFormat("PRESS %d", i + 1), (int)card.x + 18, (int)card.y + 210, 22, WHITE);
+        DrawPanel(card, panel, relic.color);
+        DrawRectangleGradientV((int)card.x + 10, (int)card.y + 44, (int)card.width - 20, 70, Fade(relic.color, 0.18f), Fade(BLACK, 0.02f));
+        DrawText(TextFormat("BLESSING %d", i + 1), (int)card.x + 18, (int)card.y + 14, 16, relic.color);
+        DrawCircleV({ card.x + card.width * 0.5f, card.y + 78.0f }, 26.0f, relic.color);
+        DrawCircleV({ card.x + card.width * 0.5f, card.y + 78.0f }, 12.0f, { 238, 232, 222, 255 });
+        DrawText(relic.name.c_str(), (int)card.x + 18, (int)card.y + 128, 24, { 224, 216, 202, 255 });
+        DrawText(relic.description.c_str(), (int)card.x + 18, (int)card.y + 168, 19, { 184, 178, 170, 255 });
+        DrawText(TextFormat("PRESS %d TO CLAIM", i + 1), (int)card.x + 18, (int)card.y + 212, 20, relic.color);
     }
 }
 
 void Game::DrawShop() const {
-    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.58f));
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.70f));
 
+    Color parchment = { 220, 212, 198, 255 };
+    Color ashText = { 176, 170, 160, 255 };
     Rectangle panelRect = { screenW * 0.5f - 580.0f, screenH * 0.5f - 320.0f, 1160.0f, 640.0f };
     DrawPanel(panelRect, panel2, neonGold);
 
@@ -4368,21 +4639,22 @@ void Game::DrawShop() const {
         }
     }
 
-    DrawText("KEEP ARMORY & STABLE", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
+    DrawText("BLACK HALL ARMORY", (int)panelRect.x + 24, (int)panelRect.y + 22, 28, neonGold);
+    DrawText("Forge, blessing and companion service for the siege ahead.", (int)panelRect.x + 24, (int)panelRect.y + 52, 17, ashText);
     DrawText(TextFormat("RENOWN %d", player.xp), (int)panelRect.x + 764, (int)panelRect.y + 24, 20, safeGreen);
     DrawText(TextFormat("EURO %d", euro), (int)panelRect.x + 930, (int)panelRect.y + 24, 20, neonGold);
-    DrawText(TextFormat("WEAPONS %d / %d", collectedWeapons, (int)weaponDB.size()), (int)panelRect.x + 748, (int)panelRect.y + 54, 18, neonBlue);
-    DrawText(TextFormat("PETS %d / %d", collectedPets, (int)petDB.size()), (int)panelRect.x + 940, (int)panelRect.y + 54, 18, safeGreen);
+    DrawText(TextFormat("ARMORY %d / %d", collectedWeapons, (int)weaponDB.size()), (int)panelRect.x + 728, (int)panelRect.y + 54, 18, neonBlue);
+    DrawText(TextFormat("STALL %d / %d", collectedPets, (int)petDB.size()), (int)panelRect.x + 940, (int)panelRect.y + 54, 18, safeGreen);
 
     int hpUpgradeCost = GetHpUpgradeCost();
     Rectangle blessingRect = { panelRect.x + 24.0f, panelRect.y + 78.0f, 692.0f, 70.0f };
     DrawPanel(blessingRect, panel, safeGreen);
-    DrawText("HEARTH BLESSING", (int)blessingRect.x + 18, (int)blessingRect.y + 12, 20, safeGreen);
-    DrawText(TextFormat("VIGOR +18   COST %d RENOWN   RANK %d / 8   PRESS H", hpUpgradeCost, player.hpUpgradeLevel), (int)blessingRect.x + 18, (int)blessingRect.y + 40, 18, WHITE);
+    DrawText("HEARTH ALTAR", (int)blessingRect.x + 18, (int)blessingRect.y + 12, 20, safeGreen);
+    DrawText(TextFormat("VIGOR +18   COST %d RENOWN   RANK %d / 8   PRESS H", hpUpgradeCost, player.hpUpgradeLevel), (int)blessingRect.x + 18, (int)blessingRect.y + 40, 18, parchment);
 
     Rectangle gridRect = { panelRect.x + 24.0f, panelRect.y + 164.0f, 692.0f, 334.0f };
     DrawPanel(gridRect, panel, neonBlue);
-    DrawText("ARMORY WALL", (int)gridRect.x + 18, (int)gridRect.y + 14, 22, neonBlue);
+    DrawText("ARSENAL OF THE KEEP", (int)gridRect.x + 18, (int)gridRect.y + 14, 22, neonBlue);
 
     const int cols = 8;
     const float cardW = 76.0f;
@@ -4407,7 +4679,7 @@ void Game::DrawShop() const {
             && !(WorldIndex(WeaponOriginWorld(i)) < (int)realmSignatureClaimed.size() ? realmSignatureClaimed[WorldIndex(WeaponOriginWorld(i))] : false);
 
         Color border = selected ? weapon.color : (owned ? safeGreen : (!realmUnlocked ? GRAY : (signatureLocked ? neonGold : Fade(weapon.color, 0.75f))));
-        Color fill = selected ? Fade(weapon.color, 0.16f) : Fade(WHITE, 0.02f);
+        Color fill = selected ? Fade(weapon.color, 0.18f) : Fade(BLACK, 0.26f);
         DrawRectangleRounded(card, 0.12f, 6, fill);
         DrawRectangleLinesEx(card, selected ? 3.0f : 2.0f, border);
 
@@ -4421,10 +4693,10 @@ void Game::DrawShop() const {
         if (cardName.size() > 8) {
             cardName = cardName.substr(0, 7) + ".";
         }
-        DrawText(cardName.c_str(), (int)card.x + 32, (int)card.y + 8, 10, WHITE);
+        DrawText(cardName.c_str(), (int)card.x + 32, (int)card.y + 8, 10, parchment);
         DrawText(TextFormat("%d", weapon.damage), (int)card.x + 32, (int)card.y + 21, 10, weapon.color);
         const char* state = owned ? "OWN" : (!realmUnlocked ? "SEALED" : (signatureLocked ? "GIFT" : "SALE"));
-        DrawText(state, (int)card.x + 32, (int)card.y + 34, 10, owned ? safeGreen : (signatureLocked ? neonGold : RAYWHITE));
+        DrawText(state, (int)card.x + 32, (int)card.y + 34, 10, owned ? safeGreen : (signatureLocked ? neonGold : ashText));
     }
 
     const Weapon& browseWeapon = weaponDB[shop.browseWeaponIdx];
@@ -4445,18 +4717,18 @@ void Game::DrawShop() const {
         Rectangle dst = { detailRect.x + 18.0f, detailRect.y + 52.0f, 112.0f, 112.0f };
         DrawTexturePro(weaponAtlas, src, dst, { 0.0f, 0.0f }, -22.0f, WHITE);
     }
-    DrawText(browseWeapon.name.c_str(), (int)detailRect.x + 144, (int)detailRect.y + 54, 24, WHITE);
+    DrawText(browseWeapon.name.c_str(), (int)detailRect.x + 144, (int)detailRect.y + 54, 24, parchment);
     DrawText(TextFormat("RARITY %s", browseWeapon.rarity.c_str()), (int)detailRect.x + 144, (int)detailRect.y + 82, 18, browseWeapon.color);
     DrawText(TextFormat("TRAIT %s", WeaponTraitLabel(browseWeapon.trait)), (int)detailRect.x + 144, (int)detailRect.y + 108, 18, neonGold);
-    DrawText(WeaponTraitDesc(browseWeapon.trait), (int)detailRect.x + 144, (int)detailRect.y + 134, 16, RAYWHITE);
+    DrawText(WeaponTraitDesc(browseWeapon.trait), (int)detailRect.x + 144, (int)detailRect.y + 134, 16, ashText);
     const char* identityDesc = WeaponIdentityDesc(shop.browseWeaponIdx);
     if (identityDesc[0] != '\0') {
         DrawText(identityDesc, (int)detailRect.x + 144, (int)detailRect.y + 156, 15, browseWeapon.color);
     }
-    DrawText(TextFormat("DAMAGE %d", browseWeapon.damage), (int)detailRect.x + 18, (int)detailRect.y + 184, 18, WHITE);
-    DrawText(TextFormat("RANGE %.0f", browseWeapon.range), (int)detailRect.x + 150, (int)detailRect.y + 184, 18, WHITE);
-    DrawText(TextFormat("SWING %.2fs", GetWeaponAttackCooldown(browseWeapon)), (int)detailRect.x + 258, (int)detailRect.y + 184, 18, WHITE);
-    DrawText(TextFormat("SOURCE %s", WeaponSourceLabel(shop.browseWeaponIdx)), (int)detailRect.x + 18, (int)detailRect.y + 212, 18, RAYWHITE);
+    DrawText(TextFormat("DAMAGE %d", browseWeapon.damage), (int)detailRect.x + 18, (int)detailRect.y + 184, 18, parchment);
+    DrawText(TextFormat("RANGE %.0f", browseWeapon.range), (int)detailRect.x + 150, (int)detailRect.y + 184, 18, parchment);
+    DrawText(TextFormat("SWING %.2fs", GetWeaponAttackCooldown(browseWeapon)), (int)detailRect.x + 258, (int)detailRect.y + 184, 18, parchment);
+    DrawText(TextFormat("SOURCE %s", WeaponSourceLabel(shop.browseWeaponIdx)), (int)detailRect.x + 18, (int)detailRect.y + 212, 18, ashText);
     DrawText(TextFormat("COST %d RENOWN", browseWeapon.cost), (int)detailRect.x + 18, (int)detailRect.y + 236, 18, neonGold);
 
     std::string stateLabel;
@@ -4470,7 +4742,7 @@ void Game::DrawShop() const {
     else if (!browseRealmUnlocked) {
         stateLabel = "SEALED BY REALM";
         stateColor = softRed;
-        actionLabel = "ADVANCE MAIN CHARTERS TO UNSEAL THIS FORGE";
+        actionLabel = "ADVANCE THE MAIN VOWS TO UNSEAL THIS FORGE";
     }
     else if (signatureLocked) {
         stateLabel = "REALM GIFT";
@@ -4486,11 +4758,11 @@ void Game::DrawShop() const {
     Rectangle stateRect = { panelRect.x + 734.0f, panelRect.y + 352.0f, 402.0f, 66.0f };
     DrawPanel(stateRect, panel, stateColor);
     DrawText(TextFormat("STATUS: %s", stateLabel.c_str()), (int)stateRect.x + 18, (int)stateRect.y + 12, 20, stateColor);
-    DrawText(actionLabel.c_str(), (int)stateRect.x + 18, (int)stateRect.y + 38, 16, RAYWHITE);
+    DrawText(actionLabel.c_str(), (int)stateRect.x + 18, (int)stateRect.y + 38, 16, parchment);
 
     Rectangle petRect = { panelRect.x + 734.0f, panelRect.y + 432.0f, 402.0f, 138.0f };
     DrawPanel(petRect, panel, safeGreen);
-    DrawText("COMPANION STABLE", (int)petRect.x + 18, (int)petRect.y + 12, 20, safeGreen);
+    DrawText("COMPANION STALL", (int)petRect.x + 18, (int)petRect.y + 12, 20, safeGreen);
     if (!petDB.empty()) {
         const PetDefinition& petInfo = petDB[shop.browsePetIdx];
         bool ownedPet = shop.browsePetIdx < (int)persistentOwnedPets.size() ? persistentOwnedPets[shop.browsePetIdx] : false;
@@ -4502,17 +4774,17 @@ void Game::DrawShop() const {
             DrawTexturePro(petAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
         }
         DrawText(petInfo.name.c_str(), (int)petRect.x + 84, (int)petRect.y + 28, 20, petInfo.color);
-        DrawText(petInfo.description.c_str(), (int)petRect.x + 84, (int)petRect.y + 48, 16, RAYWHITE);
-        DrawText(TextFormat("%d EURO  %d DMG  %.2fs", petInfo.euroCost, GetPetDamage(shop.browsePetIdx), GetPetAttackCooldown(shop.browsePetIdx)), (int)petRect.x + 84, (int)petRect.y + 68, 16, WHITE);
+        DrawText(petInfo.description.c_str(), (int)petRect.x + 84, (int)petRect.y + 48, 16, ashText);
+        DrawText(TextFormat("%d EURO  %d DMG  %.2fs", petInfo.euroCost, GetPetDamage(shop.browsePetIdx), GetPetAttackCooldown(shop.browsePetIdx)), (int)petRect.x + 84, (int)petRect.y + 68, 16, parchment);
         DrawText(TextFormat("BOND %d  XP %d", bondRank, shop.browsePetIdx < (int)persistentPetBondXp.size() ? persistentPetBondXp[shop.browsePetIdx] : 0), (int)petRect.x + 84, (int)petRect.y + 88, 16, petInfo.color);
         DrawText(activePet ? "READY" : (ownedPet ? "OWNED" : "FOR HIRE"), (int)petRect.x + 314, (int)petRect.y + 28, 18, activePet ? petInfo.color : (ownedPet ? safeGreen : neonGold));
-        DrawText("P CYCLE   N CLAIM / READY", (int)petRect.x + 192, (int)petRect.y + 86, 16, RAYWHITE);
+        DrawText("P CYCLE   N CLAIM / READY", (int)petRect.x + 192, (int)petRect.y + 86, 16, parchment);
     }
-    DrawText(TextFormat("STABLE TRAINING %d  COST %d EURO  PRESS M", persistentPetTrainingLevel, GetPetTrainingEuroCost()), (int)petRect.x + 18, (int)petRect.y + 114, 16, neonGold);
+    DrawText(TextFormat("STALL TRAINING %d  COST %d EURO  PRESS M", persistentPetTrainingLevel, GetPetTrainingEuroCost()), (int)petRect.x + 18, (int)petRect.y + 114, 16, neonGold);
 
     Rectangle footerRect = { panelRect.x + 24.0f, panelRect.y + 586.0f, 1112.0f, 42.0f };
     DrawPanel(footerRect, panel, neonBlue);
-    DrawText("E LEAVE   ARROWS BROWSE WEAPONS   B BUY/READY   H VIGOR   P CYCLE PETS   N BUY/READY PET   M TRAIN STABLE", (int)footerRect.x + 18, (int)footerRect.y + 12, 16, RAYWHITE);
+    DrawText("E LEAVE   ARROWS BROWSE ARMORY   B BUY OR READY   H VIGOR   P CYCLE PETS   N CLAIM OR READY PET   M TRAIN STALL", (int)footerRect.x + 16, (int)footerRect.y + 12, 15, parchment);
 
     if (shop.messageTimer > 0.0f) {
         DrawText(shop.message.c_str(), (int)panelRect.x + 734, (int)panelRect.y + 606, 18, shop.messageColor);
@@ -4520,30 +4792,32 @@ void Game::DrawShop() const {
 }
 
 void Game::DrawQuestBoard() const {
-    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.58f));
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.72f));
 
+    Color parchment = { 220, 212, 198, 255 };
+    Color ashText = { 176, 170, 160, 255 };
     Rectangle panelRect = { screenW * 0.5f - 470.0f, screenH * 0.5f - 250.0f, 940.0f, 500.0f };
     DrawPanel(panelRect, panel2, neonGold);
-    DrawText("KEEP QUEST BOARD", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonGold);
+    DrawText("OATHBOARD OF THE KEEP", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonGold);
     DrawText(TextFormat("EURO HELD: %d", euro), (int)panelRect.x + 700, (int)panelRect.y + 28, 22, safeGreen);
 
     Rectangle mainCard = { panelRect.x + 26.0f, panelRect.y + 72.0f, panelRect.width - 52.0f, 128.0f };
     DrawPanel(mainCard, panel, neonGold);
-    DrawText("MAIN QUEST", (int)mainCard.x + 18, (int)mainCard.y + 14, 20, neonGold);
+    DrawText("MAIN VOW", (int)mainCard.x + 18, (int)mainCard.y + 14, 20, neonGold);
     if (mainQuestIndex >= 0 && mainQuestIndex < (int)mainQuestDB.size()) {
         const QuestDefinition& mainQuest = mainQuestDB[mainQuestIndex];
         WorldId questWorld = MainQuestWorld(mainQuestIndex);
         DrawText(TextFormat("REALM %s", WorldLabel(questWorld)), (int)mainCard.x + 18, (int)mainCard.y + 38, 16, neonBlue);
-        DrawText(mainQuest.title.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 58, 24, WHITE);
-        DrawText(mainQuest.description.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 88, 18, RAYWHITE);
-        DrawRectangle((int)mainCard.x + 18, (int)mainCard.y + 114, 320, 10, Fade(WHITE, 0.12f));
-        DrawRectangle((int)mainCard.x + 18, (int)mainCard.y + 114, (int)(320.0f * (float)mainQuestProgress / (float)std::max(1, mainQuest.target)), 10, mainQuestReady ? safeGreen : neonGold);
+        DrawText(mainQuest.title.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 58, 24, parchment);
+        DrawText(mainQuest.description.c_str(), (int)mainCard.x + 18, (int)mainCard.y + 88, 18, ashText);
+        DrawRectangleRounded({ mainCard.x + 18.0f, mainCard.y + 114.0f, 320.0f, 10.0f }, 0.25f, 6, Fade(BLACK, 0.32f));
+        DrawRectangleRounded({ mainCard.x + 18.0f, mainCard.y + 114.0f, 320.0f * (float)mainQuestProgress / (float)std::max(1, mainQuest.target), 10.0f }, 0.25f, 6, mainQuestReady ? safeGreen : neonGold);
         DrawText(TextFormat("%s %d / %d %s", QuestObjectiveVerb(mainQuest.objective), mainQuestProgress, mainQuest.target, QuestObjectiveLabel(mainQuest.objective)), (int)mainCard.x + 352, (int)mainCard.y + 108, 18, mainQuestReady ? safeGreen : neonBlue);
-        DrawText(mainQuestReady ? TextFormat("PRESS E TO CLAIM %d EURO", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), (int)mainCard.x + 612, (int)mainCard.y + 108, 18, mainQuestReady ? safeGreen : RAYWHITE);
+        DrawText(mainQuestReady ? TextFormat("PRESS E TO CLAIM %d EURO", mainQuest.euroReward) : TextFormat("REWARD %d EURO", mainQuest.euroReward), (int)mainCard.x + 612, (int)mainCard.y + 108, 18, mainQuestReady ? safeGreen : parchment);
     }
     else {
-        DrawText("ALL V2 MAIN CHARTERS COMPLETE", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, WHITE);
-        DrawText("Free hunt the realms, finish side work, and forge the rest of the arsenal.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, RAYWHITE);
+        DrawText("ALL V2 MAIN VOWS STAND COMPLETED", (int)mainCard.x + 18, (int)mainCard.y + 56, 24, parchment);
+        DrawText("Free hunt the realms, finish side vows, and forge the rest of the arsenal.", (int)mainCard.x + 18, (int)mainCard.y + 92, 18, ashText);
     }
 
     for (int i = 0; i < 3; ++i) {
@@ -4552,16 +4826,16 @@ void Game::DrawQuestBoard() const {
 
         int defIndex = sideQuestOfferIndices[i];
         if (defIndex < 0 || defIndex >= (int)sideQuestDB.size()) {
-            DrawText("NO CONTRACT", (int)card.x + 18, (int)card.y + 36, 22, WHITE);
+            DrawText("NO CONTRACT", (int)card.x + 18, (int)card.y + 36, 22, parchment);
             continue;
         }
 
         const QuestDefinition& quest = sideQuestDB[defIndex];
-        DrawText(TextFormat("SIDE QUEST %d", i + 1), (int)card.x + 18, (int)card.y + 14, 18, neonBlue);
-        DrawText(quest.title.c_str(), (int)card.x + 18, (int)card.y + 42, 22, WHITE);
-        DrawText(quest.description.c_str(), (int)card.x + 18, (int)card.y + 76, 18, RAYWHITE);
-        DrawRectangle((int)card.x + 18, (int)card.y + 116, 188, 8, Fade(WHITE, 0.12f));
-        DrawRectangle((int)card.x + 18, (int)card.y + 116, (int)(188.0f * (float)sideQuestProgress[i] / (float)std::max(1, quest.target)), 8, sideQuestReady[i] ? safeGreen : neonGold);
+        DrawText(TextFormat("SIDE VOW %d", i + 1), (int)card.x + 18, (int)card.y + 14, 18, neonBlue);
+        DrawText(quest.title.c_str(), (int)card.x + 18, (int)card.y + 42, 22, parchment);
+        DrawText(quest.description.c_str(), (int)card.x + 18, (int)card.y + 76, 18, ashText);
+        DrawRectangleRounded({ card.x + 18.0f, card.y + 116.0f, 188.0f, 8.0f }, 0.25f, 6, Fade(BLACK, 0.32f));
+        DrawRectangleRounded({ card.x + 18.0f, card.y + 116.0f, 188.0f * (float)sideQuestProgress[i] / (float)std::max(1, quest.target), 8.0f }, 0.25f, 6, sideQuestReady[i] ? safeGreen : neonGold);
         DrawText(TextFormat("%s %d / %d %s", QuestObjectiveVerb(quest.objective), sideQuestProgress[i], quest.target, QuestObjectiveLabel(quest.objective)), (int)card.x + 18, (int)card.y + 132, 18, sideQuestReady[i] ? safeGreen : neonGold);
         DrawText(TextFormat("REWARD %d EURO", quest.euroReward), (int)card.x + 18, (int)card.y + 158, 18, safeGreen);
 
@@ -4570,17 +4844,20 @@ void Game::DrawQuestBoard() const {
         DrawText(TextFormat("%d  %s", i + 1, status), (int)card.x + 18, (int)card.y + 184, 18, statusColor);
     }
 
-    DrawText("Q CLOSE BOARD", (int)panelRect.x + 30, (int)panelRect.y + 460, 18, neonBlue);
-    DrawText("Main quests unlock realms. Side quests pay Euro. Clear courts and claim blessings to keep progression moving.", (int)panelRect.x + 190, (int)panelRect.y + 460, 18, RAYWHITE);
+    Rectangle footerRect = { panelRect.x + 24.0f, panelRect.y + 452.0f, panelRect.width - 48.0f, 32.0f };
+    DrawPanel(footerRect, panel, neonBlue);
+    DrawText("Q CLOSE BOARD   MAIN VOWS UNLOCK REALMS // SIDE VOWS PAY EURO // CLEAR COURTS AND CLAIM BLESSINGS TO ADVANCE", (int)footerRect.x + 14, (int)footerRect.y + 9, 16, parchment);
 }
 
 void Game::DrawRealmMap() const {
-    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.56f));
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.70f));
 
+    Color parchment = { 220, 212, 198, 255 };
+    Color ashText = { 176, 170, 160, 255 };
     Rectangle panelRect = { screenW * 0.5f - 490.0f, screenH * 0.5f - 230.0f, 980.0f, 460.0f };
     DrawPanel(panelRect, panel2, neonBlue);
-    DrawText("REALM GATE MAP", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonBlue);
-    DrawText("Choose where the next hunt will unfold.", (int)panelRect.x + 28, (int)panelRect.y + 58, 18, RAYWHITE);
+    DrawText("GATE OF REALMS", (int)panelRect.x + 28, (int)panelRect.y + 22, 30, neonBlue);
+    DrawText("Choose which wounded land will bear the next hunt.", (int)panelRect.x + 28, (int)panelRect.y + 58, 18, ashText);
 
     const WorldId worlds[4] = { WorldId::Crownheart, WorldId::Frostveil, WorldId::Sunscar, WorldId::Mirethorn };
     for (int i = 0; i < 4; ++i) {
@@ -4590,11 +4867,12 @@ void Game::DrawRealmMap() const {
         Rectangle card = { panelRect.x + 22.0f + i * 233.0f, panelRect.y + 108.0f, 212.0f, 278.0f };
         Color accent = WorldAccentTint(world);
         DrawPanel(card, panel, active ? accent : Fade(accent, 0.75f));
-        DrawRectangleGradientV((int)card.x + 12, (int)card.y + 42, (int)card.width - 24, 82, Fade(WorldGrassTint(world), 0.95f), Fade(WorldRoadTint(world), 0.95f));
+        DrawRectangleGradientV((int)card.x + 12, (int)card.y + 42, (int)card.width - 24, 82, Fade(WorldSkyTopTint(world), 0.85f), Fade(WorldRoadTint(world), 0.95f));
+        DrawRectangle((int)card.x + 12, (int)card.y + 122, (int)card.width - 24, 1, Fade(accent, 0.40f));
         DrawText(TextFormat("%d", i + 1), (int)card.x + 16, (int)card.y + 12, 22, accent);
-        DrawText(WorldLabel(world), (int)card.x + 14, (int)card.y + 138, 18, unlocked ? WHITE : GRAY);
-        DrawText(WorldBlurbLine1(world), (int)card.x + 14, (int)card.y + 174, 16, unlocked ? RAYWHITE : GRAY);
-        DrawText(WorldBlurbLine2(world), (int)card.x + 14, (int)card.y + 196, 16, unlocked ? RAYWHITE : GRAY);
+        DrawText(WorldLabel(world), (int)card.x + 14, (int)card.y + 138, 18, unlocked ? parchment : GRAY);
+        DrawText(WorldBlurbLine1(world), (int)card.x + 14, (int)card.y + 174, 16, unlocked ? ashText : GRAY);
+        DrawText(WorldBlurbLine2(world), (int)card.x + 14, (int)card.y + 196, 16, unlocked ? ashText : GRAY);
 
         if (active) {
             DrawText("CURRENT REALM", (int)card.x + 14, (int)card.y + 240, 18, safeGreen);
@@ -4603,23 +4881,29 @@ void Game::DrawRealmMap() const {
             DrawText("PRESS NUMBER TO TRAVEL", (int)card.x + 14, (int)card.y + 240, 16, accent);
         }
         else {
-            DrawText(TextFormat("UNLOCK AT %d MAIN CHARTERS", MainQuestUnlockRequirement(world)), (int)card.x + 14, (int)card.y + 240, 16, softRed);
+            DrawText(TextFormat("UNLOCK AT %d MAIN VOWS", MainQuestUnlockRequirement(world)), (int)card.x + 14, (int)card.y + 240, 16, softRed);
         }
     }
 
-    DrawText("R CLOSE MAP", (int)panelRect.x + 28, (int)panelRect.y + 408, 18, neonBlue);
-    DrawText("Travel keeps your run build, swaps the world art, and starts the next hunt there.", (int)panelRect.x + 184, (int)panelRect.y + 408, 18, RAYWHITE);
+    Rectangle footerRect = { panelRect.x + 24.0f, panelRect.y + 400.0f, panelRect.width - 48.0f, 32.0f };
+    DrawPanel(footerRect, panel, neonBlue);
+    DrawText("R CLOSE MAP   TRAVEL KEEPS YOUR RUN BUILD, SHIFTS THE REALM ART, AND SENDS THE KNIGHT INTO THE NEXT HUNT", (int)footerRect.x + 14, (int)footerRect.y + 9, 16, parchment);
 }
 
 void Game::DrawGameOver() const {
-    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.72f));
-    DrawText("FALLEN IN BATTLE", screenW / 2 - MeasureText("FALLEN IN BATTLE", 56) / 2, 180, 56, softRed);
-    DrawText(TextFormat("WAVE REACHED: %d", player.wave), screenW / 2 - MeasureText(TextFormat("WAVE REACHED: %d", player.wave), 28) / 2, 280, 28, WHITE);
-    DrawText(TextFormat("TOTAL KILLS: %d", player.kills), screenW / 2 - MeasureText(TextFormat("TOTAL KILLS: %d", player.kills), 28) / 2, 320, 28, WHITE);
-    DrawText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), screenW / 2 - MeasureText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), 28) / 2, 360, 28, neonGold);
-    DrawText(TextFormat("EURO KEPT: %d", euro), screenW / 2 - MeasureText(TextFormat("EURO KEPT: %d", euro), 24) / 2, 396, 24, safeGreen);
-    DrawText("WEAPONS, EURO, QUESTS, PET BONDS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS, EURO, QUESTS, PET BONDS AND VIGOR UPGRADES ARE KEPT", 22) / 2, 430, 22, RAYWHITE);
-    DrawText("PRESS ENTER TO RIDE OUT AGAIN", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT AGAIN", 26) / 2, 456, 26, neonCyan);
+    DrawRectangle(0, 0, screenW, screenH, Fade(BLACK, 0.82f));
+
+    Color parchment = { 224, 214, 198, 255 };
+    Rectangle panelRect = { screenW * 0.5f - 360.0f, 154.0f, 720.0f, 350.0f };
+    DrawPanel(panelRect, panel2, softRed);
+    DrawText("THE KNIGHT HAS FALLEN", screenW / 2 - MeasureText("THE KNIGHT HAS FALLEN", 50) / 2, 186, 50, softRed);
+    DrawText("Yet the kingdom remembers what was carried from the field.", screenW / 2 - MeasureText("Yet the kingdom remembers what was carried from the field.", 20) / 2, 240, 20, { 176, 170, 160, 255 });
+    DrawText(TextFormat("WAVE REACHED: %d", player.wave), screenW / 2 - MeasureText(TextFormat("WAVE REACHED: %d", player.wave), 28) / 2, 294, 28, parchment);
+    DrawText(TextFormat("TOTAL KILLS: %d", player.kills), screenW / 2 - MeasureText(TextFormat("TOTAL KILLS: %d", player.kills), 28) / 2, 330, 28, parchment);
+    DrawText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), screenW / 2 - MeasureText(TextFormat("RENOWN CARRIED FORWARD: %d", legacyRenown), 28) / 2, 368, 28, neonGold);
+    DrawText(TextFormat("EURO KEPT: %d", euro), screenW / 2 - MeasureText(TextFormat("EURO KEPT: %d", euro), 24) / 2, 406, 24, safeGreen);
+    DrawText("WEAPONS, EURO, QUESTS, PET BONDS AND VIGOR UPGRADES ARE KEPT", screenW / 2 - MeasureText("WEAPONS, EURO, QUESTS, PET BONDS AND VIGOR UPGRADES ARE KEPT", 20) / 2, 444, 20, parchment);
+    DrawText("PRESS ENTER TO RIDE OUT ONCE MORE", screenW / 2 - MeasureText("PRESS ENTER TO RIDE OUT ONCE MORE", 26) / 2, 474, 26, neonCyan);
 }
 
 void Game::DrawEnemySprite(const ActiveMonster& monster) const {
