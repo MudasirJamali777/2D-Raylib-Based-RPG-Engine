@@ -1188,6 +1188,38 @@ void Game::LoadAssets() {
     if (petAtlas.id == 0) {
         petAtlas = LoadTexture(FindAssetPath("assets/pets_atlas.png").c_str());
     }
+
+    auto LoadOptionalTexture = [&](Texture2D& texture, const char* relativePath) {
+        if (texture.id != 0) {
+            return;
+        }
+        std::string path = FindAssetPath(relativePath);
+        if (FileExistsPortable(path)) {
+            texture = LoadTexture(path.c_str());
+        }
+        };
+
+    LoadOptionalTexture(knightPortrait, "assets/portrait_knight.png");
+    LoadOptionalTexture(princessPortrait, "assets/portrait_princess_seralyne.png");
+    LoadOptionalTexture(maerwynPortrait, "assets/portrait_maerwyn.png");
+    LoadOptionalTexture(vaelorPortrait, "assets/portrait_vaelor.png");
+    LoadOptionalTexture(kingPortrait, "assets/portrait_king.png");
+    LoadOptionalTexture(finaleCoronationArt, "assets/finale_coronation_memory.png");
+
+#ifndef ARENA_ALLOW_RAYLIB_STUB
+    if (tileAtlas.id != 0) SetTextureFilter(tileAtlas, TEXTURE_FILTER_POINT);
+    if (propAtlas.id != 0) SetTextureFilter(propAtlas, TEXTURE_FILTER_POINT);
+    if (enemyAtlas.id != 0) SetTextureFilter(enemyAtlas, TEXTURE_FILTER_POINT);
+    if (actorAtlas.id != 0) SetTextureFilter(actorAtlas, TEXTURE_FILTER_POINT);
+    if (weaponAtlas.id != 0) SetTextureFilter(weaponAtlas, TEXTURE_FILTER_POINT);
+    if (petAtlas.id != 0) SetTextureFilter(petAtlas, TEXTURE_FILTER_POINT);
+    if (knightPortrait.id != 0) SetTextureFilter(knightPortrait, TEXTURE_FILTER_POINT);
+    if (princessPortrait.id != 0) SetTextureFilter(princessPortrait, TEXTURE_FILTER_POINT);
+    if (maerwynPortrait.id != 0) SetTextureFilter(maerwynPortrait, TEXTURE_FILTER_POINT);
+    if (vaelorPortrait.id != 0) SetTextureFilter(vaelorPortrait, TEXTURE_FILTER_POINT);
+    if (kingPortrait.id != 0) SetTextureFilter(kingPortrait, TEXTURE_FILTER_POINT);
+    if (finaleCoronationArt.id != 0) SetTextureFilter(finaleCoronationArt, TEXTURE_FILTER_POINT);
+#endif
 }
 
 void Game::LoadAudio() {
@@ -1269,12 +1301,24 @@ void Game::UnloadAssets() {
     if (enemyAtlas.id != 0) UnloadTexture(enemyAtlas);
     if (weaponAtlas.id != 0) UnloadTexture(weaponAtlas);
     if (petAtlas.id != 0) UnloadTexture(petAtlas);
+    if (knightPortrait.id != 0) UnloadTexture(knightPortrait);
+    if (princessPortrait.id != 0) UnloadTexture(princessPortrait);
+    if (maerwynPortrait.id != 0) UnloadTexture(maerwynPortrait);
+    if (vaelorPortrait.id != 0) UnloadTexture(vaelorPortrait);
+    if (kingPortrait.id != 0) UnloadTexture(kingPortrait);
+    if (finaleCoronationArt.id != 0) UnloadTexture(finaleCoronationArt);
     tileAtlas = {};
     propAtlas = {};
     actorAtlas = {};
     enemyAtlas = {};
     weaponAtlas = {};
     petAtlas = {};
+    knightPortrait = {};
+    princessPortrait = {};
+    maerwynPortrait = {};
+    vaelorPortrait = {};
+    kingPortrait = {};
+    finaleCoronationArt = {};
 }
 
 Rectangle Game::TileSourceRect(int index) const {
@@ -2888,12 +2932,14 @@ void Game::StartEndingCutscene() {
     std::vector<CutsceneStep> steps;
     steps.push_back({ CutsceneStepType::Fade, 0.36f, { 0.0f, 0.0f }, "", "", WHITE, false, false });
     steps.push_back({ CutsceneStepType::PanCamera, 0.88f, throneLook, "", "", WHITE, false, false });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "THE CHRONICLE", "Vaelor falls, and the false crown breaks against the stones of the drowned hall.", neonGold, true, true });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "PRINCESS SERALYNE", "You came when every bell was ash. Then let the kingdom remember not only grief, but who remained faithful to it.", softRed, true, true });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "MAERWYN", "Bring her home, knight. Crownheart has buried enough of its own heart for one age.", safeGreen, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "THE CHRONICLE", "Vaelor falls, and the drowned hall grows still as the old king lifts the crown with shaking hands.", neonGold, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "THE KING", "Seralyne, daughter of Crownheart, receive again the crown that treachery denied you.", neonGold, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "PRINCESS SERALYNE", "Then let this kingdom inherit dawn, not only mourning.", softRed, true, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "THE CHRONICLE", "The knight falls to his knees and weeps as the crown settles upon her brow and the chapel light returns.", { 196, 184, 164, 255 }, true, true });
     steps.push_back({ CutsceneStepType::PanCamera, 0.52f, player.pos, "", "", WHITE, false, false });
-    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, player.pos, "THE KNIGHT", "Then the road turns home. Let the gates open. Let the last bell speak again.", neonCyan, false, true });
-    StartCutscene("EPILOGUE // THE FALSE CROWN FALLS", steps);
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, player.pos, "THE KNIGHT", "I crossed ash, snow, and thorn for this mercy. Forgive the years I could bring you nothing but grief.", neonCyan, false, true });
+    steps.push_back({ CutsceneStepType::Dialogue, 0.0f, throneLook, "PRINCESS SERALYNE", "Rise, faithful knight. The last bell speaks because you did not abandon it.", softRed, true, true });
+    StartCutscene("EPILOGUE // THE CROWN RETURNED", steps);
 }
 
 void Game::AdvanceCutsceneStep() {
@@ -4866,6 +4912,14 @@ void Game::DrawCutsceneOverlay() const {
         DrawText(titleText.c_str(), (int)(card.x + card.width * 0.5f) - MeasureText(titleText.c_str(), bigSize) / 2, (int)card.y + 42, bigSize, Fade(parchment, alpha));
     }
 
+    if (cutscene.sceneName.find("EPILOGUE //") != std::string::npos && finaleCoronationArt.id != 0) {
+        Rectangle artFrame = { screenW * 0.5f - 300.0f, screenH * 0.5f - 260.0f, 600.0f, 230.0f };
+        DrawPanel(artFrame, panel2, softRed);
+        Rectangle src = { 0.0f, 0.0f, (float)finaleCoronationArt.width, (float)finaleCoronationArt.height };
+        Rectangle dst = { artFrame.x + 10.0f, artFrame.y + 10.0f, artFrame.width - 20.0f, artFrame.height - 20.0f };
+        DrawTexturePro(finaleCoronationArt, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+    }
+
     DrawText("F SKIP", screenW - 92, 16, 18, ashText);
 
     if (!cutscene.text.empty()) {
@@ -4881,13 +4935,27 @@ void Game::DrawCutsceneOverlay() const {
         }
 
         if (cutscene.showPortrait) {
+            const Texture2D* portraitTex = nullptr;
+            if (cutscene.speaker == "THE KNIGHT") portraitTex = &knightPortrait;
+            else if (cutscene.speaker == "PRINCESS SERALYNE") portraitTex = &princessPortrait;
+            else if (cutscene.speaker == "MAERWYN") portraitTex = &maerwynPortrait;
+            else if (cutscene.speaker == "PRINCE VAELOR") portraitTex = &vaelorPortrait;
+            else if (cutscene.speaker == "THE KING") portraitTex = &kingPortrait;
+
             Rectangle portraitRect = { dialogueRect.x + dialogueRect.width - 168.0f, dialogueRect.y - 128.0f, 146.0f, 112.0f };
             DrawPanel(portraitRect, panel, cutscene.speakerColor);
-            DrawSoftGlow({ portraitRect.x + portraitRect.width * 0.5f, portraitRect.y + 52.0f }, 18.0f, cutscene.speakerColor, 0.18f);
-            DrawCircleV({ portraitRect.x + portraitRect.width * 0.5f, portraitRect.y + 52.0f }, 18.0f, cutscene.speakerColor);
-            DrawCircleLines((int)(portraitRect.x + portraitRect.width * 0.5f), (int)(portraitRect.y + 52.0f), 30.0f, Fade(parchment, 0.35f));
-            std::string sigil = cutscene.speaker.empty() ? "?" : std::string(1, cutscene.speaker[0]);
-            DrawText(sigil.c_str(), (int)(portraitRect.x + portraitRect.width * 0.5f) - MeasureText(sigil.c_str(), 28) / 2, (int)portraitRect.y + 38, 28, BLACK);
+            if (portraitTex != nullptr && portraitTex->id != 0) {
+                Rectangle src = { 0.0f, 0.0f, (float)portraitTex->width, (float)portraitTex->height };
+                Rectangle dst = { portraitRect.x + 8.0f, portraitRect.y + 8.0f, portraitRect.width - 16.0f, portraitRect.height - 16.0f };
+                DrawTexturePro(*portraitTex, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+            }
+            else {
+                DrawSoftGlow({ portraitRect.x + portraitRect.width * 0.5f, portraitRect.y + 52.0f }, 18.0f, cutscene.speakerColor, 0.18f);
+                DrawCircleV({ portraitRect.x + portraitRect.width * 0.5f, portraitRect.y + 52.0f }, 18.0f, cutscene.speakerColor);
+                DrawCircleLines((int)(portraitRect.x + portraitRect.width * 0.5f), (int)(portraitRect.y + 52.0f), 30.0f, Fade(parchment, 0.35f));
+                std::string sigil = cutscene.speaker.empty() ? "?" : std::string(1, cutscene.speaker[0]);
+                DrawText(sigil.c_str(), (int)(portraitRect.x + portraitRect.width * 0.5f) - MeasureText(sigil.c_str(), 28) / 2, (int)portraitRect.y + 38, 28, BLACK);
+            }
             DrawText("MEMORY", (int)portraitRect.x + 34, (int)portraitRect.y + 82, 16, parchment);
         }
     }

@@ -168,4 +168,27 @@
       <Filter>Resource Files</Filter>
     </Media>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="x64\Release\assets\finale_coronation_memory.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="x64\Release\assets\monster_legion_sheet.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="x64\Release\assets\portrait_king.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="x64\Release\assets\portrait_vaelor.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="x64\Release\assets\portrait_maerwyn.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="x64\Release\assets\portrait_princess_seralyne.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="x64\Release\assets\portrait_knight.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

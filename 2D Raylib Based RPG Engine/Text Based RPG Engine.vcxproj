@@ -76,6 +76,15 @@
     <Media Include="x64\Release\assets\sfx\ui_deny.wav" />
     <Media Include="x64\Release\assets\sfx\ui_move.wav" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="x64\Release\assets\finale_coronation_memory.png" />
+    <Image Include="x64\Release\assets\monster_legion_sheet.png" />
+    <Image Include="x64\Release\assets\portrait_king.png" />
+    <Image Include="x64\Release\assets\portrait_knight.png" />
+    <Image Include="x64\Release\assets\portrait_maerwyn.png" />
+    <Image Include="x64\Release\assets\portrait_princess_seralyne.png" />
+    <Image Include="x64\Release\assets\portrait_vaelor.png" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>

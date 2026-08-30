@@ -145,6 +145,12 @@ private:
     Texture2D enemyAtlas{};
     Texture2D weaponAtlas{};
     Texture2D petAtlas{};
+    Texture2D knightPortrait{};
+    Texture2D princessPortrait{};
+    Texture2D maerwynPortrait{};
+    Texture2D vaelorPortrait{};
+    Texture2D kingPortrait{};
+    Texture2D finaleCoronationArt{};
     bool audioReady = false;
     int loadedSoundCount = 0;
     std::string audioDebugStatus = "AUDIO OFF";
