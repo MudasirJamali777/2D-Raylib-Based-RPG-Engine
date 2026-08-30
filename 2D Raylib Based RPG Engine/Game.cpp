@@ -3388,8 +3388,11 @@ void Game::DrawTitleScreen() const {
     DrawText("- Real-time combat with dash, nova burst and guardian totems", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
     DrawText("- Sealed-court battles, relic blessings, quests and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
     DrawText("- Realm-forged weapons and companion pets now grow your build between worlds", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
-    DrawText(audioDebugStatus.c_str(), screenW / 2 - MeasureText(audioDebugStatus.c_str(), 20) / 2, 537, 20, (audioReady && loadedSoundCount > 0) ? safeGreen : softRed);
-    DrawText("PRESS M TO TEST SOUND", screenW / 2 - MeasureText("PRESS M TO TEST SOUND", 18) / 2, 560, 18, neonGold);
+
+    if (loadedSoundCount < 17) {
+        DrawText(audioDebugStatus.c_str(), screenW / 2 - MeasureText(audioDebugStatus.c_str(), 20) / 2, 537, 20, loadedSoundCount > 0 ? safeGreen : softRed);
+        DrawText("PRESS M TO TEST SOUND", screenW / 2 - MeasureText("PRESS M TO TEST SOUND", 18) / 2, 560, 18, neonGold);
+    }
 
     Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
     DrawText("PRESS ENTER TO START A NEW HUNT", screenW / 2 - MeasureText("PRESS ENTER TO START A NEW HUNT", 28) / 2, 586, 28, pulse);
@@ -3402,7 +3405,7 @@ void Game::DrawTitleScreen() const {
     DrawText("PRESS F FOR FRESH CHRONICLE", screenW / 2 - MeasureText("PRESS F FOR FRESH CHRONICLE", 20) / 2, 674, 20, softRed);
     DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 702, 16, { 86, 82, 72, 255 });
 
-    if (!SoundLoaded(sfxUiMove)) {
+    if (loadedSoundCount <= 0) {
         DrawText("SFX FILES NOT FOUND // RUN build_sound_assets.py", screenW / 2 - MeasureText("SFX FILES NOT FOUND // RUN build_sound_assets.py", 18) / 2, 730, 18, softRed);
     }
 }
