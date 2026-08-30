@@ -199,6 +199,25 @@ static int WorldIndex(WorldId world) {
 }
 
 static WorldId WeaponOriginWorld(int weaponIndex) {
+    switch (weaponIndex) {
+    case 29:
+    case 33:
+    case 34:
+    case 38:
+        return WorldId::Crownheart;
+    case 30:
+    case 35:
+        return WorldId::Frostveil;
+    case 31:
+    case 36:
+        return WorldId::Sunscar;
+    case 32:
+    case 37:
+        return WorldId::Mirethorn;
+    default:
+        break;
+    }
+
     if (weaponIndex >= 25) return WorldId::Mirethorn;
     if (weaponIndex >= 22) return WorldId::Sunscar;
     if (weaponIndex >= 19) return WorldId::Frostveil;
@@ -220,6 +239,21 @@ static int SignatureWeaponIndex(WorldId world) {
 }
 
 static const char* WeaponSourceLabel(int weaponIndex) {
+    switch (weaponIndex) {
+    case 29: return "OATHKEEP FORGE";
+    case 30: return "GLASS SHRINE CACHE";
+    case 31: return "ASHEN CARAVAN VAULT";
+    case 32: return "BLACKBRIAR ARMORY";
+    case 33: return "BROKEN CROWN RELIQUARY";
+    case 34: return "VESPER FORGE";
+    case 35: return "CHAPELGLASS VAULT";
+    case 36: return "SUNSCAR OATHVAULT";
+    case 37: return "THORNMIRE ARMORY";
+    case 38: return "BROKEN THRONE RELIQUARY";
+    default:
+        break;
+    }
+
     if (weaponIndex < 17) {
         return "KEEP FORGE";
     }
@@ -232,6 +266,22 @@ static const char* WeaponSourceLabel(int weaponIndex) {
     }
 
     return "KEEP FORGE";
+}
+
+static const char* WeaponIdentityDesc(int weaponIndex) {
+    switch (weaponIndex) {
+    case 29: return "OATH // bites deeper into elites and bosses.";
+    case 30: return "VOW // tears harder through chilled prey.";
+    case 31: return "EMBER // crits spread harsher fire.";
+    case 32: return "BRIAR // poisoned thrusts steady your blood.";
+    case 33: return "SORROW // gains edge when the knight is wounded.";
+    case 34: return "VESPER // punishes healthier foes and opens crowds.";
+    case 35: return "GLASS // duelist steel peaks while the knight stands clean.";
+    case 36: return "OATH // burning elites suffer the axe's second sentence.";
+    case 37: return "GRIEF // longer reach, crueler to weakened prey.";
+    case 38: return "LAMENT // crownsteel turns desperation into judgment.";
+    default: return "";
+    }
 }
 
 static const char* WorldTileAtlasRelativePath(WorldId world) {
@@ -480,7 +530,17 @@ void Game::BuildDatabases() {
         {"Boghook", 58, 140.0f, "Realmforged", 2060, { 98, 122, 72, 255 }, 25, WeaponTrait::Venom, 0.96f},
         {"Witchreed Glaive", 72, 150.0f, "Legendary", 2720, { 118, 164, 108, 255 }, 26, WeaponTrait::Guardian, 0.98f},
         {"Hollowroot Scythe", 86, 164.0f, "Exotic", 3560, { 164, 208, 132, 255 }, 27, WeaponTrait::Venom, 1.02f},
-        {"Marsh Lantern Spear", 76, 156.0f, "Legendary", 2980, { 160, 178, 118, 255 }, 28, WeaponTrait::Guardian, 0.94f}
+        {"Marsh Lantern Spear", 76, 156.0f, "Legendary", 2980, { 160, 178, 118, 255 }, 28, WeaponTrait::Guardian, 0.94f},
+        {"Oathkeeper Blade", 64, 148.0f, "Knightly", 2380, { 126, 170, 232, 255 }, 5, WeaponTrait::Balanced, 0.90f},
+        {"Widowglass Thorn", 78, 154.0f, "Knightly", 3080, { 206, 232, 255, 255 }, 20, WeaponTrait::Frost, 0.92f},
+        {"Ashsworn Falchion", 90, 162.0f, "Knightly", 3840, { 230, 154, 86, 255 }, 23, WeaponTrait::Sunfire, 0.95f},
+        {"Blackrose Pike", 84, 170.0f, "Knightly", 4360, { 176, 118, 144, 255 }, 28, WeaponTrait::Venom, 0.90f},
+        {"Sword Without Crown", 104, 178.0f, "Relic", 5180, { 222, 178, 92, 255 }, 16, WeaponTrait::Royal, 1.00f},
+        {"Vesper Greatblade", 88, 164.0f, "Knightly", 3520, { 172, 164, 204, 255 }, 12, WeaponTrait::Heavy, 1.08f},
+        {"Chapelglass Estoc", 74, 156.0f, "Knightly", 3360, { 198, 226, 245, 255 }, 20, WeaponTrait::Swift, 0.82f},
+        {"Suncleft Oathaxe", 94, 168.0f, "Knightly", 4280, { 240, 176, 92, 255 }, 13, WeaponTrait::Sunfire, 0.98f},
+        {"Griefthorn Partisan", 82, 172.0f, "Knightly", 4620, { 140, 174, 122, 255 }, 8, WeaponTrait::Venom, 0.90f},
+        {"King's Lament", 110, 184.0f, "Relic", 5980, { 216, 186, 118, 255 }, 11, WeaponTrait::Royal, 1.02f}
     };
 
     petDB = {
@@ -1374,6 +1434,84 @@ int Game::GetWeaponDamageAgainst(const Weapon& weapon, const ActiveMonster& mons
         break;
     default:
         break;
+    }
+
+    if (weapon.name == "Oathkeeper Blade") {
+        if (monster.isElite || monster.isBoss) {
+            damage += 10;
+        }
+        if (player.hp * 2 <= player.maxHp) {
+            damage += 6;
+        }
+    }
+    else if (weapon.name == "Widowglass Thorn") {
+        if (monster.slowTimer > 0.0f) {
+            damage += 9;
+        }
+    }
+    else if (weapon.name == "Ashsworn Falchion") {
+        if (monster.burnTimer > 0.0f) {
+            damage += 7;
+        }
+    }
+    else if (weapon.name == "Blackrose Pike") {
+        if (monster.poisonTimer > 0.0f) {
+            damage += 8;
+        }
+        if (monster.isElite) {
+            damage += 4;
+        }
+    }
+    else if (weapon.name == "Sword Without Crown") {
+        if (monster.isBoss) {
+            damage += 14;
+        }
+        else if (monster.isElite) {
+            damage += 8;
+        }
+        if (player.hp * 2 <= player.maxHp) {
+            damage += 5;
+        }
+    }
+    else if (weapon.name == "Vesper Greatblade") {
+        if (monster.hp >= (monster.maxHp * 7) / 10) {
+            damage += 9;
+        }
+        if (monster.isElite || monster.isBoss) {
+            damage += 4;
+        }
+    }
+    else if (weapon.name == "Chapelglass Estoc") {
+        if (player.hp >= player.maxHp) {
+            damage += 8;
+        }
+    }
+    else if (weapon.name == "Suncleft Oathaxe") {
+        if (monster.burnTimer > 0.0f) {
+            damage += 10;
+        }
+        if ((monster.isElite || monster.isBoss) && monster.burnTimer > 0.0f) {
+            damage += 6;
+        }
+    }
+    else if (weapon.name == "Griefthorn Partisan") {
+        if (monster.hp <= monster.maxHp / 2) {
+            damage += 9;
+        }
+        if (monster.poisonTimer > 0.0f) {
+            damage += 6;
+        }
+    }
+    else if (weapon.name == "King's Lament") {
+        if (monster.isBoss) {
+            damage += 12;
+        }
+        else if (monster.isElite) {
+            damage += 7;
+        }
+        if (player.hp * 2 <= player.maxHp) {
+            damage += 10;
+        }
     }
 
     if (damage < 1) {
@@ -2483,6 +2621,77 @@ void Game::ApplyWeaponHitEffect(const Weapon& weapon, ActiveMonster& monster, in
         break;
     }
 
+    if (weapon.name == "Oathkeeper Blade") {
+        if ((monster.isElite || monster.isBoss) && player.hp < player.maxHp) {
+            player.hp = std::min(player.maxHp, player.hp + 1);
+        }
+    }
+    else if (weapon.name == "Widowglass Thorn") {
+        if (isCrit) {
+            monster.slowTimer = std::max(monster.slowTimer, 3.4f);
+        }
+    }
+    else if (weapon.name == "Ashsworn Falchion") {
+        monster.burnTimer = std::max(monster.burnTimer, isCrit ? 4.2f : 3.2f);
+        if (isCrit) {
+            for (auto& other : monsters) {
+                if (&other == &monster || other.hp <= 0) {
+                    continue;
+                }
+                if (WithinRange(other.pos, monster.pos, 56.0f)) {
+                    other.burnTimer = std::max(other.burnTimer, 2.4f);
+                    other.burnTickTimer = 0.18f;
+                    other.hitFlash = 0.08f;
+                }
+            }
+        }
+    }
+    else if (weapon.name == "Blackrose Pike") {
+        if (player.hp < player.maxHp) {
+            player.hp = std::min(player.maxHp, player.hp + 1);
+        }
+    }
+    else if (weapon.name == "Sword Without Crown") {
+        shockwaves.push_back({ monster.pos, 16.0f, 112.0f, 0.20f, 0.20f, Fade(weapon.color, 0.60f) });
+        if ((monster.isElite || monster.isBoss) && player.hp < player.maxHp) {
+            player.hp = std::min(player.maxHp, player.hp + (monster.isBoss ? 2 : 1));
+        }
+    }
+    else if (weapon.name == "Vesper Greatblade") {
+        if (isCrit) {
+            shockwaves.push_back({ monster.pos, 12.0f, 86.0f, 0.16f, 0.16f, Fade(weapon.color, 0.60f) });
+        }
+    }
+    else if (weapon.name == "Chapelglass Estoc") {
+        if (isCrit && player.hp >= player.maxHp) {
+            player.dashCd = std::max(0.0f, player.dashCd - 0.45f);
+        }
+    }
+    else if (weapon.name == "Suncleft Oathaxe") {
+        monster.burnTimer = std::max(monster.burnTimer, isCrit ? 4.4f : 3.4f);
+        if (isCrit) {
+            for (auto& other : monsters) {
+                if (&other == &monster || other.hp <= 0) continue;
+                if (WithinRange(other.pos, monster.pos, 64.0f)) {
+                    other.burnTimer = std::max(other.burnTimer, 2.6f);
+                    other.burnTickTimer = 0.18f;
+                    other.hitFlash = 0.08f;
+                }
+            }
+        }
+    }
+    else if (weapon.name == "Griefthorn Partisan") {
+        if (monster.hp <= monster.maxHp / 2 && player.hp < player.maxHp) {
+            player.hp = std::min(player.maxHp, player.hp + 2);
+        }
+    }
+    else if (weapon.name == "King's Lament") {
+        shockwaves.push_back({ monster.pos, 18.0f, 124.0f, 0.20f, 0.20f, Fade(weapon.color, 0.55f) });
+        if ((monster.isElite || monster.isBoss) && player.hp < player.maxHp) {
+            player.hp = std::min(player.maxHp, player.hp + (monster.isBoss ? 3 : 2));
+        }
+    }
+
     if (isCrit) {
         EmitBurst(monster.pos, 4, 2.8f, neonGold, 2.2f);
     }
@@ -2800,6 +3009,18 @@ void Game::UpdatePlaying(float dt) {
         bool hitSomething = false;
         bool landedCrit = false;
         float swingRange = weapon.range + 4.0f * CountRelic(RelicType::RazorPrism);
+        if (weapon.name == "Blackrose Pike") {
+            swingRange += 10.0f;
+        }
+        else if (weapon.name == "Sword Without Crown") {
+            swingRange += 6.0f;
+        }
+        else if (weapon.name == "Griefthorn Partisan") {
+            swingRange += 12.0f;
+        }
+        else if (weapon.name == "King's Lament") {
+            swingRange += 8.0f;
+        }
 
         PlaySoundSafe((weapon.trait == WeaponTrait::Heavy || weapon.trait == WeaponTrait::Royal) ? sfxSwordHeavy : sfxSwordLight);
         shockwaves.push_back({ player.pos, 12.0f, swingRange, 0.22f, 0.22f, Fade(weapon.color, 0.7f) });
@@ -2813,7 +3034,15 @@ void Game::UpdatePlaying(float dt) {
                 if (weapon.trait == WeaponTrait::Swift) critChance += 0.02f;
                 if (weapon.trait == WeaponTrait::Royal) critChance += 0.03f;
                 if (weapon.trait == WeaponTrait::Heavy) critChance -= 0.02f;
+                if (weapon.name == "Oathkeeper Blade" && (monster.isElite || monster.isBoss)) critChance += 0.03f;
+                if (weapon.name == "Widowglass Thorn" && monster.slowTimer > 0.0f) critChance += 0.05f;
+                if (weapon.name == "Sword Without Crown" && player.hp * 2 <= player.maxHp) critChance += 0.08f;
+                if (weapon.name == "Chapelglass Estoc" && player.hp >= player.maxHp) critChance += 0.06f;
+                if (weapon.name == "Vesper Greatblade" && monster.hp >= (monster.maxHp * 7) / 10) critChance += 0.03f;
+                if (weapon.name == "Griefthorn Partisan" && monster.hp <= monster.maxHp / 2) critChance += 0.04f;
+                if (weapon.name == "King's Lament" && player.hp * 2 <= player.maxHp) critChance += 0.06f;
                 if (critChance < 0.02f) critChance = 0.02f;
+                if (critChance > 0.55f) critChance = 0.55f;
 
                 bool isCrit = RandomRange(0.0f, 1.0f) < critChance;
                 if (isCrit) {
@@ -3143,7 +3372,7 @@ void Game::UpdatePlaying(float dt) {
 
     if (shop.isOpen) {
         int hpUpgradeCost = GetHpUpgradeCost();
-        const int armoryCols = 6;
+        const int armoryCols = 8;
 
         if (IsKeyPressed(KEY_RIGHT)) {
             shop.browseWeaponIdx = (shop.browseWeaponIdx + 1) % (int)weaponDB.size();
@@ -3897,10 +4126,10 @@ void Game::DrawShop() const {
     DrawPanel(gridRect, panel, neonBlue);
     DrawText("ARMORY WALL", (int)gridRect.x + 18, (int)gridRect.y + 14, 22, neonBlue);
 
-    const int cols = 6;
-    const float cardW = 104.0f;
-    const float cardH = 54.0f;
-    const float gap = 8.0f;
+    const int cols = 8;
+    const float cardW = 76.0f;
+    const float cardH = 50.0f;
+    const float gap = 5.0f;
     for (int i = 0; i < (int)weaponDB.size(); ++i) {
         int row = i / cols;
         int col = i % cols;
@@ -3926,18 +4155,18 @@ void Game::DrawShop() const {
 
         if (weaponAtlas.id != 0) {
             Rectangle src = WeaponSourceRect(weapon.spriteIndex);
-            Rectangle dst = { card.x + 6.0f, card.y + 6.0f, 42.0f, 42.0f };
+            Rectangle dst = { card.x + 4.0f, card.y + 8.0f, 28.0f, 28.0f };
             DrawTexturePro(weaponAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
         }
 
         std::string cardName = weapon.name;
-        if (cardName.size() > 10) {
-            cardName = cardName.substr(0, 9) + ".";
+        if (cardName.size() > 8) {
+            cardName = cardName.substr(0, 7) + ".";
         }
-        DrawText(cardName.c_str(), (int)card.x + 44, (int)card.y + 8, 12, WHITE);
-        DrawText(TextFormat("%d DMG", weapon.damage), (int)card.x + 44, (int)card.y + 24, 12, weapon.color);
-        const char* state = owned ? "OWNED" : (!realmUnlocked ? "SEALED" : (signatureLocked ? "GIFT" : "SALE"));
-        DrawText(state, (int)card.x + 44, (int)card.y + 38, 12, owned ? safeGreen : (signatureLocked ? neonGold : RAYWHITE));
+        DrawText(cardName.c_str(), (int)card.x + 32, (int)card.y + 8, 10, WHITE);
+        DrawText(TextFormat("%d", weapon.damage), (int)card.x + 32, (int)card.y + 21, 10, weapon.color);
+        const char* state = owned ? "OWN" : (!realmUnlocked ? "SEALED" : (signatureLocked ? "GIFT" : "SALE"));
+        DrawText(state, (int)card.x + 32, (int)card.y + 34, 10, owned ? safeGreen : (signatureLocked ? neonGold : RAYWHITE));
     }
 
     const Weapon& browseWeapon = weaponDB[shop.browseWeaponIdx];
@@ -3962,6 +4191,10 @@ void Game::DrawShop() const {
     DrawText(TextFormat("RARITY %s", browseWeapon.rarity.c_str()), (int)detailRect.x + 144, (int)detailRect.y + 82, 18, browseWeapon.color);
     DrawText(TextFormat("TRAIT %s", WeaponTraitLabel(browseWeapon.trait)), (int)detailRect.x + 144, (int)detailRect.y + 108, 18, neonGold);
     DrawText(WeaponTraitDesc(browseWeapon.trait), (int)detailRect.x + 144, (int)detailRect.y + 134, 16, RAYWHITE);
+    const char* identityDesc = WeaponIdentityDesc(shop.browseWeaponIdx);
+    if (identityDesc[0] != '\0') {
+        DrawText(identityDesc, (int)detailRect.x + 144, (int)detailRect.y + 156, 15, browseWeapon.color);
+    }
     DrawText(TextFormat("DAMAGE %d", browseWeapon.damage), (int)detailRect.x + 18, (int)detailRect.y + 184, 18, WHITE);
     DrawText(TextFormat("RANGE %.0f", browseWeapon.range), (int)detailRect.x + 150, (int)detailRect.y + 184, 18, WHITE);
     DrawText(TextFormat("SWING %.2fs", GetWeaponAttackCooldown(browseWeapon)), (int)detailRect.x + 258, (int)detailRect.y + 184, 18, WHITE);
