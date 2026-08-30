@@ -148,44 +148,184 @@ static const char* WorldLabel(WorldId world) {
     return "UNKNOWN REALM";
 }
 
+static unsigned char ClampByte(int value) {
+    if (value < 0) return 0;
+    if (value > 255) return 255;
+    return (unsigned char)value;
+}
+
+static Color ScaleColor(Color color, float factor) {
+    return {
+        ClampByte((int)std::round((float)color.r * factor)),
+        ClampByte((int)std::round((float)color.g * factor)),
+        ClampByte((int)std::round((float)color.b * factor)),
+        color.a
+    };
+}
+
+static Color MixColor(Color a, Color b, float t) {
+    t = ClampFloat(t, 0.0f, 1.0f);
+    return {
+        ClampByte((int)std::round((float)a.r + ((float)b.r - (float)a.r) * t)),
+        ClampByte((int)std::round((float)a.g + ((float)b.g - (float)a.g) * t)),
+        ClampByte((int)std::round((float)a.b + ((float)b.b - (float)a.b) * t)),
+        ClampByte((int)std::round((float)a.a + ((float)b.a - (float)a.a) * t))
+    };
+}
+
+static void DrawSoftGlow(Vector2 pos, float radius, Color color, float alpha) {
+    for (int i = 5; i >= 1; --i) {
+        float scale = 1.0f + 0.42f * (float)i;
+        DrawCircleV(pos, radius * scale, Fade(color, alpha * 0.05f * (float)i));
+    }
+}
+
+static void DrawHorizontalFade(int x, int y, int width, int height, Color color, float alphaStart, float alphaEnd) {
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    for (int i = 0; i < width; ++i) {
+        float t = (width > 1) ? ((float)i / (float)(width - 1)) : 0.0f;
+        float alpha = LerpFloat(alphaStart, alphaEnd, t);
+        DrawRectangle(x + i, y, 1, height, Fade(color, alpha));
+    }
+}
+
+static int MoodHash(int x, int y, int seed) {
+    unsigned int n = (unsigned int)(x * 374761393) ^ (unsigned int)(y * 668265263) ^ (unsigned int)(seed * 362437);
+    n = (n ^ (n >> 13)) * 1274126177u;
+    return (int)(n ^ (n >> 16));
+}
+
 static const char* WorldBlurb(WorldId world) {
     switch (world) {
-    case WorldId::Crownheart: return "Green courts, safe roads, and the keep at the heart of the realm.";
-    case WorldId::Frostveil: return "Frozen trails, pale shrines, and narrow passes haunted by the cold.";
-    case WorldId::Sunscar: return "Wide dunes, caravan ruins, and bright stone roads under harsh suns.";
-    case WorldId::Mirethorn: return "Bog paths, rotten bridges, and marsh courts wrapped in fog.";
+    case WorldId::Crownheart: return "Ruined courts, chapel roads, and a keep still breathing through grief.";
+    case WorldId::Frostveil: return "Frozen shrines and silver passes where old vows linger in the cold.";
+    case WorldId::Sunscar: return "Ash-blown roads and split stone where oaths were burned beneath red suns.";
+    case WorldId::Mirethorn: return "Bog courts and thorn-choked causeways drowned beneath patient fog.";
     }
     return "";
 }
 
 static Color WorldGrassTint(WorldId world) {
     switch (world) {
-    case WorldId::Crownheart: return WHITE;
-    case WorldId::Frostveil: return { 214, 232, 255, 255 };
-    case WorldId::Sunscar: return { 228, 212, 135, 255 };
-    case WorldId::Mirethorn: return { 160, 184, 122, 255 };
+    case WorldId::Crownheart: return { 95, 104, 96, 255 };
+    case WorldId::Frostveil: return { 102, 114, 128, 255 };
+    case WorldId::Sunscar: return { 123, 102, 78, 255 };
+    case WorldId::Mirethorn: return { 78, 92, 71, 255 };
     }
-    return WHITE;
+    return { 95, 104, 96, 255 };
 }
 
 static Color WorldRoadTint(WorldId world) {
     switch (world) {
-    case WorldId::Crownheart: return WHITE;
-    case WorldId::Frostveil: return { 232, 240, 252, 255 };
-    case WorldId::Sunscar: return { 243, 218, 157, 255 };
-    case WorldId::Mirethorn: return { 193, 177, 125, 255 };
+    case WorldId::Crownheart: return { 136, 126, 116, 255 };
+    case WorldId::Frostveil: return { 150, 156, 176, 255 };
+    case WorldId::Sunscar: return { 166, 136, 94, 255 };
+    case WorldId::Mirethorn: return { 116, 106, 82, 255 };
     }
-    return WHITE;
+    return { 136, 126, 116, 255 };
 }
 
 static Color WorldAccentTint(WorldId world) {
     switch (world) {
-    case WorldId::Crownheart: return { 88, 128, 204, 255 };
-    case WorldId::Frostveil: return { 116, 160, 220, 255 };
-    case WorldId::Sunscar: return { 201, 142, 63, 255 };
-    case WorldId::Mirethorn: return { 100, 128, 82, 255 };
+    case WorldId::Crownheart: return { 118, 126, 169, 255 };
+    case WorldId::Frostveil: return { 148, 176, 210, 255 };
+    case WorldId::Sunscar: return { 192, 138, 84, 255 };
+    case WorldId::Mirethorn: return { 110, 138, 98, 255 };
+    }
+    return { 118, 126, 169, 255 };
+}
+
+static Color WorldShadowTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 24, 28, 34, 255 };
+    case WorldId::Frostveil: return { 18, 26, 38, 255 };
+    case WorldId::Sunscar: return { 32, 20, 16, 255 };
+    case WorldId::Mirethorn: return { 18, 24, 18, 255 };
+    }
+    return { 24, 28, 34, 255 };
+}
+
+static Color WorldFogTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 122, 130, 156, 255 };
+    case WorldId::Frostveil: return { 166, 184, 210, 255 };
+    case WorldId::Sunscar: return { 154, 112, 86, 255 };
+    case WorldId::Mirethorn: return { 94, 122, 98, 255 };
+    }
+    return { 122, 130, 156, 255 };
+}
+
+static Color WorldGlowTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 188, 170, 122, 255 };
+    case WorldId::Frostveil: return { 206, 230, 255, 255 };
+    case WorldId::Sunscar: return { 224, 166, 92, 255 };
+    case WorldId::Mirethorn: return { 156, 184, 124, 255 };
+    }
+    return { 188, 170, 122, 255 };
+}
+
+static Color WorldPropTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 228, 226, 232, 255 };
+    case WorldId::Frostveil: return { 220, 234, 245, 255 };
+    case WorldId::Sunscar: return { 236, 226, 206, 255 };
+    case WorldId::Mirethorn: return { 218, 228, 214, 255 };
     }
     return WHITE;
+}
+
+static Color WorldSkyTopTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 18, 22, 32, 255 };
+    case WorldId::Frostveil: return { 15, 24, 38, 255 };
+    case WorldId::Sunscar: return { 28, 16, 20, 255 };
+    case WorldId::Mirethorn: return { 14, 22, 20, 255 };
+    }
+    return { 18, 22, 32, 255 };
+}
+
+static Color WorldSkyBottomTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 54, 44, 48, 255 };
+    case WorldId::Frostveil: return { 56, 64, 82, 255 };
+    case WorldId::Sunscar: return { 88, 58, 38, 255 };
+    case WorldId::Mirethorn: return { 46, 52, 34, 255 };
+    }
+    return { 54, 44, 48, 255 };
+}
+
+static Color WorldRoomLabelTint(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return { 203, 189, 164, 255 };
+    case WorldId::Frostveil: return { 210, 224, 236, 255 };
+    case WorldId::Sunscar: return { 226, 194, 142, 255 };
+    case WorldId::Mirethorn: return { 188, 206, 160, 255 };
+    }
+    return { 203, 189, 164, 255 };
+}
+
+static float WorldFogStrength(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return 0.30f;
+    case WorldId::Frostveil: return 0.36f;
+    case WorldId::Sunscar: return 0.20f;
+    case WorldId::Mirethorn: return 0.42f;
+    }
+    return 0.30f;
+}
+
+static float WorldAmbientMotion(WorldId world) {
+    switch (world) {
+    case WorldId::Crownheart: return 0.70f;
+    case WorldId::Frostveil: return 0.60f;
+    case WorldId::Sunscar: return 0.85f;
+    case WorldId::Mirethorn: return 0.52f;
+    }
+    return 0.70f;
 }
 
 static int WorldIndex(WorldId world) {
@@ -3595,48 +3735,83 @@ void Game::Draw() const {
 }
 
 void Game::DrawTitleScreen() const {
-    DrawRectangleGradientV(0, 0, screenW, screenH, { 186, 221, 255, 255 }, bg2);
+    float t = (float)GetTime();
+    Color skyTop = { 12, 16, 26, 255 };
+    Color skyBottom = { 58, 36, 42, 255 };
+    Color moon = { 194, 208, 226, 255 };
+    Color mist = { 126, 136, 162, 255 };
+    Color parchment = { 224, 212, 188, 255 };
+    Color iron = { 120, 105, 86, 255 };
+    Color sorrowRed = { 154, 78, 86, 255 };
 
-    for (int i = 0; i < screenW; i += 140) {
-        DrawTreeProp({ (float)i + 30.0f, 170.0f + std::sin((float)i * 0.03f) * 8.0f }, 1.7f, { 69, 181, 83, 255 });
-        DrawTreeProp({ (float)i + 90.0f, 680.0f + std::cos((float)i * 0.02f) * 10.0f }, 1.9f, { 59, 166, 77, 255 });
+    DrawRectangleGradientV(0, 0, screenW, screenH, skyTop, skyBottom);
+    DrawSoftGlow({ screenW * 0.78f, 112.0f }, 44.0f, moon, 0.28f);
+    DrawCircleV({ screenW * 0.78f, 112.0f }, 44.0f, moon);
+
+    for (const auto& star : stars) {
+        float shimmer = 0.20f + star.size * 0.08f + std::sin(t * 1.8f + star.pos.x * 0.01f) * 0.04f;
+        DrawCircleV(star.pos, star.size * 0.9f, Fade(WHITE, ClampFloat(shimmer, 0.10f, 0.36f)));
     }
 
-    DrawCastleProp({ screenW * 0.5f, 250.0f }, 2.1f);
-    DrawTowerProp({ screenW * 0.5f - 220.0f, 300.0f }, 1.35f, neonPink);
-    DrawTowerProp({ screenW * 0.5f + 220.0f, 300.0f }, 1.35f, neonPink);
+    for (int i = -120; i < screenW + 120; i += 120) {
+        DrawTreeProp({ (float)i + 36.0f, 226.0f + std::sin((float)i * 0.028f) * 10.0f }, 1.65f, { 30, 48, 34, 255 });
+        DrawTreeProp({ (float)i + 84.0f, 678.0f + std::cos((float)i * 0.019f) * 10.0f }, 2.05f, { 22, 38, 28, 255 });
+    }
 
-    int titleWidth = MeasureText("CROWNHEART", 74);
-    DrawText("CROWNHEART", screenW / 2 - titleWidth / 2, 82, 74, { 67, 86, 54, 255 });
-    DrawText("KINGDOM SIEGE", screenW / 2 - MeasureText("KINGDOM SIEGE", 30) / 2, 158, 30, softRed);
-    DrawText("A hand-drawn fantasy action RPG in Raylib", screenW / 2 - MeasureText("A hand-drawn fantasy action RPG in Raylib", 22) / 2, 196, 22, { 79, 74, 63, 255 });
+    DrawRectangleGradientV(0, 180, screenW, 250, Fade(BLACK, 0.00f), Fade(BLACK, 0.16f));
+    DrawCastleProp({ screenW * 0.5f, 264.0f }, 2.18f);
+    DrawTowerProp({ screenW * 0.5f - 238.0f, 316.0f }, 1.38f, sorrowRed);
+    DrawTowerProp({ screenW * 0.5f + 238.0f, 316.0f }, 1.38f, sorrowRed);
+    DrawRectangle(0, 138, screenW, 260, Fade(BLACK, 0.18f));
 
-    DrawPanel({ screenW / 2.0f - 360.0f, 360.0f, 720.0f, 190.0f }, panel, { 118, 105, 80, 255 });
-    DrawText("WHAT'S IN THE BUILD", screenW / 2 - MeasureText("WHAT'S IN THE BUILD", 24) / 2, 384, 24, { 92, 78, 58, 255 });
-    DrawText("- Four connected realms with distinct road networks and hidden pockets", screenW / 2 - 300, 425, 20, { 73, 67, 54, 255 });
-    DrawText("- Real-time combat with dash, nova burst and guardian totems", screenW / 2 - 300, 453, 20, { 73, 67, 54, 255 });
-    DrawText("- Sealed-court battles, relic blessings, quests and rising hunt waves", screenW / 2 - 300, 481, 20, { 73, 67, 54, 255 });
-    DrawText("- Realm-forged weapons and companion pets now grow your build between worlds", screenW / 2 - 300, 509, 20, { 73, 67, 54, 255 });
+    for (int i = 0; i < 5; ++i) {
+        float drift = std::sin(t * 0.22f + (float)i * 1.4f) * 28.0f;
+        DrawEllipse((int)(screenW * (0.12f + i * 0.19f) + drift), 488 + i * 34, 240 + i * 32, 40 + i * 8, Fade(mist, 0.07f - i * 0.008f));
+    }
+
+    for (int i = 0; i < 7; ++i) {
+        DrawEllipse((int)(i * 220.0f + 110.0f), screenH - 22, 180.0f + (i % 2) * 34.0f, 56.0f + (i % 3) * 10.0f, Fade(BLACK, 0.54f));
+    }
+
+    int titleWidth = MeasureText("CROWNHEART", 78);
+    DrawText("CROWNHEART", screenW / 2 - titleWidth / 2 + 2, 82, 78, Fade(BLACK, 0.45f));
+    DrawText("CROWNHEART", screenW / 2 - titleWidth / 2, 80, 78, parchment);
+    DrawText("THE FALLEN KINGDOM", screenW / 2 - MeasureText("THE FALLEN KINGDOM", 28) / 2, 164, 28, sorrowRed);
+    DrawText("A tragic knight action RPG in a ruined sacred realm", screenW / 2 - MeasureText("A tragic knight action RPG in a ruined sacred realm", 22) / 2, 198, 22, { 168, 161, 151, 255 });
+
+    Rectangle lorePanel = { screenW / 2.0f - 372.0f, 352.0f, 744.0f, 202.0f };
+    DrawPanel(lorePanel, { 20, 22, 28, 232 }, iron);
+    DrawText("WHAT WAITS IN THIS CHRONICLE", screenW / 2 - MeasureText("WHAT WAITS IN THIS CHRONICLE", 24) / 2, 376, 24, { 196, 176, 132, 255 });
+    DrawText("- Four broken realms threaded by roads, shrines, secrets and sealed courts", screenW / 2 - 314, 420, 20, { 197, 191, 179, 255 });
+    DrawText("- Real-time steel, dash, nova burst and guardian totems under siege", screenW / 2 - 314, 448, 20, { 197, 191, 179, 255 });
+    DrawText("- Relics, quests, boss hunts, companion pets and escalating night waves", screenW / 2 - 314, 476, 20, { 197, 191, 179, 255 });
+    DrawText("- A growing armory of realm-forged weapons with distinct identities", screenW / 2 - 314, 504, 20, { 197, 191, 179, 255 });
 
     if (loadedSoundCount < 17) {
-        DrawText(audioDebugStatus.c_str(), screenW / 2 - MeasureText(audioDebugStatus.c_str(), 20) / 2, 537, 20, loadedSoundCount > 0 ? safeGreen : softRed);
-        DrawText("PRESS M TO TEST SOUND", screenW / 2 - MeasureText("PRESS M TO TEST SOUND", 18) / 2, 560, 18, neonGold);
+        Color debugColor = (loadedSoundCount > 0) ? Color{ 126, 168, 126, 255 } : sorrowRed;
+        DrawText(audioDebugStatus.c_str(), screenW / 2 - MeasureText(audioDebugStatus.c_str(), 20) / 2, 536, 20, debugColor);
+        DrawText("PRESS M TO TEST SOUND", screenW / 2 - MeasureText("PRESS M TO TEST SOUND", 18) / 2, 560, 18, { 206, 178, 118, 255 });
     }
 
-    Color pulse = ((int)(GetTime() * 2.5) % 2 == 0) ? softRed : WHITE;
-    DrawText("PRESS ENTER TO START A NEW HUNT", screenW / 2 - MeasureText("PRESS ENTER TO START A NEW HUNT", 28) / 2, 586, 28, pulse);
-    DrawText("NEW HUNT KEEPS UNLOCKS BUT RESETS TO BASIC LOADOUT", screenW / 2 - MeasureText("NEW HUNT KEEPS UNLOCKS BUT RESETS TO BASIC LOADOUT", 18) / 2, 616, 18, { 73, 67, 54, 255 });
+    Color pulse = ((int)(GetTime() * 2.3) % 2 == 0) ? Color{ 228, 220, 202, 255 } : Color{ 196, 142, 132, 255 };
+    DrawText("PRESS ENTER TO BEGIN A NEW CHRONICLE", screenW / 2 - MeasureText("PRESS ENTER TO BEGIN A NEW CHRONICLE", 28) / 2, 588, 28, pulse);
+    DrawText("YOUR PERMANENT UNLOCKS REMAIN, BUT EACH CHRONICLE BEGINS AS A LOWLY KNIGHT", screenW / 2 - MeasureText("YOUR PERMANENT UNLOCKS REMAIN, BUT EACH CHRONICLE BEGINS AS A LOWLY KNIGHT", 17) / 2, 620, 17, { 164, 156, 148, 255 });
 
     if (HasSaveFile()) {
-        DrawText("PRESS C TO CONTINUE CURRENT RUN", screenW / 2 - MeasureText("PRESS C TO CONTINUE CURRENT RUN", 22) / 2, 644, 22, neonGold);
+        DrawText("PRESS C TO RESUME THE CURRENT CHRONICLE", screenW / 2 - MeasureText("PRESS C TO RESUME THE CURRENT CHRONICLE", 22) / 2, 648, 22, { 206, 178, 118, 255 });
     }
 
-    DrawText("PRESS F FOR FRESH CHRONICLE", screenW / 2 - MeasureText("PRESS F FOR FRESH CHRONICLE", 20) / 2, 674, 20, softRed);
-    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 702, 16, { 86, 82, 72, 255 });
+    DrawText("PRESS F TO BURN THE OLD CHRONICLE", screenW / 2 - MeasureText("PRESS F TO BURN THE OLD CHRONICLE", 20) / 2, 678, 20, sorrowRed);
+    DrawText("ESC closes the game", screenW / 2 - MeasureText("ESC closes the game", 16) / 2, 704, 16, { 132, 129, 124, 255 });
 
     if (loadedSoundCount <= 0) {
-        DrawText("SFX FILES NOT FOUND // RUN build_sound_assets.py", screenW / 2 - MeasureText("SFX FILES NOT FOUND // RUN build_sound_assets.py", 18) / 2, 730, 18, softRed);
+        DrawText("SFX FILES NOT FOUND // RUN build_sound_assets.py", screenW / 2 - MeasureText("SFX FILES NOT FOUND // RUN build_sound_assets.py", 18) / 2, 730, 18, sorrowRed);
     }
+
+    DrawHorizontalFade(0, 0, screenW / 5, screenH, BLACK, 0.34f, 0.0f);
+    DrawHorizontalFade(screenW - screenW / 5, 0, screenW / 5, screenH, BLACK, 0.0f, 0.34f);
+    DrawRectangleGradientV(0, 0, screenW, screenH / 4, Fade(BLACK, 0.22f), Fade(BLACK, 0.0f));
+    DrawRectangleGradientV(0, screenH - screenH / 3, screenW, screenH / 3, Fade(BLACK, 0.0f), Fade(BLACK, 0.24f));
 }
 
 void Game::DrawWorld() const {
@@ -3645,6 +3820,15 @@ void Game::DrawWorld() const {
     Color grassTint = WorldGrassTint(currentWorld);
     Color roadTint = WorldRoadTint(currentWorld);
     Color accentTint = WorldAccentTint(currentWorld);
+    Color shadowTint = WorldShadowTint(currentWorld);
+    Color fogTint = WorldFogTint(currentWorld);
+    Color glowTint = WorldGlowTint(currentWorld);
+    Color propTint = WorldPropTint(currentWorld);
+    Color labelTint = WorldRoomLabelTint(currentWorld);
+    float fogStrength = WorldFogStrength(currentWorld);
+    float ambientMotion = WorldAmbientMotion(currentWorld);
+    float worldTime = (float)GetTime();
+    int worldSeed = WorldIndex(currentWorld) * 97 + 11;
 
     auto drawProp = [&](const PropInstance& prop) {
         if (propAtlas.id == 0) {
@@ -3654,35 +3838,39 @@ void Game::DrawWorld() const {
         float cell = 96.0f;
         Rectangle src = PropSourceRect(prop.spriteIndex);
         Rectangle dst = { prop.pos.x - (cell * prop.scale) * 0.5f, prop.pos.y - (cell * prop.scale) * 0.78f, cell * prop.scale, cell * prop.scale };
-        DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+        DrawEllipse((int)prop.pos.x, (int)(prop.pos.y + 18.0f * prop.scale), 18.0f * prop.scale, 7.0f * prop.scale, Fade(BLACK, 0.22f));
+        DrawEllipse((int)prop.pos.x, (int)(prop.pos.y + 15.0f * prop.scale), 28.0f * prop.scale, 9.0f * prop.scale, Fade(shadowTint, 0.10f));
+        DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, propTint);
         };
 
-    auto drawFenceStrip = [&](bool horizontal, float fixed, float start, float end) {
-        if (end - start < 24.0f) {
+    auto drawFenceStrip = [&](bool horizontal, float fixed, float startSpan, float endSpan) {
+        if (endSpan - startSpan < 24.0f) {
             return;
         }
 
-        Color wallShade = { 119, 95, 66, 255 };
+        Color wallShade = MixColor(roadTint, shadowTint, 0.45f);
         if (horizontal) {
-            DrawLineEx({ start, fixed + 6.0f }, { end, fixed + 6.0f }, 7.0f, Fade(wallShade, 0.24f));
+            DrawLineEx({ startSpan, fixed + 7.0f }, { endSpan, fixed + 7.0f }, 9.0f, Fade(BLACK, 0.15f));
+            DrawLineEx({ startSpan, fixed + 5.0f }, { endSpan, fixed + 5.0f }, 7.0f, Fade(wallShade, 0.26f));
         }
         else {
-            DrawLineEx({ fixed + 6.0f, start }, { fixed + 6.0f, end }, 7.0f, Fade(wallShade, 0.24f));
+            DrawLineEx({ fixed + 7.0f, startSpan }, { fixed + 7.0f, endSpan }, 9.0f, Fade(BLACK, 0.15f));
+            DrawLineEx({ fixed + 5.0f, startSpan }, { fixed + 5.0f, endSpan }, 7.0f, Fade(wallShade, 0.26f));
         }
 
         if (propAtlas.id == 0) {
-            if (horizontal) DrawLineEx({ start, fixed }, { end, fixed }, 4.0f, wallShade);
-            else DrawLineEx({ fixed, start }, { fixed, end }, 4.0f, wallShade);
+            if (horizontal) DrawLineEx({ startSpan, fixed }, { endSpan, fixed }, 4.0f, wallShade);
+            else DrawLineEx({ fixed, startSpan }, { fixed, endSpan }, 4.0f, wallShade);
             return;
         }
 
         Rectangle src = PropSourceRect(horizontal ? 7 : 8);
-        for (float p = start; p < end; p += 88.0f) {
-            float length = std::min(88.0f, end - p);
+        for (float p = startSpan; p < endSpan; p += 88.0f) {
+            float length = std::min(88.0f, endSpan - p);
             Rectangle dst = horizontal
                 ? Rectangle{ p, fixed - 48.0f, length, 96.0f }
             : Rectangle{ fixed - 48.0f, p, 96.0f, length };
-            DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+            DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, propTint);
         }
         };
 
@@ -3755,16 +3943,70 @@ void Game::DrawWorld() const {
             Rectangle dst = TileWorldRect(tileMap, x, y);
             int tileIndex = TileAt(tileMap, x, y);
             Rectangle src = TileSourceRect(tileIndex);
-            Color tint = (tileIndex == (int)TileType::Path) ? roadTint : grassTint;
+            int hash = MoodHash(x, y, worldSeed);
+            Color baseTint = grassTint;
+            if (tileIndex == (int)TileType::Path) {
+                baseTint = roadTint;
+            }
+            else if (tileIndex == (int)TileType::GrassAlt) {
+                baseTint = MixColor(grassTint, accentTint, 0.16f);
+            }
+            else if (tileIndex == (int)TileType::Flowers) {
+                baseTint = MixColor(grassTint, glowTint, 0.22f);
+            }
+
+            float shade = 0.88f + (float)(hash & 7) * 0.022f;
+            if (tileIndex == (int)TileType::Path && ((hash >> 4) & 1) == 0) {
+                shade -= 0.04f;
+            }
+            Color tint = ScaleColor(baseTint, shade);
 
             if (tileAtlas.id != 0) {
                 DrawTexturePro(tileAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, tint);
+            }
+            else {
+                DrawRectangleRec(dst, tint);
+            }
+
+            DrawRectangleRec(dst, Fade(shadowTint, tileIndex == (int)TileType::Path ? 0.035f : 0.055f));
+
+            if (tileIndex == (int)TileType::Path && (hash % 6) == 0) {
+                DrawLineEx({ dst.x + 10.0f, dst.y + 18.0f }, { dst.x + dst.width - 12.0f, dst.y + dst.height - 15.0f }, 1.6f, Fade(BLACK, 0.08f));
+            }
+        }
+    }
+
+    int fogMinX = minTileX / 4 - 1;
+    int fogMaxX = maxTileX / 4 + 1;
+    int fogMinY = minTileY / 3 - 1;
+    int fogMaxY = maxTileY / 3 + 1;
+    for (int gy = fogMinY; gy <= fogMaxY; ++gy) {
+        for (int gx = fogMinX; gx <= fogMaxX; ++gx) {
+            int seed = MoodHash(gx, gy, worldSeed + 4000);
+            float baseX = tileMap.originX + gx * tileMap.tileSize * 4.0f + 96.0f + (float)(seed & 31) * 4.0f;
+            float baseY = tileMap.originY + gy * tileMap.tileSize * 3.0f + 72.0f + (float)((seed >> 5) & 31) * 4.0f;
+            float phase = worldTime * ambientMotion * (0.18f + 0.02f * (float)(seed & 3)) + (float)(seed & 255) * 0.03f;
+            float driftX = std::sin(phase) * (18.0f + (float)(seed & 15));
+            float driftY = std::cos(phase * 0.83f) * (10.0f + (float)((seed >> 8) & 7));
+            float radiusX = 48.0f + (float)((seed >> 11) & 31) * 2.0f;
+            float radiusY = 18.0f + (float)((seed >> 16) & 15) * 1.25f;
+            float alpha = fogStrength * (0.13f + (float)((seed >> 20) & 7) * 0.01f);
+            DrawEllipse((int)(baseX + driftX), (int)(baseY + driftY), radiusX, radiusY, Fade(fogTint, alpha));
+
+            if ((seed & 7) == 0) {
+                Vector2 motePos = {
+                    baseX + std::cos(phase * 1.28f) * (18.0f + (float)((seed >> 9) & 15)),
+                    baseY + std::sin(phase * 1.14f) * (12.0f + (float)((seed >> 13) & 11))
+                };
+                DrawCircleV(motePos, 1.6f + (float)((seed >> 18) & 3) * 0.4f, Fade(glowTint, 0.12f));
             }
         }
     }
 
     for (const auto& corridor : dungeon.corridors) {
-        DrawRectangleLinesEx(corridor, 2.0f, Fade(accentTint, 0.18f));
+        DrawRectangleRec(corridor, Fade(shadowTint, 0.06f));
+        DrawLineEx({ corridor.x, corridor.y + corridor.height }, { corridor.x + corridor.width, corridor.y + corridor.height }, 8.0f, Fade(BLACK, 0.12f));
+        DrawRectangleLinesEx(corridor, 2.0f, Fade(accentTint, 0.14f));
     }
 
     for (const auto& prop : decorProps) {
@@ -3772,11 +4014,16 @@ void Game::DrawWorld() const {
     }
 
     for (const auto& room : dungeon.rooms) {
-        DrawRectangleLinesEx(room.rect, 2.0f, Fade(accentTint, 0.18f));
+        DrawRectangleRec(room.rect, Fade(room.isSafeZone ? glowTint : shadowTint, room.isSafeZone ? 0.05f : 0.085f));
+        DrawLineEx({ room.rect.x, room.rect.y + room.rect.height }, { room.rect.x + room.rect.width, room.rect.y + room.rect.height }, 8.0f, Fade(BLACK, 0.14f));
+        DrawRectangleLinesEx(room.rect, 2.0f, Fade(accentTint, 0.16f));
         drawRoomEdgeFences(room);
         int labelSize = room.isSafeZone ? 24 : 20;
         int labelX = (int)(room.rect.x + room.rect.width * 0.5f) - MeasureText(room.name.c_str(), labelSize) / 2;
-        DrawText(room.name.c_str(), labelX, (int)room.rect.y + 14, labelSize, room.isSafeZone ? Color{ 92, 78, 56, 255 } : accentTint);
+        int labelY = (int)room.rect.y + 14;
+        Color roomLabel = room.isSafeZone ? MixColor(labelTint, glowTint, 0.20f) : labelTint;
+        DrawText(room.name.c_str(), labelX + 2, labelY + 2, labelSize, Fade(BLACK, 0.42f));
+        DrawText(room.name.c_str(), labelX, labelY, labelSize, roomLabel);
     }
 
     std::vector<PropInstance> sortedProps = worldProps;
@@ -3788,20 +4035,24 @@ void Game::DrawWorld() const {
     }
 
     for (const auto& barrier : GetActiveBarrierRects()) {
-        DrawRectangleRounded(barrier, 0.12f, 4, Fade({ 97, 72, 48, 255 }, 0.18f));
+        DrawRectangleRounded(barrier, 0.12f, 4, Fade(shadowTint, 0.20f));
         if (barrier.width > barrier.height) drawFenceStrip(true, barrier.y + barrier.height * 0.5f, barrier.x, barrier.x + barrier.width);
         else drawFenceStrip(false, barrier.x + barrier.width * 0.5f, barrier.y, barrier.y + barrier.height);
     }
 
-    if (rewardChestActive && propAtlas.id != 0) {
-        Rectangle src = PropSourceRect(6);
-        Rectangle dst = { rewardChestPos.x - 48.0f, rewardChestPos.y - 60.0f, 96.0f, 96.0f };
-        DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
+    if (rewardChestActive) {
+        DrawSoftGlow({ rewardChestPos.x, rewardChestPos.y - 8.0f }, 28.0f, glowTint, 0.22f);
+        if (propAtlas.id != 0) {
+            Rectangle src = PropSourceRect(6);
+            Rectangle dst = { rewardChestPos.x - 48.0f, rewardChestPos.y - 60.0f, 96.0f, 96.0f };
+            DrawTexturePro(propAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, propTint);
+        }
     }
 
     for (const auto& shockwave : shockwaves) {
         float alpha = ClampFloat(shockwave.life / shockwave.maxLife, 0.0f, 1.0f);
-        DrawCircleLines((int)shockwave.pos.x, (int)shockwave.pos.y, shockwave.radius, Fade({ 255, 255, 255, 255 }, alpha * 0.45f));
+        DrawCircleLines((int)shockwave.pos.x, (int)shockwave.pos.y, shockwave.radius, Fade(glowTint, alpha * 0.30f));
+        DrawCircleLines((int)shockwave.pos.x, (int)shockwave.pos.y, shockwave.radius - 4.0f, Fade({ 255, 255, 255, 255 }, alpha * 0.20f));
     }
 
     for (const auto& turret : turrets) {
@@ -3810,12 +4061,12 @@ void Game::DrawWorld() const {
             Rectangle dst = { turret.pos.x - 34.0f, turret.pos.y - 46.0f, 68.0f, 68.0f };
             DrawTexturePro(actorAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
         }
-        DrawCircleLines((int)turret.pos.x, (int)turret.pos.y, 260.0f, Fade({ 96, 130, 183, 255 }, 0.10f));
+        DrawCircleLines((int)turret.pos.x, (int)turret.pos.y, 260.0f, Fade(accentTint, 0.08f));
     }
 
     for (const auto& beam : beams) {
-        DrawLineEx(beam.start, beam.end, beam.thickness + 2.0f, Fade({ 255, 246, 204, 255 }, beam.life * 3.0f));
-        DrawLineEx(beam.start, beam.end, beam.thickness, { 122, 167, 230, 255 });
+        DrawLineEx(beam.start, beam.end, beam.thickness + 2.0f, Fade({ 255, 246, 204, 255 }, beam.life * 2.8f));
+        DrawLineEx(beam.start, beam.end, beam.thickness, ScaleColor(accentTint, 1.10f));
     }
 
     for (const auto& orb : orbs) {
@@ -3836,7 +4087,7 @@ void Game::DrawWorld() const {
     for (const auto& monster : monsters) {
         DrawEnemySprite(monster);
         Rectangle back = { monster.pos.x - 24.0f, monster.pos.y - monster.radius - 20.0f, 48.0f, 6.0f };
-        DrawRectangleRec(back, Fade(BLACK, 0.35f));
+        DrawRectangleRec(back, Fade(BLACK, 0.42f));
         DrawRectangleRec({ back.x, back.y, back.width * ((float)monster.hp / (float)monster.maxHp), back.height }, monster.isBoss ? neonGold : safeGreen);
     }
 
@@ -3853,13 +4104,20 @@ void Game::DrawWorld() const {
         DrawTexturePro(actorAtlas, src, dst, { 0.0f, 0.0f }, 0.0f, WHITE);
     }
     DrawPlayerWeapon();
-    DrawCircleLines((int)player.pos.x, (int)player.pos.y, weaponDB[player.equippedWeaponIdx].range, Fade({ 98, 130, 190, 255 }, 0.12f));
+    DrawCircleLines((int)player.pos.x, (int)player.pos.y, weaponDB[player.equippedWeaponIdx].range, Fade(accentTint, 0.10f));
 
     for (const auto& text : floatingTexts) {
         DrawText(text.text.c_str(), (int)text.pos.x, (int)text.pos.y, 18, Fade(text.color, text.life));
     }
 
     EndMode2D();
+
+    DrawRectangleGradientV(0, 0, screenW, screenH / 3, Fade(WorldSkyTopTint(currentWorld), 0.20f), Fade(BLACK, 0.0f));
+    DrawSoftGlow({ screenW * 0.82f, 92.0f }, 40.0f, glowTint, 0.10f);
+    DrawRectangleGradientV(0, screenH - screenH / 3, screenW, screenH / 3, Fade(BLACK, 0.0f), Fade(WorldSkyBottomTint(currentWorld), 0.18f));
+    DrawHorizontalFade(0, 0, screenW / 5, screenH, BLACK, 0.30f, 0.0f);
+    DrawHorizontalFade(screenW - screenW / 5, 0, screenW / 5, screenH, BLACK, 0.0f, 0.28f);
+    DrawRectangleGradientV(0, 0, screenW, screenH / 5, Fade(BLACK, 0.16f), Fade(BLACK, 0.0f));
 }
 
 void Game::DrawHud() const {
